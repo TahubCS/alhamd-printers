@@ -1,0 +1,293 @@
+// Prisma Schema for Al-Hamd Printers Business Management System
+// Database: PostgreSQL (Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// COMPANY - Multi-brand invoicing
+// ============================================
+model Company {
+  id        String    @id @default(cuid())
+  name      String    // Al-Hamd Printers, ATS, M.A Enterprises, Muhammad Tanveer
+  nameUrdu  String?
+  address   String?
+  phone     String?
+  email     String?
+  isDefault Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  invoices  Invoice[]
+}
+
+// ============================================
+// CUSTOMER - with credit terms & ledger
+// ============================================
+model Customer {
+  id            String        @id @default(cuid())
+  name          String
+  nameUrdu      String?
+  phone         String?
+  address       String?
+  creditDays    Int           @default(30)
+  creditLimit   Decimal?      @db.Decimal(15, 2)
+  balance       Decimal       @default(0) @db.Decimal(15, 2)
+  isBadDebt     Boolean       @default(false)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  invoices      Invoice[]
+  ledgerEntries LedgerEntry[]
+  cheques       Cheque[]
+  payments      Payment[]
+}
+
+// ============================================
+// PRODUCT - PVC bag specifications
+// ============================================
+model Product {
+  id           String        @id @default(cuid())
+  code         String        @unique
+  name         String
+  nameUrdu     String?
+  description  String?
+  thickness    String?
+  withTape     Boolean       @default(false)
+  withPrint    Boolean       @default(false)
+  basePrice    Decimal       @db.Decimal(10, 2)
+  buttonPrice  Decimal       @default(1) @db.Decimal(10, 2)
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  invoiceItems InvoiceItem[]
+}
+
+// ============================================
+// INVOICE
+// ============================================
+model Invoice {
+  id          String        @id @default(cuid())
+  invoiceNo   Int           @unique @default(autoincrement())
+  date        DateTime      @default(now())
+  dueDate     DateTime
+  companyId   String
+  company     Company       @relation(fields: [companyId], references: [id])
+  customerId  String
+  customer    Customer      @relation(fields: [customerId], references: [id])
+  items       InvoiceItem[]
+  subtotal    Decimal       @db.Decimal(15, 2)
+  total       Decimal       @db.Decimal(15, 2)
+  status      InvoiceStatus @default(PENDING)
+  notes       String?
+  ledgerEntry LedgerEntry?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+enum InvoiceStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  BAD_DEBT
+}
+
+// ============================================
+// INVOICE ITEM - Line items on invoice
+// ============================================
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  description String
+  sizeWidth   Decimal? @db.Decimal(10, 2)
+  sizeLength  Decimal? @db.Decimal(10, 2)
+  sizeDepth   Decimal? @db.Decimal(10, 2)
+  quantity    Int
+  rate        Decimal  @db.Decimal(10, 2)
+  amount      Decimal  @db.Decimal(15, 2)
+}
+
+// ============================================
+// LEDGER ENTRY - Debit/Credit with running balance
+// ============================================
+model LedgerEntry {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  particulars String
+  invoiceId   String?  @unique
+  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+  paymentId   String?  @unique
+  payment     Payment? @relation(fields: [paymentId], references: [id])
+  debit       Decimal  @default(0) @db.Decimal(15, 2)
+  credit      Decimal  @default(0) @db.Decimal(15, 2)
+  balance     Decimal  @db.Decimal(15, 2)
+  createdAt   DateTime @default(now())
+}
+
+// ============================================
+// PAYMENT - Cash or Cheque
+// ============================================
+model Payment {
+  id          String        @id @default(cuid())
+  date        DateTime      @default(now())
+  customerId  String
+  customer    Customer      @relation(fields: [customerId], references: [id])
+  amount      Decimal       @db.Decimal(15, 2)
+  method      PaymentMethod
+  chequeId    String?       @unique
+  cheque      Cheque?       @relation(fields: [chequeId], references: [id])
+  notes       String?
+  ledgerEntry LedgerEntry?
+  createdAt   DateTime      @default(now())
+}
+
+enum PaymentMethod {
+  CASH
+  CHEQUE
+  BANK_TRANSFER
+}
+
+// ============================================
+// CHEQUE - with status tracking
+// ============================================
+model Cheque {
+  id           String       @id @default(cuid())
+  chequeNo     String
+  bankName     String
+  amount       Decimal      @db.Decimal(15, 2)
+  chequeDate   DateTime
+  receivedDate DateTime     @default(now())
+  depositDate  DateTime?
+  clearDate    DateTime?
+  status       ChequeStatus @default(RECEIVED)
+  customerId   String
+  customer     Customer     @relation(fields: [customerId], references: [id])
+  payment      Payment?
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+enum ChequeStatus {
+  RECEIVED
+  DEPOSITED
+  CLEARED
+  BOUNCED
+}
+
+// ============================================
+// WORKER - with weekly wages
+// ============================================
+model Worker {
+  id           String        @id @default(cuid())
+  name         String
+  nameUrdu     String?
+  phone        String?
+  weeklyWage   Decimal       @db.Decimal(10, 2)
+  balance      Decimal       @default(0) @db.Decimal(15, 2)
+  isActive     Boolean       @default(true)
+  notes        String?
+  wagePayments WagePayment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+// ============================================
+// WAGE PAYMENT - payments to workers
+// ============================================
+model WagePayment {
+  id        String   @id @default(cuid())
+  workerId  String
+  worker    Worker   @relation(fields: [workerId], references: [id])
+  date      DateTime @default(now())
+  amount    Decimal  @db.Decimal(10, 2)
+  type      WageType
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+enum WageType {
+  PAYMENT
+  ADVANCE
+  DEDUCTION
+}
+
+// ============================================
+// SUPPLIER - for PVC rolls
+// ============================================
+model Supplier {
+  id             String          @id @default(cuid())
+  name           String
+  nameUrdu       String?
+  phone          String?
+  address        String?
+  balance        Decimal         @default(0) @db.Decimal(15, 2)
+  notes          String?
+  purchaseOrders PurchaseOrder[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+// ============================================
+// PURCHASE ORDER - buying raw materials
+// ============================================
+model PurchaseOrder {
+  id         String              @id @default(cuid())
+  poNumber   Int                 @unique @default(autoincrement())
+  date       DateTime            @default(now())
+  supplierId String
+  supplier   Supplier            @relation(fields: [supplierId], references: [id])
+  items      PurchaseOrderItem[]
+  total      Decimal             @db.Decimal(15, 2)
+  status     PurchaseStatus      @default(PENDING)
+  notes      String?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+}
+
+enum PurchaseStatus {
+  PENDING
+  RECEIVED
+  PARTIAL
+  CANCELLED
+}
+
+// ============================================
+// PURCHASE ORDER ITEM
+// ============================================
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  description     String
+  specification   String?
+  quantity        Int
+  rate            Decimal       @db.Decimal(10, 2)
+  amount          Decimal       @db.Decimal(15, 2)
+}
+
+// ============================================
+// DELIVERY CHALLAN
+// ============================================
+model DeliveryChallan {
+  id         String   @id @default(cuid())
+  challanNo  Int      @unique @default(autoincrement())
+  date       DateTime @default(now())
+  customerId String
+  poNumber   String?
+  items      String
+  quantity   Int
+  notes      String?
+  createdAt  DateTime @default(now())
+}
