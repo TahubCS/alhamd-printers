@@ -1,0 +1,34 @@
+{
+    "common": {
+        "appName": "Al-Hamd Printers",
+        "language": "English",
+        "toggleLanguage": "اردو"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "customers": "Customers",
+        "invoices": "Invoices",
+        "inventory": "Inventory",
+        "expenses": "Expenses",
+        "wages": "Wages",
+        "reports": "Reports",
+        "settings": "Settings"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "welcome": "Welcome to Al-Hamd Printers",
+        "subtitle": "Manage your business operations efficiently",
+        "quickActions": "Quick Actions",
+        "recentActivity": "Recent Activity",
+        "todaySales": "Today's Sales",
+        "pendingInvoices": "Pending Invoices",
+        "totalCustomers": "Total Customers",
+        "lowStock": "Low Stock Items"
+    },
+    "actions": {
+        "newInvoice": "New Invoice",
+        "addCustomer": "Add Customer",
+        "addExpense": "Add Expense",
+        "viewReports": "View Reports"
+    }
+}
