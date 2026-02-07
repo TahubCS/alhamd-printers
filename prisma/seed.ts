@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '../src/generated/prisma/index.js';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -69,7 +69,6 @@ async function main() {
             nameUrdu: 'آر ایم شیرشیر',
             phone: '0300-1234567',
             address: 'Karachi, Pakistan',
-            creditDays: 60,
             balance: 0,
         },
     });

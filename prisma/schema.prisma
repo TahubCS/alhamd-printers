@@ -3,11 +3,12 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================
@@ -35,10 +36,11 @@ model Customer {
   nameUrdu      String?
   phone         String?
   address       String?
-  creditDays    Int           @default(30)
+  email         String?       @unique
   creditLimit   Decimal?      @db.Decimal(15, 2)
   balance       Decimal       @default(0) @db.Decimal(15, 2)
   isBadDebt     Boolean       @default(false)
+  // testField222  String?
   notes         String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -75,6 +77,7 @@ model Invoice {
   id          String        @id @default(cuid())
   invoiceNo   Int           @unique @default(autoincrement())
   date        DateTime      @default(now())
+  creditDays  Int           @default(0)
   dueDate     DateTime
   companyId   String
   company     Company       @relation(fields: [companyId], references: [id])
