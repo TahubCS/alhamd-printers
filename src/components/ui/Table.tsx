@@ -15,7 +15,7 @@ Table.displayName = 'Table';
 
 export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
     ({ className = '', ...props }, ref) => (
-        <thead ref={ref} className={`[&_tr]:border-b ${className}`} {...props} />
+        <thead ref={ref} className={`[&_tr]:border-b [&_tr]:border-[var(--color-border)] ${className}`} {...props} />
     )
 );
 TableHeader.displayName = 'TableHeader';
@@ -35,7 +35,7 @@ export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTable
     ({ className = '', ...props }, ref) => (
         <tr
             ref={ref}
-            className={`border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted ${className}`}
+            className={`border-b border-[var(--color-border)] transition-colors hover:bg-[var(--color-bg-hover)] data-[state=selected]:bg-[var(--color-bg-hover)] ${className}`}
             {...props}
         />
     )
@@ -46,7 +46,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLT
     ({ className = '', ...props }, ref) => (
         <th
             ref={ref}
-            className={`h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${className}`}
+            className={`h-12 px-4 text-left align-middle font-medium text-[var(--color-text-secondary)] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${className}`}
             {...props}
         />
     )
@@ -57,7 +57,7 @@ export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLT
     ({ className = '', ...props }, ref) => (
         <td
             ref={ref}
-            className={`p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${className}`}
+            className={`p-4 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${className}`}
             {...props}
         />
     )

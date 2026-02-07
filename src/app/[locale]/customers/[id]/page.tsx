@@ -38,20 +38,20 @@ export default async function CustomerDetailsPage({
     const ledger = ledgerResult.data || [];
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="animate-fade-in space-y-6">
+            <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{customer.name}</h1>
-                    <p className="font-noto-nastaliq text-xl text-muted-foreground">
+                    <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">{customer.name}</h1>
+                    <p className="font-noto-nastaliq text-xl text-[var(--color-text-secondary)]">
                         {customer.nameUrdu}
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                     <Link href={`/${locale}/customers/${id}/edit`}>
-                        <Button variant="outline">{tActions("edit")}</Button>
+                        <Button variant="outline" className="w-full sm:w-auto">{tActions("edit")}</Button>
                     </Link>
-                    <Button variant="primary">{tActions("newInvoice")}</Button>
-                    <Button variant="secondary">{tActions("recordPayment")}</Button>
+                    <Button variant="primary" className="w-full sm:w-auto">{tActions("newInvoice")}</Button>
+                    <Button variant="secondary" className="w-full sm:w-auto">{tActions("recordPayment")}</Button>
                 </div>
             </div>
 

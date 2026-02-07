@@ -51,21 +51,21 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                 For now, let's just make the whole page printable and user hits Ctrl+P. 
             */}
 
-            <div className="print-container bg-white p-8 rounded-lg border shadow-sm print:border-0 print:shadow-none print:w-full">
+            <div className="card p-8 print:p-0 print:border-0 print:shadow-none print:w-full print:bg-white print:text-black">
                 {/* Header */}
-                <div className="flex justify-between items-start mb-8 border-b pb-8">
+                <div className="flex justify-between items-start mb-8 border-b border-[var(--color-border)] pb-8">
                     <div>
-                        <h1 className="text-2xl font-bold">{invoice.company.name}</h1>
-                        <p className="text-sm text-muted-foreground font-noto-nastaliq mt-1">
+                        <h1 className="text-2xl font-bold text-[var(--color-text-primary)] print:text-black">{invoice.company.name}</h1>
+                        <p className="text-sm text-[var(--color-text-secondary)] font-noto-nastaliq mt-1 print:text-gray-600">
                             {invoice.company.nameUrdu}
                         </p>
-                        <p className="text-sm mt-2">{invoice.company.address}</p>
-                        <p className="text-sm">{invoice.company.phone}</p>
-                        <p className="text-sm">{invoice.company.email}</p>
+                        <p className="text-sm mt-2 text-[var(--color-text-secondary)] print:text-gray-600">{invoice.company.address}</p>
+                        <p className="text-sm text-[var(--color-text-secondary)] print:text-gray-600">{invoice.company.phone}</p>
+                        <p className="text-sm text-[var(--color-text-secondary)] print:text-gray-600">{invoice.company.email}</p>
                     </div>
                     <div className="text-right">
-                        <h2 className="text-xl font-bold text-gray-900">INVOICE</h2>
-                        <p className="text-lg font-mono mt-2">#{invoice.invoiceNo}</p>
+                        <h2 className="text-xl font-bold text-[var(--color-text-primary)] print:text-black">INVOICE</h2>
+                        <p className="text-lg font-mono mt-2 text-[var(--color-text-primary)] print:text-black">#{invoice.invoiceNo}</p>
 
                         <div className="mt-4 text-sm">
                             <div className="flex justify-end gap-4">

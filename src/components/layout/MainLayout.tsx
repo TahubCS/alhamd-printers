@@ -25,7 +25,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <main className="main-content">
                 <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-                <div className="page-content">
+                <div className="page-content px-8 py-8 w-full">
                     {children}
                 </div>
             </main>

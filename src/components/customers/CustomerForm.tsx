@@ -74,14 +74,14 @@ export function CustomerForm({ customer, mode, locale }: CustomerFormProps) {
             <CardContent className="pt-6">
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                        <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-md text-sm">
                             {error}
                         </div>
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-4">
-                            <h3 className="font-medium text-lg">{t("personalInfo")}</h3>
+                            <h3 className="font-medium text-lg text-[var(--color-text-primary)]">{t("personalInfo")}</h3>
 
                             <Input
                                 label={t("name")}
@@ -122,7 +122,7 @@ export function CustomerForm({ customer, mode, locale }: CustomerFormProps) {
                         </div>
 
                         <div className="space-y-4">
-                            <h3 className="font-medium text-lg">{t("financialInfo")}</h3>
+                            <h3 className="font-medium text-lg text-[var(--color-text-primary)]">{t("financialInfo")}</h3>
 
                             <Input
                                 label={t("creditLimit")}
@@ -148,9 +148,9 @@ export function CustomerForm({ customer, mode, locale }: CustomerFormProps) {
                                     type="checkbox"
                                     id="isBadDebt"
                                     {...form.register("isBadDebt")}
-                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    className="h-4 w-4 rounded border-[var(--color-border)] bg-[var(--color-bg-tertiary)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]"
                                 />
-                                <label htmlFor="isBadDebt" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                <label htmlFor="isBadDebt" className="text-sm font-medium leading-none text-[var(--color-text-secondary)] peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                     {t("badDebt")}
                                 </label>
                             </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
-import { MainLayout } from '@/components/layout';
 import {
     TrendingUp,
     FileText,
@@ -14,9 +13,7 @@ import {
 
 export default function DashboardPage() {
     return (
-        <MainLayout>
-            <Dashboard />
-        </MainLayout>
+        <Dashboard />
     );
 }
 

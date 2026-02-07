@@ -36,23 +36,42 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
         console.error(error);
     }
 
+    const isUrdu = locale === 'ur';
+
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-                    <p className="text-muted-foreground">{t("subtitle")}</p>
+                    <h1
+                        className="font-bold text-[var(--color-text-primary)]"
+                        style={{
+                            fontSize: isUrdu ? '2.5rem' : '2rem',
+                            marginBottom: isUrdu ? '16px' : '12px',
+                            lineHeight: isUrdu ? '1.4' : '1.2'
+                        }}
+                    >
+                        {t("title")}
+                    </h1>
+                    <p
+                        className="text-[var(--color-text-secondary)]"
+                        style={{
+                            fontSize: isUrdu ? '1.2rem' : '1.1rem',
+                            lineHeight: isUrdu ? '1.8' : '1.5'
+                        }}
+                    >
+                        {t("subtitle")}
+                    </p>
                 </div>
                 <Link href={`/${locale}/invoices/new`}>
                     <Button>{t("newInvoice")}</Button>
                 </Link>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t("recentInvoices")}</CardTitle>
+            <Card className="card" style={{ padding: isUrdu ? '28px' : '24px' }}>
+                <CardHeader className="p-0 mb-6">
+                    <CardTitle className="text-xl text-[var(--color-text-primary)]">{t("recentInvoices")}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -69,24 +88,24 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                             {invoices && invoices.length > 0 ? (
                                 invoices.map((invoice) => (
                                     <TableRow key={invoice.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium text-[var(--color-text-primary)]">
                                             {invoice.invoiceNo}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-[var(--color-text-secondary)]">
                                             {new Date(invoice.date).toLocaleDateString(
                                                 locale === "ur" ? "ur-PK" : "en-PK"
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-medium">{invoice.customer.name}</div>
-                                            <div className="text-xs text-muted-foreground font-noto-nastaliq">
+                                            <div className="font-medium text-[var(--color-text-primary)]">{invoice.customer.name}</div>
+                                            <div className="text-xs text-[var(--color-text-muted)] font-noto-nastaliq">
                                                 {invoice.customer.nameUrdu}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
+                                        <TableCell className="text-sm text-[var(--color-text-secondary)]">
                                             {invoice.company.name}
                                         </TableCell>
-                                        <TableCell className="text-right font-medium">
+                                        <TableCell className="text-right font-medium text-[var(--color-text-primary)]">
                                             {new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
                                                 style: "currency",
                                                 currency: "PKR",
@@ -112,7 +131,7 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
+                                    <TableCell colSpan={7} className="h-24 text-center text-[var(--color-text-muted)]">
                                         {t("noInvoices")}
                                     </TableCell>
                                 </TableRow>

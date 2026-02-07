@@ -35,36 +35,57 @@ export default async function CustomersPage({ params, searchParams }: PageProps)
         console.error(error);
     }
 
+    const isUrdu = locale === 'ur';
+
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-                    <p className="text-muted-foreground">{t("subtitle")}</p>
+                    <h1
+                        className="font-bold text-[var(--color-text-primary)]"
+                        style={{
+                            fontSize: isUrdu ? '2.5rem' : '2rem',
+                            marginBottom: isUrdu ? '16px' : '12px',
+                            lineHeight: isUrdu ? '1.4' : '1.2'
+                        }}
+                    >
+                        {t("title")}
+                    </h1>
+                    <p
+                        className="text-[var(--color-text-secondary)]"
+                        style={{
+                            fontSize: isUrdu ? '1.2rem' : '1.1rem',
+                            lineHeight: isUrdu ? '1.8' : '1.5'
+                        }}
+                    >
+                        {t("subtitle")}
+                    </p>
                 </div>
                 <Link href={`/${locale}/customers/new`}>
-                    <Button>{t("newCustomer")}</Button>
+                    <Button>
+                        {t("newCustomer")}
+                    </Button>
                 </Link>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle>{t("title")}</CardTitle>
+            <Card className="card" style={{ padding: isUrdu ? '28px' : '24px' }}>
+                <CardHeader className="p-0 mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <CardTitle className="text-xl text-[var(--color-text-primary)]">{t("title")}</CardTitle>
                         <form className="flex w-full max-w-sm items-center space-x-2">
                             <Input
                                 name="q"
                                 placeholder={tActions("search")}
                                 defaultValue={q}
-                                className="h-9"
+                                className="h-10"
                             />
-                            <Button type="submit" size="sm" variant="secondary">
+                            <Button type="submit" variant="secondary">
                                 {tActions("search")}
                             </Button>
                         </form>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -80,12 +101,12 @@ export default async function CustomersPage({ params, searchParams }: PageProps)
                             {customers && customers.length > 0 ? (
                                 customers.map((customer: any) => (
                                     <TableRow key={customer.id}>
-                                        <TableCell className="font-medium">{customer.name}</TableCell>
-                                        <TableCell className="font-noto-nastaliq text-lg">
+                                        <TableCell className="font-medium text-[var(--color-text-primary)]">{customer.name}</TableCell>
+                                        <TableCell className="font-noto-nastaliq text-lg text-[var(--color-text-secondary)]">
                                             {customer.nameUrdu || "-"}
                                         </TableCell>
-                                        <TableCell>{customer.phone || "-"}</TableCell>
-                                        <TableCell className="text-right font-medium">
+                                        <TableCell className="text-[var(--color-text-secondary)]">{customer.phone || "-"}</TableCell>
+                                        <TableCell className="text-right font-medium text-[var(--color-text-primary)]">
                                             {new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
                                                 style: "currency",
                                                 currency: "PKR",
@@ -116,7 +137,7 @@ export default async function CustomersPage({ params, searchParams }: PageProps)
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center">
+                                    <TableCell colSpan={6} className="h-24 text-center text-[var(--color-text-muted)]">
                                         {t("noCustomers")}
                                     </TableCell>
                                 </TableRow>

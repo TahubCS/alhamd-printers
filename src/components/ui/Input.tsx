@@ -17,7 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 <input
                     id={id}
                     ref={ref}
-                    className={`flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${error ? 'border-red-500 focus-visible:ring-red-500' : ''
+                    className={`input ${error ? 'border-red-500 focus-visible:ring-red-500' : ''
                         } ${className}`}
                     {...props}
                 />

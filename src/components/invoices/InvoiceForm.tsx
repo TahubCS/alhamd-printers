@@ -158,9 +158,9 @@ export default function InvoiceForm() {
                 <CardContent className="p-6 grid md:grid-cols-2 gap-6">
                     {/* Header Fields */}
                     <div>
-                        <Label>{t("selectCompany")}</Label>
+                        <Label className="text-[var(--color-text-secondary)]">{t("selectCompany")}</Label>
                         <select
-                            className="w-full p-2 border rounded"
+                            className="input"
                             value={companyId}
                             onChange={e => setCompanyId(e.target.value)}
                         >
@@ -188,7 +188,7 @@ export default function InvoiceForm() {
                                In real app, we'd use a proper ComboBox component calculating ID from selection 
                            */}
                             <select
-                                className="mt-2 w-full p-2 border rounded"
+                                className="input mt-2"
                                 value={customerId}
                                 onChange={e => setCustomerId(e.target.value)}
                             >
@@ -235,20 +235,20 @@ export default function InvoiceForm() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="text-left border-b">
-                                        <th className="p-2 w-[200px]">{t("selectProduct")} / {t("manualDescription")}</th>
-                                        <th className="p-2 w-[80px]">{t("quantity")}</th>
-                                        <th className="p-2 w-[100px]">{t("rate")}</th>
-                                        <th className="p-2 w-[100px] text-right">{tCommon("amount", { defaultMessage: "Amount" })}</th>
-                                        <th className="p-2 w-[50px]"></th>
+                                    <tr className="text-left border-b border-[var(--color-border)]">
+                                        <th className="p-4 w-[200px] text-[var(--color-text-secondary)]">{t("selectProduct")} / {t("manualDescription")}</th>
+                                        <th className="p-4 w-[80px] text-[var(--color-text-secondary)]">{t("quantity")}</th>
+                                        <th className="p-4 w-[100px] text-[var(--color-text-secondary)]">{t("rate")}</th>
+                                        <th className="p-4 w-[100px] text-right text-[var(--color-text-secondary)]">{tCommon("amount", { defaultMessage: "Amount" })}</th>
+                                        <th className="p-4 w-[50px]"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {items.map((item, index) => (
-                                        <tr key={index} className="border-b last:border-0">
-                                            <td className="p-2">
+                                        <tr key={index} className="border-b border-[var(--color-border)] last:border-0">
+                                            <td className="p-4">
                                                 <select
-                                                    className="w-full text-xs p-1 mb-1 border rounded"
+                                                    className="input h-8 text-xs p-1 mb-1"
                                                     value={item.productId || ""}
                                                     onChange={e => updateItem(index, 'productId', e.target.value)}
                                                 >
@@ -264,7 +264,7 @@ export default function InvoiceForm() {
                                                     className="h-8 text-xs"
                                                 />
                                             </td>
-                                            <td className="p-2">
+                                            <td className="p-4">
                                                 <Input
                                                     type="number"
                                                     value={item.quantity}
@@ -273,7 +273,7 @@ export default function InvoiceForm() {
                                                 />
                                                 {/* Size Fields (Hidden for simplicity in V1, uncomment if needed) */}
                                             </td>
-                                            <td className="p-2">
+                                            <td className="p-4">
                                                 <Input
                                                     type="number"
                                                     value={item.rate}
@@ -281,10 +281,10 @@ export default function InvoiceForm() {
                                                     className="h-8"
                                                 />
                                             </td>
-                                            <td className="p-2 text-right font-mono">
+                                            <td className="p-4 text-right font-mono">
                                                 {item.amount.toLocaleString()}
                                             </td>
-                                            <td className="p-2 text-right">
+                                            <td className="p-4 text-right">
                                                 {items.length > 1 && (
                                                     <Button
                                                         type="button"
