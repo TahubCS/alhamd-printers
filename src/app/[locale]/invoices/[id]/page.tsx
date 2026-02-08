@@ -35,9 +35,12 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
     }
 
     return (
-        <div className="space-y-6 print:space-y-0 print:p-0">
+    const isUrdu = locale === 'ur';
+
+    return (
+        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
             {/* Action Bar (Hidden in Print) */}
-            <div className="flex items-center justify-between print:hidden">
+            <div className="flex items-center justify-between print:hidden" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
                 <Link href={`/${locale}/invoices`}>
                     <Button variant="outline" size="sm">
                         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -47,11 +50,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                 <PrintButton />
             </div>
 
-            {/* Print Button Component Placeholder - We will replace this button logic if we want interactivity. 
-                For now, let's just make the whole page printable and user hits Ctrl+P. 
-            */}
-
-            <div className="card p-8 print:p-0 print:border-0 print:shadow-none print:w-full print:bg-white print:text-black">
+            <div className="card print:p-0 print:border-0 print:shadow-none print:w-full print:bg-white print:text-black" style={{ padding: isUrdu ? '28px' : '24px' }}>
                 {/* Header */}
                 <div className="flex justify-between items-start mb-8 border-b border-[var(--color-border)] pb-8">
                     <div>
@@ -67,16 +66,16 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                         <h2 className="text-xl font-bold text-[var(--color-text-primary)] print:text-black">INVOICE</h2>
                         <p className="text-lg font-mono mt-2 text-[var(--color-text-primary)] print:text-black">#{invoice.invoiceNo}</p>
 
-                        <div className="mt-4 text-sm">
+                        <div className="mt-4 text-sm text-[var(--color-text-secondary)]">
                             <div className="flex justify-end gap-4">
                                 <span className="text-muted-foreground">{t("date")}:</span>
-                                <span className="font-medium">
+                                <span className="font-medium text-[var(--color-text-primary)]">
                                     {new Date(invoice.date).toLocaleDateString(locale === 'ur' ? 'ur-PK' : 'en-PK')}
                                 </span>
                             </div>
                             <div className="flex justify-end gap-4">
                                 <span className="text-muted-foreground">{t("dueDate")}:</span>
-                                <span className="font-medium">
+                                <span className="font-medium text-[var(--color-text-primary)]">
                                     {new Date(invoice.dueDate).toLocaleDateString(locale === 'ur' ? 'ur-PK' : 'en-PK')}
                                 </span>
                             </div>
@@ -89,8 +88,8 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                     <h3 className="text-sm font-semibold text-muted-foreground uppercase mb-2">
                         {tCommon("billTo", { defaultMessage: "Bill To" })}
                     </h3>
-                    <div className="font-medium text-lg">{invoice.customer.name}</div>
-                    <div className="text-md font-noto-nastaliq">{invoice.customer.nameUrdu}</div>
+                    <div className="font-medium text-lg text-[var(--color-text-primary)]">{invoice.customer.name}</div>
+                    <div className="text-md font-noto-nastaliq text-[var(--color-text-secondary)]">{invoice.customer.nameUrdu}</div>
                     <div className="text-sm text-muted-foreground mt-1">
                         {invoice.customer.address}
                     </div>
@@ -113,7 +112,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                         {invoice.items.map((item) => (
                             <TableRow key={item.id}>
                                 <TableCell>
-                                    <span className="font-medium">{item.description}</span>
+                                    <span className="font-medium text-[var(--color-text-primary)]">{item.description}</span>
                                     {/* Display sizes if PVC bag */}
                                     {(item.sizeWidth || item.product) && (
                                         <div className="text-xs text-muted-foreground mt-1">
@@ -122,11 +121,11 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                                         </div>
                                     )}
                                 </TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="text-right text-[var(--color-text-primary)]">
                                     {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK').format(Number(item.rate))}
                                 </TableCell>
-                                <TableCell className="text-right">{item.quantity}</TableCell>
-                                <TableCell className="text-right font-medium">
+                                <TableCell className="text-right text-[var(--color-text-primary)]">{item.quantity}</TableCell>
+                                <TableCell className="text-right font-medium text-[var(--color-text-primary)]">
                                     {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK', {
                                         style: "currency",
                                         currency: "PKR"
@@ -142,14 +141,14 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                     <div className="w-[300px] space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">{t("subtotal")}</span>
-                            <span>
+                            <span className="text-[var(--color-text-primary)]">
                                 {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK', {
                                     style: "currency",
                                     currency: "PKR"
                                 }).format(Number(invoice.subtotal))}
                             </span>
                         </div>
-                        <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
+                        <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2 text-[var(--color-text-primary)]">
                             <span>{t("total")}</span>
                             <span>
                                 {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK', {
@@ -164,7 +163,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                 {/* Notes */}
                 {invoice.notes && (
                     <div className="mt-8 border-t pt-4">
-                        <h4 className="text-sm font-semibold mb-1">Notes:</h4>
+                        <h4 className="text-sm font-semibold mb-1 text-[var(--color-text-primary)]">Notes:</h4>
                         <p className="text-sm text-muted-foreground">{invoice.notes}</p>
                     </div>
                 )}

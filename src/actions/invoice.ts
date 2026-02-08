@@ -40,7 +40,13 @@ export async function getInvoices(filters?: {
             }
         });
 
-        return { success: true, data: invoices };
+        const serializedInvoices = invoices.map(invoice => ({
+            ...invoice,
+            subtotal: Number(invoice.subtotal),
+            total: Number(invoice.total),
+        }));
+
+        return { success: true, data: serializedInvoices };
     } catch (error) {
         console.error("Get Invoices Error:", error);
         return { success: false, error: "Failed to fetch invoices" };
@@ -67,7 +73,28 @@ export async function getInvoiceById(id: string) {
             return { success: false, error: "Invoice not found" };
         }
 
-        return { success: true, data: invoice };
+        const serializedInvoice = {
+            ...invoice,
+            subtotal: Number(invoice.subtotal),
+            total: Number(invoice.total),
+            items: invoice.items.map(item => ({
+                ...item,
+                rate: Number(item.rate),
+                amount: Number(item.amount),
+                product: item.product ? {
+                    ...item.product,
+                    basePrice: Number(item.product.basePrice),
+                } : null
+            })),
+            ledgerEntry: invoice.ledgerEntry ? {
+                ...invoice.ledgerEntry,
+                debit: Number(invoice.ledgerEntry.debit),
+                credit: Number(invoice.ledgerEntry.credit),
+                balance: Number(invoice.ledgerEntry.balance),
+            } : null
+        };
+
+        return { success: true, data: serializedInvoice };
     } catch (error) {
         console.error("Get Invoice Error:", error);
         return { success: false, error: "Failed to fetch invoice" };

@@ -15,7 +15,13 @@ export async function getProducts(query?: string) {
             orderBy: { name: 'asc' }
         });
 
-        return { success: true, data: products };
+        const serializedProducts = products.map(product => ({
+            ...product,
+            basePrice: Number(product.basePrice),
+            buttonPrice: product.buttonPrice ? Number(product.buttonPrice) : null,
+        }));
+
+        return { success: true, data: serializedProducts };
     } catch (error) {
         console.error("Get Products Error:", error);
         return { success: false, error: "Failed to fetch products" };

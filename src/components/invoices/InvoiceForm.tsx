@@ -64,8 +64,7 @@ export default function InvoiceForm() {
     useEffect(() => {
         getProducts().then(res => {
             if (res.success && res.data) {
-                // @ts-ignore - Decimal handling
-                setProducts(res.data.map(p => ({ ...p, basePrice: Number(p.basePrice) })));
+                setProducts(res.data);
             }
         });
     }, []);
@@ -81,6 +80,24 @@ export default function InvoiceForm() {
         }, 500);
         return () => clearTimeout(timer);
     }, [customerSearch]);
+
+    // Sync: When customer search matches a name exactly, select the ID
+    useEffect(() => {
+        const match = customers.find(c => c.name.toLowerCase() === customerSearch.toLowerCase());
+        if (match && match.id !== customerId) {
+            setCustomerId(match.id);
+        }
+    }, [customerSearch, customers, customerId]);
+
+    // Sync: When customer ID changes, update search text if it doesn't match
+    useEffect(() => {
+        if (customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (customer && customer.name !== customerSearch) {
+                setCustomerSearch(customer.name);
+            }
+        }
+    }, [customerId, customers]);
 
     // Calculations
     const calculateAmount = (item: InvoiceItem) => {
@@ -167,6 +184,7 @@ export default function InvoiceForm() {
                             <option value="alhamd-printers">Al-Hamd Printers</option>
                             <option value="ats">ATS</option>
                             <option value="ma-enterprises">M.A Enterprises</option>
+                            <option value="muhammad-tanveer">Muhammad Tanveer</option>
                         </select>
                     </div>
 
@@ -197,6 +215,13 @@ export default function InvoiceForm() {
                                     <option key={c.id} value={c.id}>{c.name} {c.nameUrdu ? `(${c.nameUrdu})` : ''}</option>
                                 ))}
                             </select>
+                            {customerId && (
+                                <div className="mt-2 text-right">
+                                    <span className="text-lg font-bold text-[var(--color-primary)]">
+                                        {customers.find(c => c.id === customerId)?.nameUrdu}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -48,7 +48,20 @@ export async function createCustomer(data: CustomerFormValues) {
         }
 
         revalidatePath("/customers");
-        return { success: true, data: customer };
+        const serializedCustomer = {
+            id: customer.id,
+            name: customer.name,
+            nameUrdu: customer.nameUrdu,
+            phone: customer.phone,
+            address: customer.address,
+            email: customer.email,
+            creditLimit: customer.creditLimit ? Number(customer.creditLimit) : null,
+            balance: Number(customer.balance),
+            isBadDebt: customer.isBadDebt,
+            createdAt: customer.createdAt,
+            updatedAt: customer.updatedAt,
+        };
+        return { success: true, data: serializedCustomer };
     } catch (error) {
         console.error("Create Customer Error:", error);
         return { success: false, error: "Failed to create customer" };
@@ -90,7 +103,21 @@ export async function updateCustomer(id: string, data: CustomerFormValues) {
 
         revalidatePath("/customers");
         revalidatePath(`/customers/${id}`);
-        return { success: true, data: customer };
+
+        const serializedCustomer = {
+            id: customer.id,
+            name: customer.name,
+            nameUrdu: customer.nameUrdu,
+            phone: customer.phone,
+            address: customer.address,
+            email: customer.email,
+            creditLimit: customer.creditLimit ? Number(customer.creditLimit) : null,
+            balance: Number(customer.balance),
+            isBadDebt: customer.isBadDebt,
+            createdAt: customer.createdAt,
+            updatedAt: customer.updatedAt,
+        };
+        return { success: true, data: serializedCustomer };
     } catch (error) {
         console.error("Update Customer Error:", error);
         return { success: false, error: "Failed to update customer" };
@@ -111,7 +138,20 @@ export async function getCustomers(query?: string) {
                 : undefined,
             orderBy: { updatedAt: "desc" },
         });
-        return { success: true, data: customers };
+        const serializedCustomers = customers.map(customer => ({
+            id: customer.id,
+            name: customer.name,
+            nameUrdu: customer.nameUrdu,
+            phone: customer.phone,
+            address: customer.address,
+            email: customer.email,
+            creditLimit: customer.creditLimit ? Number(customer.creditLimit) : null,
+            balance: Number(customer.balance),
+            isBadDebt: customer.isBadDebt,
+            createdAt: customer.createdAt,
+            updatedAt: customer.updatedAt,
+        }));
+        return { success: true, data: serializedCustomers };
     } catch (error) {
         console.error("Get Customers Error:", error);
         return { success: false, error: "Failed to fetch customers" };
@@ -128,7 +168,27 @@ export async function getCustomerById(id: string) {
                 },
             },
         });
-        return { success: true, data: customer };
+
+        if (!customer) return { success: false, error: "Customer not found" };
+
+        const serializedCustomer = {
+            id: customer.id,
+            name: customer.name,
+            nameUrdu: customer.nameUrdu,
+            phone: customer.phone,
+            address: customer.address,
+            email: customer.email,
+            creditLimit: customer.creditLimit ? Number(customer.creditLimit) : null,
+            balance: Number(customer.balance),
+            isBadDebt: customer.isBadDebt,
+            notes: customer.notes,
+            createdAt: customer.createdAt,
+            updatedAt: customer.updatedAt,
+            // @ts-ignore - _count is added by include
+            _count: customer._count
+        };
+
+        return { success: true, data: serializedCustomer };
     } catch (error) {
         console.error("Get Customer Error:", error);
         return { success: false, error: "Failed to fetch customer" };
@@ -149,7 +209,13 @@ export async function getCustomerLedger(customerId: string) {
                 },
             },
         });
-        return { success: true, data: ledger };
+        const serializedLedger = ledger.map(entry => ({
+            ...entry,
+            debit: Number(entry.debit),
+            credit: Number(entry.credit),
+            balance: Number(entry.balance),
+        }));
+        return { success: true, data: serializedLedger };
     } catch (error) {
         console.error("Get Ledger Error:", error);
         return { success: false, error: "Failed to fetch ledger" };

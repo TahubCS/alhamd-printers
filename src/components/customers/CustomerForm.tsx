@@ -13,7 +13,17 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 interface CustomerFormProps {
-    customer?: Customer;
+    customer?: {
+        id: string;
+        name: string;
+        nameUrdu: string | null;
+        phone: string | null;
+        address: string | null;
+        email: string | null;
+        creditLimit: number | any | null;
+        isBadDebt: boolean;
+        balance: number | any;
+    };
     mode: "create" | "edit";
     locale: string;
 }

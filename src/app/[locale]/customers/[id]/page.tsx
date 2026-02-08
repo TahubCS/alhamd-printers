@@ -37,12 +37,29 @@ export default async function CustomerDetailsPage({
     const customer = customerResult.data;
     const ledger = ledgerResult.data || [];
 
+    const isUrdu = locale === 'ur';
+
     return (
-        <div className="animate-fade-in space-y-6">
-            <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
+        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">{customer.name}</h1>
-                    <p className="font-noto-nastaliq text-xl text-[var(--color-text-secondary)]">
+                    <h1
+                        className="font-bold text-[var(--color-text-primary)]"
+                        style={{
+                            fontSize: isUrdu ? '2.5rem' : '2rem',
+                            marginBottom: isUrdu ? '16px' : '12px',
+                            lineHeight: isUrdu ? '1.4' : '1.2'
+                        }}
+                    >
+                        {customer.name}
+                    </h1>
+                    <p
+                        className="text-[var(--color-text-secondary)]"
+                        style={{
+                            fontSize: isUrdu ? '1.2rem' : '1.1rem',
+                            lineHeight: isUrdu ? '1.8' : '1.5'
+                        }}
+                    >
                         {customer.nameUrdu}
                     </p>
                 </div>
@@ -50,34 +67,36 @@ export default async function CustomerDetailsPage({
                     <Link href={`/${locale}/customers/${id}/edit`}>
                         <Button variant="outline" className="w-full sm:w-auto">{tActions("edit")}</Button>
                     </Link>
-                    <Button variant="primary" className="w-full sm:w-auto">{tActions("newInvoice")}</Button>
+                    <Link href={`/${locale}/invoices/new?customerId=${id}`}>
+                        <Button variant="primary" className="w-full sm:w-auto">{tActions("newInvoice")}</Button>
+                    </Link>
                     <Button variant="secondary" className="w-full sm:w-auto">{tActions("recordPayment")}</Button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="md:col-span-1">
-                    <CardHeader>
-                        <CardTitle>{t("personalInfo")}</CardTitle>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: isUrdu ? '24px' : '20px' }}>
+                <Card className="card md:col-span-1" style={{ padding: isUrdu ? '28px' : '24px' }}>
+                    <CardHeader className="p-0 mb-6">
+                        <CardTitle className="text-xl text-[var(--color-text-primary)]">{t("personalInfo")}</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="p-0 space-y-4">
                         <div>
                             <div className="text-sm font-medium text-muted-foreground">
                                 {t("phone")}
                             </div>
-                            <div>{customer.phone || "-"}</div>
+                            <div className="text-[var(--color-text-primary)]">{customer.phone || "-"}</div>
                         </div>
                         <div>
                             <div className="text-sm font-medium text-muted-foreground">
                                 {t("email")}
                             </div>
-                            <div>{customer.email || "-"}</div>
+                            <div className="text-[var(--color-text-primary)]">{customer.email || "-"}</div>
                         </div>
                         <div>
                             <div className="text-sm font-medium text-muted-foreground">
                                 {t("address")}
                             </div>
-                            <div>{customer.address || "-"}</div>
+                            <div className="text-[var(--color-text-primary)]">{customer.address || "-"}</div>
                         </div>
                         <div>
                             <div className="text-sm font-medium text-muted-foreground">
@@ -94,10 +113,10 @@ export default async function CustomerDetailsPage({
                     </CardContent>
                 </Card>
 
-                <Card className="md:col-span-2">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>{t("financialInfo")}</CardTitle>
-                        <div className="text-2xl font-bold">
+                <Card className="card md:col-span-2" style={{ padding: isUrdu ? '28px' : '24px' }}>
+                    <CardHeader className="p-0 mb-6 flex flex-row items-center justify-between">
+                        <CardTitle className="text-xl text-[var(--color-text-primary)]">{t("financialInfo")}</CardTitle>
+                        <div className="text-2xl font-bold text-[var(--color-text-primary)]">
                             {new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
                                 style: "currency",
                                 currency: "PKR",
@@ -107,7 +126,7 @@ export default async function CustomerDetailsPage({
                             </span>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -122,31 +141,31 @@ export default async function CustomerDetailsPage({
                                 {ledger.length > 0 ? (
                                     ledger.map((entry: any) => (
                                         <TableRow key={entry.id}>
-                                            <TableCell>
+                                            <TableCell className="text-[var(--color-text-secondary)]">
                                                 {new Date(entry.date).toLocaleDateString(
                                                     locale === "ur" ? "ur-PK" : "en-PK"
                                                 )}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-[var(--color-text-primary)]">
                                                 {entry.particulars}
                                                 {entry.invoice?.invoiceNo && ` #${entry.invoice.invoiceNo}`}
                                                 {entry.payment?.method && ` (${entry.payment.method})`}
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-right text-[var(--color-text-primary)]">
                                                 {Number(entry.debit) > 0
                                                     ? new Intl.NumberFormat(
                                                         locale === "ur" ? "ur-PK" : "en-PK"
                                                     ).format(Number(entry.debit))
                                                     : "-"}
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-right text-[var(--color-text-primary)]">
                                                 {Number(entry.credit) > 0
                                                     ? new Intl.NumberFormat(
                                                         locale === "ur" ? "ur-PK" : "en-PK"
                                                     ).format(Number(entry.credit))
                                                     : "-"}
                                             </TableCell>
-                                            <TableCell className="text-right font-medium">
+                                            <TableCell className="text-right font-medium text-[var(--color-text-primary)]">
                                                 {new Intl.NumberFormat(
                                                     locale === "ur" ? "ur-PK" : "en-PK"
                                                 ).format(Number(entry.balance))}
@@ -155,7 +174,7 @@ export default async function CustomerDetailsPage({
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="h-24 text-center">
+                                        <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                                             No transactions found
                                         </TableCell>
                                     </TableRow>
