@@ -152,6 +152,12 @@ model Payment {
   customer    Customer      @relation(fields: [customerId], references: [id])
   amount      Decimal       @db.Decimal(15, 2)
   method      PaymentMethod
+  // Bank Transfer Details
+  bankAccountId String?
+  bankAccount   BankAccount? @relation(fields: [bankAccountId], references: [id])
+  senderBankName String?    // Bank name of the customer
+  senderAccountTitle String? // Account title of the customer
+  
   chequeId    String?       @unique
   cheque      Cheque?       @relation(fields: [chequeId], references: [id])
   notes       String?
@@ -338,3 +344,19 @@ model DeliveryChallan {
   createdAt  DateTime @default(now())
 }
 
+
+
+// ============================================
+// BANK ACCOUNT - Secure storage
+// ============================================
+model BankAccount {
+  id                  String    @id @default(cuid())
+  bankName            String    // Display name: HBL, Meezan, etc.
+  accountTitle        String    // Al-Hamd Printers
+  accountNumberMasked String    // ****1234 (Last 4 digits only)
+  // FULL ACCOUNT NUMBER IS NOT STORED IN DB FOR SECURITY
+  isActive            Boolean   @default(true)
+  payments            Payment[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}

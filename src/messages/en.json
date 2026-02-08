@@ -112,5 +112,21 @@
         "email": "Email",
         "creditLimit": "Credit Limit",
         "openingBalance": "Opening Balance"
+    },
+    "payments": {
+        "title": "Record Payment",
+        "amount": "Amount",
+        "method": "Payment Method",
+        "cash": "Cash",
+        "cheque": "Cheque",
+        "bankTransfer": "Bank Transfer",
+        "chequeDetails": "Cheque Details",
+        "chequeNo": "Cheque Number",
+        "bankName": "Bank Name",
+        "chequeDate": "Cheque Date",
+        "notes": "Notes",
+        "currentBalance": "Current Balance",
+        "recordPayment": "Record Payment",
+        "success": "Payment recorded successfully"
     }
 }

@@ -8,7 +8,7 @@
     },
     "nav": {
         "dashboard": "ڈیش بورڈ",
-        "customers": "گاہک",
+        "customers": "صارف",
         "orders": "آرڈرز",
         "invoices": "بل",
         "inventory": "انوینٹری",
@@ -112,5 +112,21 @@
         "email": "ای میل",
         "creditLimit": "کریڈٹ کی حد",
         "openingBalance": "ابتدائی بیلنس"
+    },
+    "payments": {
+        "title": "ادائیگی ریکارڈ کریں",
+        "amount": "رقم",
+        "method": "ادائیگی کا طریقہ",
+        "cash": "نقد",
+        "cheque": "چیک",
+        "bankTransfer": "بینک ٹرانسفر",
+        "chequeDetails": "چیک کی تفصیلات",
+        "chequeNo": "چیک نمبر",
+        "bankName": "بینک کا نام",
+        "chequeDate": "چیک کی تاریخ",
+        "notes": "نوٹس",
+        "currentBalance": "موجودہ بقایا",
+        "recordPayment": "ادائیگی ریکارڈ کریں",
+        "success": "ادائیگی کامیابی سے ریکارڈ ہوگئی"
     }
 }

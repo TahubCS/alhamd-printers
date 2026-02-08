@@ -1,11 +1,10 @@
 import { getCustomerById, getCustomerLedger } from "@/actions/customer";
 import { getCustomerPOs } from "@/actions/po";
 import CustomerContent from "@/components/customers/CustomerContent";
+import CustomerActions from "@/components/customers/CustomerActions";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -59,15 +58,17 @@ export default async function CustomerDetailsPage({
                         {customer.nameUrdu}
                     </p>
                 </div>
-                <div className="flex gap-2 w-full sm:w-auto">
-                    <Link href={`/${locale}/customers/${id}/edit`}>
-                        <Button variant="outline" className="w-full sm:w-auto">{tActions("edit")}</Button>
-                    </Link>
-                    <Link href={`/${locale}/invoices/new?customerId=${id}`}>
-                        <Button variant="primary" className="w-full sm:w-auto">{tActions("newInvoice")}</Button>
-                    </Link>
-                    <Button variant="secondary" className="w-full sm:w-auto">{tActions("recordPayment")}</Button>
-                </div>
+                <CustomerActions
+                    customerId={id}
+                    customerName={customer.name}
+                    customerBalance={Number(customer.balance)}
+                    locale={locale}
+                    labels={{
+                        edit: tActions("edit"),
+                        newInvoice: tActions("newInvoice"),
+                        recordPayment: tActions("recordPayment"),
+                    }}
+                />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: isUrdu ? '24px' : '20px' }}>
