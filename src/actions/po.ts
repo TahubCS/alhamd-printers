@@ -8,6 +8,8 @@ function serializePO(po: any) {
     return {
         ...po,
         totalAmount: Number(po.totalAmount),
+        subtotal: po.subtotal ? Number(po.subtotal) : 0,
+        taxTotal: po.taxTotal ? Number(po.taxTotal) : 0,
         date: po.date instanceof Date ? po.date.toISOString() : po.date,
         createdAt: po.createdAt instanceof Date ? po.createdAt.toISOString() : po.createdAt,
         updatedAt: po.updatedAt instanceof Date ? po.updatedAt.toISOString() : po.updatedAt,
@@ -21,7 +23,8 @@ function serializePO(po: any) {
         items: po.items?.map((item: any) => ({
             ...item,
             rate: Number(item.rate),
-            amount: Number(item.amount)
+            amount: Number(item.amount),
+            gstRate: Number(item.gstRate || 0)
         })),
         // Handle nested invoices if present
         invoices: po.invoices?.map((inv: any) => ({

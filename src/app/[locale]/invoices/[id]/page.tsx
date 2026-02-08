@@ -104,6 +104,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                             <TableHead className="w-[40%]">{t("description")}</TableHead>
                             <TableHead className="text-right">{t("rate")}</TableHead>
                             <TableHead className="text-right">{t("quantity")}</TableHead>
+                            <TableHead className="text-right text-[var(--color-text-secondary)]">GST %</TableHead>
                             <TableHead className="text-right">{t("total")}</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -124,6 +125,9 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                                     {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK').format(Number(item.rate))}
                                 </TableCell>
                                 <TableCell className="text-right text-[var(--color-text-primary)]">{item.quantity}</TableCell>
+                                <TableCell className="text-right text-[var(--color-text-secondary)]">
+                                    {Number(item.gstRate) > 0 ? `${Number(item.gstRate)}%` : '-'}
+                                </TableCell>
                                 <TableCell className="text-right font-medium text-[var(--color-text-primary)]">
                                     {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK', {
                                         style: "currency",
@@ -147,6 +151,17 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                                 }).format(Number(invoice.subtotal))}
                             </span>
                         </div>
+                        {Number(invoice.taxTotal) > 0 && (
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">GST Total</span>
+                                <span className="text-[var(--color-text-primary)]">
+                                    {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK', {
+                                        style: "currency",
+                                        currency: "PKR"
+                                    }).format(Number(invoice.taxTotal))}
+                                </span>
+                            </div>
+                        )}
                         <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2 text-[var(--color-text-primary)]">
                             <span>{t("total")}</span>
                             <span>

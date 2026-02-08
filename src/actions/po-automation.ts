@@ -58,6 +58,14 @@ export type ConfirmPOData = ExtractedPOData & {
     newCustomerPhone?: string;
     newCustomerEmail?: string;
     newCustomerAddress?: string;
+    // GST Support
+    items: {
+        description: string;
+        quantity: number;
+        rate: number;
+        amount: number;
+        gstRate?: number;
+    }[];
 };
 
 export async function confirmCustomerPO(data: ConfirmPOData) {
@@ -87,20 +95,43 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
         // 2. Create Purchase Order
         const safeNumber = (val: any) => isNaN(parseFloat(val)) ? 0 : parseFloat(val);
 
+        // Calculate totals
+        let subtotal = 0;
+        let taxTotal = 0;
+
+        const itemsData = data.items.map((item: any) => {
+            const quantity = Math.max(1, Math.round(safeNumber(item.quantity)));
+            const rate = safeNumber(item.rate);
+            const amount = safeNumber(item.amount); // Usually qty * rate, but trusting UI/Extraction
+            const gstRate = safeNumber(item.gstRate || 0);
+
+            subtotal += amount;
+            taxTotal += (amount * gstRate / 100);
+
+            return {
+                description: item.description || "Item",
+                quantity,
+                rate,
+                amount,
+                gstRate
+            };
+        });
+
+        // Use calculated total if available, else extraction (though UI should sync them)
+        // Actually, let's trust the calculated total from items if items exist
+        const total = subtotal + taxTotal;
+
         const po = await prisma.customerPurchaseOrder.create({
             data: {
                 customerId,
                 poNumber: data.poNumber || `PO-${Date.now()}`,
                 date: data.date ? new Date(data.date) : new Date(),
-                totalAmount: safeNumber(data.totalAmount),
+                subtotal: subtotal,
+                taxTotal: taxTotal,
+                totalAmount: total, // or data.totalAmount if we want to allow override? Let's use calculated.
                 status: "OPEN",
                 items: {
-                    create: data.items.map((item: any) => ({
-                        description: item.description || "Item",
-                        quantity: Math.max(1, Math.round(safeNumber(item.quantity))),
-                        rate: safeNumber(item.rate),
-                        amount: safeNumber(item.amount)
-                    }))
+                    create: itemsData
                 }
             }
         });
@@ -114,6 +145,8 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
             data: {
                 ...po,
                 totalAmount: Number(po.totalAmount),
+                subtotal: Number(po.subtotal), // Add this if needed by client
+                taxTotal: Number(po.taxTotal), // Add this if needed by client
                 date: po.date.toISOString()
             }
         };

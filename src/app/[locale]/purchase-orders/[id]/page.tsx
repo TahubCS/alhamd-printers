@@ -98,6 +98,7 @@ export default async function PurchaseOrderDetailsPage({
                                         <TableHead>Description</TableHead>
                                         <TableHead className="text-right">Qty</TableHead>
                                         <TableHead className="text-right">Rate</TableHead>
+                                        <TableHead className="text-right text-[var(--color-text-secondary)]">GST %</TableHead>
                                         <TableHead className="text-right">Amount</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -107,15 +108,29 @@ export default async function PurchaseOrderDetailsPage({
                                             <TableCell className="font-medium">{item.description}</TableCell>
                                             <TableCell className="text-right">{item.quantity}</TableCell>
                                             <TableCell className="text-right">{formatCurrency(Number(item.rate))}</TableCell>
+                                            <TableCell className="text-right text-[var(--color-text-secondary)]">
+                                                {Number(item.gstRate) > 0 ? `${Number(item.gstRate)}%` : '-'}
+                                            </TableCell>
                                             <TableCell className="text-right">{formatCurrency(Number(item.amount))}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
-                        <div className="p-4 border-t flex justify-end">
-                            <div className="text-lg font-bold">
-                                Total: {formatCurrency(Number(po.totalAmount))}
+                        <div className="p-4 border-t flex flex-col items-end gap-2">
+                            <div className="flex justify-between w-[200px] text-sm">
+                                <span className="text-muted-foreground">Subtotal:</span>
+                                <span>{formatCurrency(Number(po.subtotal || po.totalAmount))}</span>
+                            </div>
+                            {Number(po.taxTotal) > 0 && (
+                                <div className="flex justify-between w-[200px] text-sm">
+                                    <span className="text-muted-foreground">GST Total:</span>
+                                    <span>{formatCurrency(Number(po.taxTotal))}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between w-[200px] text-lg font-bold border-t pt-2 mt-1 ring-offset-background">
+                                <span>Total:</span>
+                                <span>{formatCurrency(Number(po.totalAmount))}</span>
                             </div>
                         </div>
                     </Card>

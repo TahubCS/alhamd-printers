@@ -35,6 +35,7 @@ interface InvoiceItem {
     sizeDepth?: number;
     rate: number;
     amount: number;
+    gstRate?: number;
 }
 
 export default function InvoiceForm() {
@@ -53,8 +54,9 @@ export default function InvoiceForm() {
     const [customerId, setCustomerId] = useState(urlCustomerId || "");
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [creditDays, setCreditDays] = useState(0);
+    const [globalGst, setGlobalGst] = useState<number>(0); // Global GST Rate
     const [items, setItems] = useState<InvoiceItem[]>([
-        { description: "", quantity: 1, rate: 0, amount: 0 }
+        { description: "", quantity: 1, rate: 0, amount: 0, gstRate: 0 } // items now track their own gstRate
     ]);
     const [notes, setNotes] = useState("");
 
@@ -93,7 +95,8 @@ export default function InvoiceForm() {
                             description: item.description,
                             quantity: item.quantity,
                             rate: Number(item.rate),
-                            amount: Number(item.amount)
+                            amount: Number(item.amount),
+                            gstRate: 0 // Default GST for PO items
                         })));
                     }
                     if (po.poNumber) {
@@ -134,10 +137,17 @@ export default function InvoiceForm() {
         }
     }, [customerId, customers]);
 
+    // Auto-update items when global GST changes
+    const applyGlobalGst = (rate: number) => {
+        setGlobalGst(rate);
+        setItems(items.map(item => ({ ...item, gstRate: rate })));
+    };
+
+    // ... (Search customers effects remain same) ...
+
     // Calculations
     const calculateAmount = (item: InvoiceItem) => {
-        // Simple Qty * Rate for now. 
-        // Logic for PVC bags (Weight calculation) can be added here if needed.
+        // Amount is essentially subtotal for the line (Qty * Rate)
         return item.quantity * item.rate;
     };
 
@@ -156,6 +166,7 @@ export default function InvoiceForm() {
                 newItems[index].description = product.name;
                 newItems[index].rate = product.basePrice;
                 newItems[index].amount = calculateAmount({ ...newItems[index], rate: product.basePrice });
+                newItems[index].gstRate = globalGst; // Apply current global GST to new items
             }
         }
 
@@ -163,7 +174,7 @@ export default function InvoiceForm() {
     };
 
     const addItem = () => {
-        setItems([...items, { description: "", quantity: 1, rate: 0, amount: 0 }]);
+        setItems([...items, { description: "", quantity: 1, rate: 0, amount: 0, gstRate: globalGst }]);
     };
 
     const removeItem = (index: number) => {
@@ -203,13 +214,15 @@ export default function InvoiceForm() {
         }
     };
 
-    const total = items.reduce((sum, item) => sum + item.amount, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+    const totalTax = items.reduce((sum, item) => sum + (item.amount * (item.gstRate || 0) / 100), 0);
+    const total = subtotal + totalTax;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <Card>
                 <CardContent className="p-6 grid md:grid-cols-2 gap-6">
-                    {/* Header Fields */}
+                    {/* Header Fields - Company & Customer */}
                     <div>
                         <Label className="text-[var(--color-text-secondary)]">{t("selectCompany")}</Label>
                         <select
@@ -238,9 +251,6 @@ export default function InvoiceForm() {
                                     <option key={c.id} value={c.name}>{c.nameUrdu}</option>
                                 ))}
                             </datalist>
-                            {/* Fallback to select if ID needed, logic simplified for MVP - 
-                               In real app, we'd use a proper ComboBox component calculating ID from selection 
-                           */}
                             <select
                                 className="input mt-2"
                                 value={customerId}
@@ -261,6 +271,7 @@ export default function InvoiceForm() {
                         </div>
                     </div>
 
+                    {/* Date & Global Settings */}
                     <div>
                         <Label>{t("billingDate")}</Label>
                         <Input
@@ -270,13 +281,27 @@ export default function InvoiceForm() {
                         />
                     </div>
 
-                    <div>
-                        <Label>{t("creditDays")}</Label>
-                        <Input
-                            type="number"
-                            value={creditDays}
-                            onChange={e => setCreditDays(Number(e.target.value))}
-                        />
+                    <div className="flex gap-4">
+                        <div className="flex-1">
+                            <Label>{t("creditDays")}</Label>
+                            <Input
+                                type="number"
+                                value={creditDays}
+                                onChange={e => setCreditDays(Number(e.target.value))}
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <Label>Global GST %</Label>
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    type="number"
+                                    value={globalGst}
+                                    onChange={e => applyGlobalGst(Number(e.target.value))}
+                                    placeholder="0"
+                                    className="border-dashed border-[var(--color-primary)]/50"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -300,6 +325,7 @@ export default function InvoiceForm() {
                                         <th className="p-4 w-[200px] text-[var(--color-text-secondary)]">{t("selectProduct")} / {t("manualDescription")}</th>
                                         <th className="p-4 w-[80px] text-[var(--color-text-secondary)]">{t("quantity")}</th>
                                         <th className="p-4 w-[100px] text-[var(--color-text-secondary)]">{t("rate")}</th>
+                                        <th className="p-4 w-[80px] text-[var(--color-text-secondary)]">Tax %</th>
                                         <th className="p-4 w-[100px] text-right text-[var(--color-text-secondary)]">{tCommon("amount", { defaultMessage: "Amount" })}</th>
                                         <th className="p-4 w-[50px]"></th>
                                     </tr>
@@ -332,7 +358,6 @@ export default function InvoiceForm() {
                                                     onChange={e => updateItem(index, 'quantity', Number(e.target.value))}
                                                     className="h-8"
                                                 />
-                                                {/* Size Fields (Hidden for simplicity in V1, uncomment if needed) */}
                                             </td>
                                             <td className="p-4">
                                                 <Input
@@ -340,6 +365,14 @@ export default function InvoiceForm() {
                                                     value={item.rate}
                                                     onChange={e => updateItem(index, 'rate', Number(e.target.value))}
                                                     className="h-8"
+                                                />
+                                            </td>
+                                            <td className="p-4">
+                                                <Input
+                                                    type="number"
+                                                    value={item.gstRate ?? globalGst}
+                                                    onChange={e => updateItem(index, 'gstRate', Number(e.target.value))}
+                                                    className="h-8 w-16"
                                                 />
                                             </td>
                                             <td className="p-4 text-right font-mono">
@@ -363,9 +396,23 @@ export default function InvoiceForm() {
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colSpan={3} className="p-4 text-right font-bold text-lg">Total:</td>
-                                        <td className="p-4 text-right font-bold text-lg">
-                                            {total.toLocaleString()}
+                                        <td colSpan={4} className="p-4 text-right text-[var(--color-text-secondary)]">Subtotal:</td>
+                                        <td className="p-4 text-right font-mono text-[var(--color-text-secondary)]">
+                                            {subtotal.toLocaleString()}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan={4} className="p-4 text-right text-[var(--color-text-secondary)]">GST Total:</td>
+                                        <td className="p-4 text-right font-mono text-[var(--color-text-secondary)]">
+                                            {totalTax.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr className="border-t-2 border-[var(--color-border)]">
+                                        <td colSpan={4} className="p-4 text-right font-bold text-lg">Grand Total:</td>
+                                        <td className="p-4 text-right font-bold text-lg text-[var(--color-primary)]">
+                                            {total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                                         </td>
                                         <td></td>
                                     </tr>

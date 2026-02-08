@@ -16,6 +16,7 @@ interface POItem {
     quantity: number;
     rate: number;
     amount: number;
+    gstRate?: number;
 }
 
 interface POFormData {
@@ -39,6 +40,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [extractedData, setExtractedData] = useState<any>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [globalGst, setGlobalGst] = useState<number>(0);
     const router = useRouter();
 
     const form = useForm<POFormData>({
@@ -113,7 +115,8 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                     description: item.description,
                     quantity: item.quantity,
                     rate: item.rate,
-                    amount: item.amount
+                    amount: item.amount,
+                    gstRate: 0
                 })) || []
             });
 
@@ -154,8 +157,8 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
         return (
             <Card
                 className={`max-w-xl mx-auto border-2 border-dashed transition-all duration-200 bg-[var(--color-bg-secondary)] ${isDragging
-                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                        : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                    : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
                     }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -371,29 +374,46 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                         <div>
                             <div className="flex justify-between items-center mb-3">
                                 <Label className="text-[var(--color-text-primary)] font-medium">Items</Label>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => append({ description: "", quantity: 1, rate: 0, amount: 0 })}
-                                    className="text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                                >
-                                    <Plus className="w-4 h-4 mr-1" /> Add Item
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 mr-4">
+                                        <Label className="text-xs text-[var(--color-text-secondary)]">Global Tax %:</Label>
+                                        <Input
+                                            type="number"
+                                            className="w-16 h-8 text-xs bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                            value={globalGst}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                setGlobalGst(val);
+                                                const currentItems = form.getValues("items");
+                                                form.setValue("items", currentItems.map(item => ({ ...item, gstRate: val })));
+                                            }}
+                                        />
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => append({ description: "", quantity: 1, rate: 0, amount: 0, gstRate: globalGst })}
+                                        className="text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                                    >
+                                        <Plus className="w-4 h-4 mr-1" /> Add Item
+                                    </Button>
+                                </div>
                             </div>
 
                             <div className="space-y-2 bg-[var(--color-bg-tertiary)] rounded-lg p-3 border border-[var(--color-border)]">
                                 <div className="grid grid-cols-12 gap-2 text-xs font-medium text-[var(--color-text-secondary)] pb-2 border-b border-[var(--color-border)]">
-                                    <div className="col-span-5">Description</div>
+                                    <div className="col-span-4">Description</div>
                                     <div className="col-span-2 text-center">Qty</div>
                                     <div className="col-span-2 text-center">Rate</div>
+                                    <div className="col-span-1 text-center">Tax %</div>
                                     <div className="col-span-2 text-center">Amount</div>
                                     <div className="col-span-1"></div>
                                 </div>
 
                                 {fields.map((field, index) => (
                                     <div key={field.id} className="grid grid-cols-12 gap-2 items-center">
-                                        <div className="col-span-5">
+                                        <div className="col-span-4">
                                             <Input
                                                 {...form.register(`items.${index}.description`)}
                                                 placeholder="Item description"
@@ -411,6 +431,13 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                             <Input
                                                 type="number"
                                                 {...form.register(`items.${index}.rate`)}
+                                                className="h-9 text-sm text-center bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <Input
+                                                type="number"
+                                                {...form.register(`items.${index}.gstRate`)} // Use form register for gstRate
                                                 className="h-9 text-sm text-center bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                             />
                                         </div>
