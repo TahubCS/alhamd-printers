@@ -12,7 +12,8 @@ import {
     Banknote,
     BarChart3,
     Settings,
-    Printer
+    Printer,
+    CreditCard
 } from 'lucide-react';
 
 const navItems = [
@@ -20,6 +21,7 @@ const navItems = [
     { key: 'customers', href: '/customers', icon: Users },
     { key: 'orders', href: '/purchase-orders', icon: ShoppingCart },
     { key: 'invoices', href: '/invoices', icon: FileText },
+    { key: 'cheques', href: '/cheques', icon: CreditCard },
     { key: 'inventory', href: '/inventory', icon: Package },
     { key: 'expenses', href: '/expenses', icon: Wallet },
     { key: 'wages', href: '/wages', icon: Banknote },

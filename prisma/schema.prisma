@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-
 }
 
 datasource db {
@@ -16,7 +15,7 @@ datasource db {
 // ============================================
 model Company {
   id        String    @id @default(cuid())
-  name      String    // Al-Hamd Printers, ATS, M.A Enterprises, Muhammad Tanveer
+  name      String // Al-Hamd Printers, ATS, M.A Enterprises, Muhammad Tanveer
   nameUrdu  String?
   address   String?
   phone     String?
@@ -31,44 +30,44 @@ model Company {
 // CUSTOMER - with credit terms & ledger
 // ============================================
 model Customer {
-  id            String        @id @default(cuid())
-  name          String
-  nameUrdu      String?
-  phone         String?
-  address       String?
-  email         String?       @unique
-  creditLimit   Decimal?      @db.Decimal(15, 2)
-  balance       Decimal       @default(0) @db.Decimal(15, 2)
-  isBadDebt     Boolean       @default(false)
+  id                     String                  @id @default(cuid())
+  name                   String
+  nameUrdu               String?
+  phone                  String?
+  address                String?
+  email                  String?                 @unique
+  creditLimit            Decimal?                @db.Decimal(15, 2)
+  balance                Decimal                 @default(0) @db.Decimal(15, 2)
+  isBadDebt              Boolean                 @default(false)
   // testField222  String?
-  notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  notes                  String?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
   customerPurchaseOrders CustomerPurchaseOrder[]
-  invoices      Invoice[]
-  ledgerEntries LedgerEntry[]
-  cheques       Cheque[]
-  payments      Payment[]
+  invoices               Invoice[]
+  ledgerEntries          LedgerEntry[]
+  cheques                Cheque[]
+  payments               Payment[]
 }
 
 // ============================================
 // PRODUCT - PVC bag specifications
 // ============================================
 model Product {
-  id           String        @id @default(cuid())
-  code         String        @unique
-  name         String
-  nameUrdu     String?
-  description  String?
-  thickness    String?
-  withTape     Boolean       @default(false)
-  withPrint    Boolean       @default(false)
-  basePrice    Decimal       @db.Decimal(10, 2)
-  buttonPrice  Decimal       @default(1) @db.Decimal(10, 2)
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  invoiceItems InvoiceItem[]
+  id                 String                      @id @default(cuid())
+  code               String                      @unique
+  name               String
+  nameUrdu           String?
+  description        String?
+  thickness          String?
+  withTape           Boolean                     @default(false)
+  withPrint          Boolean                     @default(false)
+  basePrice          Decimal                     @db.Decimal(10, 2)
+  buttonPrice        Decimal                     @default(1) @db.Decimal(10, 2)
+  isActive           Boolean                     @default(true)
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+  invoiceItems       InvoiceItem[]
   purchaseOrderItems CustomerPurchaseOrderItem[]
 }
 
@@ -76,25 +75,25 @@ model Product {
 // INVOICE
 // ============================================
 model Invoice {
-  id          String        @id @default(cuid())
-  invoiceNo   Int           @unique @default(autoincrement())
-  date        DateTime      @default(now())
-  creditDays  Int           @default(0)
-  dueDate     DateTime
-  companyId   String
-  company     Company       @relation(fields: [companyId], references: [id])
-  customerId  String
-  customer    Customer      @relation(fields: [customerId], references: [id])
-  customerPurchaseOrderId String? 
+  id                      String                 @id @default(cuid())
+  invoiceNo               Int                    @unique @default(autoincrement())
+  date                    DateTime               @default(now())
+  creditDays              Int                    @default(0)
+  dueDate                 DateTime
+  companyId               String
+  company                 Company                @relation(fields: [companyId], references: [id])
+  customerId              String
+  customer                Customer               @relation(fields: [customerId], references: [id])
+  customerPurchaseOrderId String?
   customerPurchaseOrder   CustomerPurchaseOrder? @relation(fields: [customerPurchaseOrderId], references: [id])
-  items       InvoiceItem[]
-  subtotal    Decimal       @db.Decimal(15, 2)
-  total       Decimal       @db.Decimal(15, 2)
-  status      InvoiceStatus @default(PENDING)
-  notes       String?
-  ledgerEntry LedgerEntry?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  items                   InvoiceItem[]
+  subtotal                Decimal                @db.Decimal(15, 2)
+  total                   Decimal                @db.Decimal(15, 2)
+  status                  InvoiceStatus          @default(PENDING)
+  notes                   String?
+  ledgerEntry             LedgerEntry?
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
 }
 
 enum InvoiceStatus {
@@ -146,23 +145,23 @@ model LedgerEntry {
 // PAYMENT - Cash or Cheque
 // ============================================
 model Payment {
-  id          String        @id @default(cuid())
-  date        DateTime      @default(now())
-  customerId  String
-  customer    Customer      @relation(fields: [customerId], references: [id])
-  amount      Decimal       @db.Decimal(15, 2)
-  method      PaymentMethod
+  id                 String        @id @default(cuid())
+  date               DateTime      @default(now())
+  customerId         String
+  customer           Customer      @relation(fields: [customerId], references: [id])
+  amount             Decimal       @db.Decimal(15, 2)
+  method             PaymentMethod
   // Bank Transfer Details
-  bankAccountId String?
-  bankAccount   BankAccount? @relation(fields: [bankAccountId], references: [id])
-  senderBankName String?    // Bank name of the customer
+  bankAccountId      String?
+  bankAccount        BankAccount?  @relation(fields: [bankAccountId], references: [id])
+  senderBankName     String? // Bank name of the customer
   senderAccountTitle String? // Account title of the customer
-  
-  chequeId    String?       @unique
-  cheque      Cheque?       @relation(fields: [chequeId], references: [id])
+
+  chequeId    String?      @unique
+  cheque      Cheque?      @relation(fields: [chequeId], references: [id])
   notes       String?
   ledgerEntry LedgerEntry?
-  createdAt   DateTime      @default(now())
+  createdAt   DateTime     @default(now())
 }
 
 enum PaymentMethod {
@@ -294,39 +293,39 @@ model PurchaseOrderItem {
 // CUSTOMER PURCHASE ORDER (Incoming POs)
 // ============================================
 model CustomerPurchaseOrder {
-  id              String                    @id @default(cuid())
-  poNumber        String?                   // The customer's PO number
-  date            DateTime                  @default(now())
-  customerId      String?                   // Optional because it might be a new customer during extraction
-  customer        Customer?                 @relation(fields: [customerId], references: [id])
-  totalAmount     Decimal                   @default(0) @db.Decimal(15, 2)
-  status          CustomerPOStatus          @default(DRAFT)
-  originalFileUrl String?                   // Path/URL to the uploaded file
-  ocrText         String?                   // Raw text extracted if needed
+  id              String                      @id @default(cuid())
+  poNumber        String? // The customer's PO number
+  date            DateTime                    @default(now())
+  customerId      String? // Optional because it might be a new customer during extraction
+  customer        Customer?                   @relation(fields: [customerId], references: [id])
+  totalAmount     Decimal                     @default(0) @db.Decimal(15, 2)
+  status          CustomerPOStatus            @default(DRAFT)
+  originalFileUrl String? // Path/URL to the uploaded file
+  ocrText         String? // Raw text extracted if needed
   items           CustomerPurchaseOrderItem[]
   invoices        Invoice[]
-  createdAt       DateTime                  @default(now())
-  updatedAt       DateTime                  @updatedAt
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
 }
 
 enum CustomerPOStatus {
-  DRAFT     // Extracted but not confirmed
-  OPEN      // Confirmed, waiting for invoice
-  PARTIAL   // Partially invoiced
-  CLOSED    // Fully invoiced
+  DRAFT // Extracted but not confirmed
+  OPEN // Confirmed, waiting for invoice
+  PARTIAL // Partially invoiced
+  CLOSED // Fully invoiced
   REJECTED
 }
 
 model CustomerPurchaseOrderItem {
-  id                    String              @id @default(cuid())
+  id                      String                @id @default(cuid())
   customerPurchaseOrderId String
-  customerPurchaseOrder CustomerPurchaseOrder @relation(fields: [customerPurchaseOrderId], references: [id], onDelete: Cascade)
-  description           String
-  quantity              Int
-  rate                  Decimal             @default(0) @db.Decimal(10, 2)
-  amount                Decimal             @default(0) @db.Decimal(15, 2)
-  productId             String?
-  product               Product?            @relation(fields: [productId], references: [id])
+  customerPurchaseOrder   CustomerPurchaseOrder @relation(fields: [customerPurchaseOrderId], references: [id], onDelete: Cascade)
+  description             String
+  quantity                Int
+  rate                    Decimal               @default(0) @db.Decimal(10, 2)
+  amount                  Decimal               @default(0) @db.Decimal(15, 2)
+  productId               String?
+  product                 Product?              @relation(fields: [productId], references: [id])
 }
 
 // ============================================
@@ -344,16 +343,14 @@ model DeliveryChallan {
   createdAt  DateTime @default(now())
 }
 
-
-
 // ============================================
 // BANK ACCOUNT - Secure storage
 // ============================================
 model BankAccount {
   id                  String    @id @default(cuid())
-  bankName            String    // Display name: HBL, Meezan, etc.
-  accountTitle        String    // Al-Hamd Printers
-  accountNumberMasked String    // ****1234 (Last 4 digits only)
+  bankName            String // Display name: HBL, Meezan, etc.
+  accountTitle        String // Al-Hamd Printers
+  accountNumberMasked String // ****1234 (Last 4 digits only)
   // FULL ACCOUNT NUMBER IS NOT STORED IN DB FOR SECURITY
   isActive            Boolean   @default(true)
   payments            Payment[]

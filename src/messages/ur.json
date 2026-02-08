@@ -11,6 +11,7 @@
         "customers": "صارف",
         "orders": "آرڈرز",
         "invoices": "بل",
+        "cheques": "چیکس",
         "inventory": "انوینٹری",
         "expenses": "اخراجات",
         "wages": "تنخواہیں",
@@ -128,5 +129,39 @@
         "currentBalance": "موجودہ بقایا",
         "recordPayment": "ادائیگی ریکارڈ کریں",
         "success": "ادائیگی کامیابی سے ریکارڈ ہوگئی"
+    },
+    "cheques": {
+        "title": "چیک مینجمنٹ",
+        "subtitle": "گاہکوں کے چیکس کا انتظام کریں",
+        "stats": {
+            "received": "موصول شدہ",
+            "deposited": "جمع کرایا گیا",
+            "cleared": "کلیئر شدہ",
+            "bounced": "باؤنس شدہ",
+            "pending": "زیر التواء"
+        },
+        "tabs": {
+            "all": "تمام چیکس",
+            "received": "موصول شدہ",
+            "deposited": "جمع کرایا گیا",
+            "cleared": "کلیئر شدہ",
+            "bounced": "باؤنس شدہ"
+        },
+        "table": {
+            "chequeNo": "چیک نمبر",
+            "bank": "بینک",
+            "customer": "گاہک",
+            "amount": "رقم",
+            "date": "تاریخ",
+            "status": "حیثیت",
+            "actions": "اقدامات"
+        },
+        "actions": {
+            "markDeposited": "جمع کرائیں",
+            "markCleared": "کلیئر کریں",
+            "markBounced": "باؤنس مارک کریں",
+            "depositDate": "جمع کرانے کی تاریخ",
+            "clearDate": "کلیئرنس کی تاریخ"
+        }
     }
 }

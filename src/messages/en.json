@@ -11,6 +11,7 @@
         "customers": "Customers",
         "orders": "Orders",
         "invoices": "Invoices",
+        "cheques": "Cheques",
         "inventory": "Inventory",
         "expenses": "Expenses",
         "wages": "Wages",
@@ -128,5 +129,39 @@
         "currentBalance": "Current Balance",
         "recordPayment": "Record Payment",
         "success": "Payment recorded successfully"
+    },
+    "cheques": {
+        "title": "Cheque Management",
+        "subtitle": "Track and manage customer cheques",
+        "stats": {
+            "received": "Received",
+            "deposited": "Deposited",
+            "cleared": "Cleared",
+            "bounced": "Bounced",
+            "pending": "Pending Clearance"
+        },
+        "tabs": {
+            "all": "All Cheques",
+            "received": "Received",
+            "deposited": "Deposited",
+            "cleared": "Cleared",
+            "bounced": "Bounced"
+        },
+        "table": {
+            "chequeNo": "Cheque #",
+            "bank": "Bank",
+            "customer": "Customer",
+            "amount": "Amount",
+            "date": "Cheque Date",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "actions": {
+            "markDeposited": "Mark as Deposited",
+            "markCleared": "Mark as Cleared",
+            "markBounced": "Mark as Bounced",
+            "depositDate": "Deposit Date",
+            "clearDate": "Clearance Date"
+        }
     }
 }

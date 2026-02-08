@@ -76,11 +76,13 @@ export async function getInvoiceById(id: string) {
         const serializedInvoice = {
             ...invoice,
             subtotal: Number(invoice.subtotal),
+            taxTotal: Number(invoice.taxTotal || 0), // Handle potential null/undefined for old records if any
             total: Number(invoice.total),
             items: invoice.items.map(item => ({
                 ...item,
                 rate: Number(item.rate),
                 amount: Number(item.amount),
+                gstRate: Number(item.gstRate || 0),
                 product: item.product ? {
                     ...item.product,
                     basePrice: Number(item.product.basePrice),
@@ -113,6 +115,7 @@ export async function createInvoice(data: {
         quantity: number;
         rate: number;
         amount: number;
+        gstRate?: number; // New optional field
         sizeWidth?: number;
         sizeLength?: number;
         sizeDepth?: number;
@@ -124,7 +127,18 @@ export async function createInvoice(data: {
         dueDate.setDate(dueDate.getDate() + data.creditDays);
 
         // Calculate totals
-        const total = data.items.reduce((sum, item) => sum + item.amount, 0);
+        const subtotal = data.items.reduce((sum, item) => sum + item.amount, 0);
+
+        // Calculate Tax Total
+        // Formula: item.amount * (item.gstRate / 100)
+        let taxTotal = 0;
+        data.items.forEach(item => {
+            const rate = item.gstRate || 0;
+            const tax = (item.amount * rate) / 100;
+            taxTotal += tax;
+        });
+
+        const total = subtotal + taxTotal;
 
         // Transaction: Invoice -> Items -> Ledger -> Customer Balance
         const result = await prisma.$transaction(async (tx) => {
@@ -137,7 +151,8 @@ export async function createInvoice(data: {
                     dueDate: dueDate,
                     creditDays: data.creditDays,
                     notes: data.notes,
-                    subtotal: total,
+                    subtotal: subtotal,
+                    taxTotal: taxTotal,
                     total: total,
                     status: 'PENDING',
                     customerPurchaseOrderId: data.customerPurchaseOrderId, // Linked PO
@@ -148,6 +163,7 @@ export async function createInvoice(data: {
                             quantity: item.quantity,
                             rate: item.rate,
                             amount: item.amount,
+                            gstRate: item.gstRate || 0,
                             sizeWidth: item.sizeWidth,
                             sizeLength: item.sizeLength,
                             sizeDepth: item.sizeDepth
@@ -164,15 +180,11 @@ export async function createInvoice(data: {
                 });
 
                 if (po) {
-                    // Calculate total invoiced amount for this PO (including current one)
-                    // Note: Current invoice is already created but not committed, so findUnique might not see it yet 
-                    // inside transaction if isolation level is standard, but since we are same txn it should be fine 
-                    // or we just add current total.
-                    // Actually, simple logic: current + past invoices.
-
+                    // Calculate total invoiced amount for this PO (including past invoices)
                     const pastTotal = po.invoices.reduce((sum: number, inv: { total: any }) => sum + Number(inv.total), 0);
                     const newTotalInvoiced = pastTotal + total; // current invoice total
 
+                    // Check if fully invoiced
                     const status = newTotalInvoiced >= Number(po.totalAmount) ? 'CLOSED' : 'PARTIAL';
 
                     await tx.customerPurchaseOrder.update({
@@ -189,7 +201,7 @@ export async function createInvoice(data: {
                     customerId: data.customerId,
                     invoiceId: invoice.id,
                     particulars: `Invoice #${invoice.invoiceNo}`,
-                    debit: total,
+                    debit: total, // Debit the full amount including tax
                     credit: 0,
                     balance: 0
                 }
