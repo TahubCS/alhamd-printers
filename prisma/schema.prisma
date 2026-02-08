@@ -44,6 +44,7 @@ model Customer {
   notes         String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  customerPurchaseOrders CustomerPurchaseOrder[]
   invoices      Invoice[]
   ledgerEntries LedgerEntry[]
   cheques       Cheque[]
@@ -68,6 +69,7 @@ model Product {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   invoiceItems InvoiceItem[]
+  purchaseOrderItems CustomerPurchaseOrderItem[]
 }
 
 // ============================================
@@ -83,6 +85,8 @@ model Invoice {
   company     Company       @relation(fields: [companyId], references: [id])
   customerId  String
   customer    Customer      @relation(fields: [customerId], references: [id])
+  customerPurchaseOrderId String? 
+  customerPurchaseOrder   CustomerPurchaseOrder? @relation(fields: [customerPurchaseOrderId], references: [id])
   items       InvoiceItem[]
   subtotal    Decimal       @db.Decimal(15, 2)
   total       Decimal       @db.Decimal(15, 2)
@@ -281,6 +285,45 @@ model PurchaseOrderItem {
 }
 
 // ============================================
+// CUSTOMER PURCHASE ORDER (Incoming POs)
+// ============================================
+model CustomerPurchaseOrder {
+  id              String                    @id @default(cuid())
+  poNumber        String?                   // The customer's PO number
+  date            DateTime                  @default(now())
+  customerId      String?                   // Optional because it might be a new customer during extraction
+  customer        Customer?                 @relation(fields: [customerId], references: [id])
+  totalAmount     Decimal                   @default(0) @db.Decimal(15, 2)
+  status          CustomerPOStatus          @default(DRAFT)
+  originalFileUrl String?                   // Path/URL to the uploaded file
+  ocrText         String?                   // Raw text extracted if needed
+  items           CustomerPurchaseOrderItem[]
+  invoices        Invoice[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+}
+
+enum CustomerPOStatus {
+  DRAFT     // Extracted but not confirmed
+  OPEN      // Confirmed, waiting for invoice
+  PARTIAL   // Partially invoiced
+  CLOSED    // Fully invoiced
+  REJECTED
+}
+
+model CustomerPurchaseOrderItem {
+  id                    String              @id @default(cuid())
+  customerPurchaseOrderId String
+  customerPurchaseOrder CustomerPurchaseOrder @relation(fields: [customerPurchaseOrderId], references: [id], onDelete: Cascade)
+  description           String
+  quantity              Int
+  rate                  Decimal             @default(0) @db.Decimal(10, 2)
+  amount                Decimal             @default(0) @db.Decimal(15, 2)
+  productId             String?
+  product               Product?            @relation(fields: [productId], references: [id])
+}
+
+// ============================================
 // DELIVERY CHALLAN
 // ============================================
 model DeliveryChallan {
@@ -294,3 +337,4 @@ model DeliveryChallan {
   notes      String?
   createdAt  DateTime @default(now())
 }
+

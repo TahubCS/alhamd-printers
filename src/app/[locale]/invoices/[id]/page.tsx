@@ -34,7 +34,6 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
         notFound();
     }
 
-    return (
     const isUrdu = locale === 'ur';
 
     return (

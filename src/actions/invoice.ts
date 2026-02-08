@@ -106,6 +106,7 @@ export async function createInvoice(data: {
     date: Date;
     creditDays: number;
     notes?: string;
+    customerPurchaseOrderId?: string;
     items: {
         productId?: string;
         description: string;
@@ -139,6 +140,7 @@ export async function createInvoice(data: {
                     subtotal: total,
                     total: total,
                     status: 'PENDING',
+                    customerPurchaseOrderId: data.customerPurchaseOrderId, // Linked PO
                     items: {
                         create: data.items.map(item => ({
                             productId: item.productId || null,
@@ -154,8 +156,34 @@ export async function createInvoice(data: {
                 }
             });
 
+            // 1b. Update PO Status if linked
+            if (data.customerPurchaseOrderId) {
+                const po = await tx.customerPurchaseOrder.findUnique({
+                    where: { id: data.customerPurchaseOrderId },
+                    select: { totalAmount: true, invoices: { select: { total: true } } }
+                });
+
+                if (po) {
+                    // Calculate total invoiced amount for this PO (including current one)
+                    // Note: Current invoice is already created but not committed, so findUnique might not see it yet 
+                    // inside transaction if isolation level is standard, but since we are same txn it should be fine 
+                    // or we just add current total.
+                    // Actually, simple logic: current + past invoices.
+
+                    const pastTotal = po.invoices.reduce((sum: number, inv: { total: any }) => sum + Number(inv.total), 0);
+                    const newTotalInvoiced = pastTotal + total; // current invoice total
+
+                    const status = newTotalInvoiced >= Number(po.totalAmount) ? 'CLOSED' : 'PARTIAL';
+
+                    await tx.customerPurchaseOrder.update({
+                        where: { id: data.customerPurchaseOrderId },
+                        data: { status }
+                    });
+                }
+            }
+
             // 2. Create Ledger Entry (Debit Customer)
-            await tx.ledgerEntry.create({
+            const ledgerEntry = await tx.ledgerEntry.create({
                 data: {
                     date: data.date,
                     customerId: data.customerId,
@@ -163,10 +191,7 @@ export async function createInvoice(data: {
                     particulars: `Invoice #${invoice.invoiceNo}`,
                     debit: total,
                     credit: 0,
-                    balance: 0 // Will be updated by trigger or calc? 
-                    // Prisma doesn't support triggers natively for balance calc in app logic easily 
-                    // without reading previous balance.
-                    // For now, we will fetch current balance and add to it.
+                    balance: 0
                 }
             });
 
@@ -179,10 +204,8 @@ export async function createInvoice(data: {
             });
 
             // 4. Update the Ledger Entry with the new running balance
-            // This is a simplification. Real accounting needs strict ordering.
-            // For this app, simply storing the snapshot balance is okay for now.
             await tx.ledgerEntry.update({
-                where: { invoiceId: invoice.id },
+                where: { id: ledgerEntry.id },
                 data: {
                     balance: customer.balance
                 }

@@ -9,6 +9,7 @@
     "nav": {
         "dashboard": "Dashboard",
         "customers": "Customers",
+        "orders": "Orders",
         "invoices": "Invoices",
         "inventory": "Inventory",
         "expenses": "Expenses",

@@ -1,15 +1,9 @@
 import { getCustomerById, getCustomerLedger } from "@/actions/customer";
+import { getCustomerPOs } from "@/actions/po";
+import CustomerContent from "@/components/customers/CustomerContent";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/Table";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -25,9 +19,10 @@ export default async function CustomerDetailsPage({
     const t = await getTranslations("customers");
     const tActions = await getTranslations("actions");
 
-    const [customerResult, ledgerResult] = await Promise.all([
+    const [customerResult, ledgerResult, poResult] = await Promise.all([
         getCustomerById(id),
         getCustomerLedger(id),
+        getCustomerPOs(id),
     ]);
 
     if (!customerResult.success || !customerResult.data) {
@@ -36,6 +31,7 @@ export default async function CustomerDetailsPage({
 
     const customer = customerResult.data;
     const ledger = ledgerResult.data || [];
+    const purchaseOrders = poResult.data || [];
 
     const isUrdu = locale === 'ur';
 
@@ -113,76 +109,14 @@ export default async function CustomerDetailsPage({
                     </CardContent>
                 </Card>
 
-                <Card className="card md:col-span-2" style={{ padding: isUrdu ? '28px' : '24px' }}>
-                    <CardHeader className="p-0 mb-6 flex flex-row items-center justify-between">
-                        <CardTitle className="text-xl text-[var(--color-text-primary)]">{t("financialInfo")}</CardTitle>
-                        <div className="text-2xl font-bold text-[var(--color-text-primary)]">
-                            {new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
-                                style: "currency",
-                                currency: "PKR",
-                            }).format(Number(customer.balance))}
-                            <span className="text-sm font-normal text-muted-foreground ml-2">
-                                {t("balance")}
-                            </span>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Particulars</TableHead>
-                                    <TableHead className="text-right">Debit</TableHead>
-                                    <TableHead className="text-right">Credit</TableHead>
-                                    <TableHead className="text-right">Balance</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {ledger.length > 0 ? (
-                                    ledger.map((entry: any) => (
-                                        <TableRow key={entry.id}>
-                                            <TableCell className="text-[var(--color-text-secondary)]">
-                                                {new Date(entry.date).toLocaleDateString(
-                                                    locale === "ur" ? "ur-PK" : "en-PK"
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-[var(--color-text-primary)]">
-                                                {entry.particulars}
-                                                {entry.invoice?.invoiceNo && ` #${entry.invoice.invoiceNo}`}
-                                                {entry.payment?.method && ` (${entry.payment.method})`}
-                                            </TableCell>
-                                            <TableCell className="text-right text-[var(--color-text-primary)]">
-                                                {Number(entry.debit) > 0
-                                                    ? new Intl.NumberFormat(
-                                                        locale === "ur" ? "ur-PK" : "en-PK"
-                                                    ).format(Number(entry.debit))
-                                                    : "-"}
-                                            </TableCell>
-                                            <TableCell className="text-right text-[var(--color-text-primary)]">
-                                                {Number(entry.credit) > 0
-                                                    ? new Intl.NumberFormat(
-                                                        locale === "ur" ? "ur-PK" : "en-PK"
-                                                    ).format(Number(entry.credit))
-                                                    : "-"}
-                                            </TableCell>
-                                            <TableCell className="text-right font-medium text-[var(--color-text-primary)]">
-                                                {new Intl.NumberFormat(
-                                                    locale === "ur" ? "ur-PK" : "en-PK"
-                                                ).format(Number(entry.balance))}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                            No transactions found
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                <div className="md:col-span-2">
+                    <CustomerContent
+                        ledger={ledger}
+                        purchaseOrders={purchaseOrders}
+                        locale={locale}
+                        customerId={id}
+                    />
+                </div>
             </div>
         </div>
     );

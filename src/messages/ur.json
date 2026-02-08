@@ -9,6 +9,7 @@
     "nav": {
         "dashboard": "ڈیش بورڈ",
         "customers": "گاہک",
+        "orders": "آرڈرز",
         "invoices": "بل",
         "inventory": "انوینٹری",
         "expenses": "اخراجات",

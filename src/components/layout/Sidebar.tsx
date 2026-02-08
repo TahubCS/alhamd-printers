@@ -5,6 +5,7 @@ import { usePathname, Link } from '@/i18n/navigation';
 import {
     LayoutDashboard,
     Users,
+    ShoppingCart,
     FileText,
     Package,
     Wallet,
@@ -17,6 +18,7 @@ import {
 const navItems = [
     { key: 'dashboard', href: '/', icon: LayoutDashboard },
     { key: 'customers', href: '/customers', icon: Users },
+    { key: 'orders', href: '/purchase-orders', icon: ShoppingCart },
     { key: 'invoices', href: '/invoices', icon: FileText },
     { key: 'inventory', href: '/inventory', icon: Package },
     { key: 'expenses', href: '/expenses', icon: Wallet },

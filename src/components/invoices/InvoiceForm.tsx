@@ -1,8 +1,7 @@
-"use client";
-
 import { createInvoice } from "@/actions/invoice";
 import { getCustomers } from "@/actions/customer";
 import { getProducts } from "@/actions/product";
+import { getCustomerPOById } from "@/actions/po";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -11,6 +10,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Plus, Trash, Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 // Types
 interface Product {
@@ -42,12 +42,15 @@ export default function InvoiceForm() {
     const tCommon = useTranslations("common");
     const tActions = useTranslations("actions");
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const fromPoId = searchParams.get("fromPoId");
+    const urlCustomerId = searchParams.get("customerId");
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form State
     const [companyId, setCompanyId] = useState("alhamd-printers"); // Default
-    const [customerId, setCustomerId] = useState("");
+    const [customerId, setCustomerId] = useState(urlCustomerId || "");
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [creditDays, setCreditDays] = useState(0);
     const [items, setItems] = useState<InvoiceItem[]>([
@@ -67,7 +70,39 @@ export default function InvoiceForm() {
                 setProducts(res.data);
             }
         });
+
+        // Initial customer load
+        getCustomers().then(res => {
+            if (res.success && res.data) {
+                setCustomers(res.data);
+            }
+        });
     }, []);
+
+    // PO Autofill Logic
+    useEffect(() => {
+        if (fromPoId) {
+            getCustomerPOById(fromPoId).then(res => {
+                if (res.success && res.data) {
+                    const po = res.data;
+                    if (po.customerId) setCustomerId(po.customerId);
+                    // Pre-fill items from PO
+                    if (po.items && po.items.length > 0) {
+                        setItems(po.items.map((item: any) => ({
+                            productId: item.productId,
+                            description: item.description,
+                            quantity: item.quantity,
+                            rate: Number(item.rate),
+                            amount: Number(item.amount)
+                        })));
+                    }
+                    if (po.poNumber) {
+                        setNotes((prev) => `${prev ? prev + '\n' : ''}PO #: ${po.poNumber}`);
+                    }
+                }
+            });
+        }
+    }, [fromPoId]);
 
     // Search customers
     useEffect(() => {
@@ -150,7 +185,8 @@ export default function InvoiceForm() {
                 date: new Date(date),
                 creditDays,
                 items,
-                notes
+                notes,
+                customerPurchaseOrderId: fromPoId || undefined
             });
 
             if (result.success) {
