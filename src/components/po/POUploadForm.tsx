@@ -17,6 +17,7 @@ interface POItem {
     rate: number;
     amount: number;
     gstRate?: number;
+    unit?: string;
 }
 
 interface POFormData {
@@ -26,6 +27,8 @@ interface POFormData {
     newCustomerPhone: string;
     newCustomerEmail: string;
     newCustomerAddress: string;
+    newCustomerNTN: string;
+    newCustomerGST: string;
     poNumber: string;
     date: string;
     items: POItem[];
@@ -51,6 +54,8 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
             newCustomerPhone: "",
             newCustomerEmail: "",
             newCustomerAddress: "",
+            newCustomerNTN: "",
+            newCustomerGST: "",
             paymentTerms: "",
             notes: ""
         }
@@ -106,17 +111,20 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                 newCustomerPhone: !matchedCustomer ? (extracted.customer?.phone || "") : "",
                 newCustomerEmail: !matchedCustomer ? (extracted.customer?.email || "") : "",
                 newCustomerAddress: !matchedCustomer ? (extracted.customer?.address || "") : "",
+                newCustomerNTN: !matchedCustomer ? (extracted.customer?.ntn || "") : "",
+                newCustomerGST: !matchedCustomer ? (extracted.customer?.gstNumber || "") : "",
                 poNumber: extracted.poNumber || "",
                 date: extracted.date || new Date().toISOString().split('T')[0],
                 totalAmount: extracted.totalAmount || 0,
                 paymentTerms: extracted.paymentTerms || "",
                 notes: extracted.notes || "",
                 items: extracted.items?.map((item: any) => ({
-                    description: item.description,
-                    quantity: item.quantity,
-                    rate: item.rate,
-                    amount: item.amount,
-                    gstRate: 0
+                    description: item.description || "",
+                    quantity: item.quantity || 1,
+                    rate: item.rate || 0,
+                    amount: item.amount || 0,
+                    gstRate: item.gstRate || 0,
+                    unit: item.unit || "Pieces"
                 })) || []
             });
 
@@ -129,15 +137,12 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
     const onSubmit = async (data: POFormData) => {
         setIsLoading(true);
 
-        if (!extractedData) {
-            setIsLoading(false);
-            return;
-        }
-
         const submissionData = {
             ...extractedData,
             ...data,
-            items: data.items
+            items: data.items,
+            originalFileUrl: extractedData?.originalFileUrl || null,
+            ocrText: extractedData?.ocrText || null
         };
 
         const result = await confirmCustomerPO(submissionData);
@@ -205,6 +210,37 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                     onChange={handleFileUpload}
                                 />
                             </div>
+
+                            <div className="relative flex items-center w-full py-4">
+                                <div className="flex-grow border-t border-[var(--color-border)]"></div>
+                                <span className="flex-shrink-0 mx-4 text-sm text-[var(--color-text-tertiary)]">OR</span>
+                                <div className="flex-grow border-t border-[var(--color-border)]"></div>
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={() => {
+                                    setExtractedData({}); // Set empty object to bypass check
+                                    setStep("review");
+                                    form.reset({
+                                        date: new Date().toISOString().split('T')[0],
+                                        items: [{ description: "", quantity: 1, rate: 0, amount: 0, gstRate: 0, unit: "Pieces" }],
+                                        newCustomerName: "",
+                                        newCustomerNameUrdu: "",
+                                        newCustomerPhone: "",
+                                        newCustomerEmail: "",
+                                        newCustomerAddress: "",
+                                        newCustomerNTN: "",
+                                        newCustomerGST: "",
+                                        paymentTerms: "",
+                                        notes: ""
+                                    });
+                                }}
+                            >
+                                <FileText className="w-4 h-4 mr-2" />
+                                Create Manually
+                            </Button>
                         </div>
                     )}
                 </CardContent>
@@ -253,7 +289,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                             <div>
                                 <Label className="text-[var(--color-text-secondary)]">Select Existing Customer</Label>
                                 <select
-                                    className="w-full mt-1 px-3 py-2 rounded-md bg-[var(--color-bg-primary)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:border-[var(--color-primary)] focus:outline-none"
+                                    className="w-full mt-1 px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-900 focus:border-[var(--color-primary)] focus:outline-none"
                                     {...form.register("customerId")}
                                 >
                                     <option value="">-- Create New Customer from PO --</option>
@@ -276,16 +312,36 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                             <Input
                                                 {...form.register("newCustomerName")}
                                                 placeholder="Company Name"
-                                                className="mt-1 bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="mt-1 bg-white border-gray-300 text-gray-900"
                                             />
                                         </div>
                                         <div>
                                             <Label className="text-[var(--color-text-secondary)] text-xs">Name (Urdu)</Label>
                                             <Input
                                                 {...form.register("newCustomerNameUrdu")}
-                                                className="mt-1 font-noto-nastaliq bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="mt-1 font-noto-nastaliq bg-white border-gray-300 text-gray-900"
                                                 dir="rtl"
                                                 placeholder="اردو نام"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Tax Info Row */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <Label className="text-[var(--color-text-secondary)] text-xs">NTN</Label>
+                                            <Input
+                                                {...form.register("newCustomerNTN")}
+                                                placeholder="National Tax Number"
+                                                className="mt-1 bg-white border-gray-300 text-gray-900"
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label className="text-[var(--color-text-secondary)] text-xs">STRN / GST</Label>
+                                            <Input
+                                                {...form.register("newCustomerGST")}
+                                                placeholder="Sales Tax Number"
+                                                className="mt-1 bg-white border-gray-300 text-gray-900"
                                             />
                                         </div>
                                     </div>
@@ -297,9 +353,10 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 <Phone className="w-3 h-3" /> Phone
                                             </Label>
                                             <Input
+
                                                 {...form.register("newCustomerPhone")}
                                                 placeholder="+92 21 35069311"
-                                                className="mt-1 bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="mt-1 bg-white border-gray-300 text-gray-900"
                                             />
                                         </div>
                                         <div>
@@ -307,9 +364,10 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 <Mail className="w-3 h-3" /> Email
                                             </Label>
                                             <Input
+
                                                 {...form.register("newCustomerEmail")}
                                                 placeholder="info@company.com"
-                                                className="mt-1 bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="mt-1 bg-white border-gray-300 text-gray-900"
                                             />
                                         </div>
                                     </div>
@@ -335,7 +393,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 <Label className="text-[var(--color-text-secondary)]">PO Number</Label>
                                 <Input
                                     {...form.register("poNumber")}
-                                    className="mt-1 bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                    className="mt-1 bg-white border-gray-300 text-gray-900"
                                 />
                             </div>
                             <div>
@@ -343,7 +401,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 <Input
                                     type="date"
                                     {...form.register("date")}
-                                    className="mt-1 bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                    className="mt-1 bg-white border-gray-300 text-gray-900 [color-scheme:light]"
                                 />
                             </div>
                         </div>
@@ -357,7 +415,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 <Input
                                     {...form.register("paymentTerms")}
                                     placeholder="e.g., 60 days"
-                                    className="mt-1 bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                    className="mt-1 bg-white border-gray-300 text-gray-900"
                                 />
                             </div>
                             <div>
@@ -365,7 +423,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 <Input
                                     {...form.register("notes")}
                                     placeholder="Special instructions"
-                                    className="mt-1 bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                    className="mt-1 bg-white border-gray-300 text-gray-900"
                                 />
                             </div>
                         </div>
@@ -379,7 +437,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                         <Label className="text-xs text-[var(--color-text-secondary)]">Global Tax %:</Label>
                                         <Input
                                             type="number"
-                                            className="w-16 h-8 text-xs bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                            className="w-16 h-8 text-xs bg-white border-gray-300 text-gray-900"
                                             value={globalGst}
                                             onChange={(e) => {
                                                 const val = Number(e.target.value);
@@ -393,7 +451,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                         type="button"
                                         size="sm"
                                         variant="ghost"
-                                        onClick={() => append({ description: "", quantity: 1, rate: 0, amount: 0, gstRate: globalGst })}
+                                        onClick={() => append({ description: "", quantity: 1, rate: 0, amount: 0, gstRate: globalGst, unit: "Pieces" })}
                                         className="text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                                     >
                                         <Plus className="w-4 h-4 mr-1" /> Add Item
@@ -404,7 +462,8 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                             <div className="space-y-2 bg-[var(--color-bg-tertiary)] rounded-lg p-3 border border-[var(--color-border)]">
                                 <div className="grid grid-cols-12 gap-2 text-xs font-medium text-[var(--color-text-secondary)] pb-2 border-b border-[var(--color-border)]">
                                     <div className="col-span-4">Description</div>
-                                    <div className="col-span-2 text-center">Qty</div>
+                                    <div className="col-span-1 text-center">Qty</div>
+                                    <div className="col-span-1 text-center">Unit</div>
                                     <div className="col-span-2 text-center">Rate</div>
                                     <div className="col-span-1 text-center">Tax %</div>
                                     <div className="col-span-2 text-center">Amount</div>
@@ -417,35 +476,42 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                             <Input
                                                 {...form.register(`items.${index}.description`)}
                                                 placeholder="Item description"
-                                                className="h-9 text-sm bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="h-9 text-sm bg-white border-gray-300 text-gray-900"
                                             />
                                         </div>
-                                        <div className="col-span-2">
+                                        <div className="col-span-1">
                                             <Input
                                                 type="number"
                                                 {...form.register(`items.${index}.quantity`)}
-                                                className="h-9 text-sm text-center bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <Input
+                                                {...form.register(`items.${index}.unit`)}
+                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
+                                                placeholder="Unit"
                                             />
                                         </div>
                                         <div className="col-span-2">
                                             <Input
                                                 type="number"
                                                 {...form.register(`items.${index}.rate`)}
-                                                className="h-9 text-sm text-center bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
                                             />
                                         </div>
                                         <div className="col-span-1">
                                             <Input
                                                 type="number"
                                                 {...form.register(`items.${index}.gstRate`)} // Use form register for gstRate
-                                                className="h-9 text-sm text-center bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
                                             />
                                         </div>
                                         <div className="col-span-2">
                                             <Input
                                                 type="number"
                                                 {...form.register(`items.${index}.amount`)}
-                                                className="h-9 text-sm text-center bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
                                             />
                                         </div>
                                         <div className="col-span-1 flex justify-center">
@@ -454,7 +520,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 size="sm"
                                                 variant="ghost"
                                                 onClick={() => remove(index)}
-                                                className="h-9 w-9 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                                className="h-9 w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-500/10"
                                             >
                                                 <Trash className="w-4 h-4" />
                                             </Button>
@@ -475,7 +541,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                             <Label className="text-lg text-[var(--color-text-primary)]">Total Amount:</Label>
                             <Input
                                 {...form.register("totalAmount")}
-                                className="w-40 text-right font-bold text-lg bg-[var(--color-bg-primary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                className="w-40 text-right font-bold text-lg bg-white border-gray-300 text-gray-900"
                             />
                         </div>
 

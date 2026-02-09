@@ -22,18 +22,33 @@ export async function processPOUpload(formData: FormData) {
             return { success: false, error: "AI Extraction Failed. Please try a clearer image." };
         }
 
-        // Fuzzy Match Customer by name
+        // Fuzzy Match Customer by name or exact match by NTN/Email
         let matchedCustomer = null;
         const customerName = extractedData.customer?.name;
+        const customerEmail = extractedData.customer?.email;
+        const customerNTN = extractedData.customer?.ntn;
+
+        const whereClause: any = { OR: [] };
         if (customerName) {
+            whereClause.OR.push({ name: { contains: customerName, mode: 'insensitive' } });
+            whereClause.OR.push({ nameUrdu: { contains: customerName } });
+        }
+        if (customerEmail) whereClause.OR.push({ email: customerEmail });
+        if (customerNTN) whereClause.OR.push({ ntn: customerNTN });
+
+        if (whereClause.OR.length > 0) {
             matchedCustomer = await prisma.customer.findFirst({
-                where: {
-                    OR: [
-                        { name: { contains: customerName, mode: 'insensitive' } },
-                        { nameUrdu: { contains: customerName } }
-                    ]
-                },
-                select: { id: true, name: true, nameUrdu: true, phone: true, address: true, email: true }
+                where: whereClause,
+                select: {
+                    id: true,
+                    name: true,
+                    nameUrdu: true,
+                    phone: true,
+                    address: true,
+                    email: true,
+                    ntn: true,
+                    gstNumber: true
+                }
             });
         }
 
@@ -58,6 +73,11 @@ export type ConfirmPOData = ExtractedPOData & {
     newCustomerPhone?: string;
     newCustomerEmail?: string;
     newCustomerAddress?: string;
+    newCustomerNTN?: string;
+    newCustomerGST?: string;
+    // File Metadata
+    originalFileUrl?: string | null;
+    ocrText?: string | null;
     // GST Support
     items: {
         description: string;
@@ -65,6 +85,7 @@ export type ConfirmPOData = ExtractedPOData & {
         rate: number;
         amount: number;
         gstRate?: number;
+        unit?: string;
     }[];
 };
 
@@ -80,6 +101,8 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
                 phone: data.newCustomerPhone || data.customer?.phone || null,
                 email: data.newCustomerEmail || data.customer?.email || `auto-${Date.now()}@placeholder.com`,
                 address: data.newCustomerAddress || data.customer?.address || null,
+                ntn: data.newCustomerNTN || data.customer?.ntn || null,
+                gstNumber: data.newCustomerGST || data.customer?.gstNumber || null,
             };
 
             const newCustomer = await prisma.customer.create({
@@ -113,7 +136,8 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
                 quantity,
                 rate,
                 amount,
-                gstRate
+                gstRate,
+                unit: item.unit || "Pieces"
             };
         });
 
@@ -130,6 +154,8 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
                 taxTotal: taxTotal,
                 totalAmount: total, // or data.totalAmount if we want to allow override? Let's use calculated.
                 status: "OPEN",
+                originalFileUrl: data.originalFileUrl || null,
+                ocrText: data.ocrText || null,
                 items: {
                     create: itemsData
                 }

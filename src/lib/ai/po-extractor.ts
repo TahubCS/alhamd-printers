@@ -7,6 +7,8 @@ export interface ExtractedPOItem {
     quantity: number;
     rate: number;
     amount: number;
+    gstRate?: number;
+    unit?: string;
     productCode?: string;
 }
 
@@ -18,6 +20,8 @@ export interface ExtractedCustomerData {
     email?: string | null;
     address?: string | null;
     website?: string | null;
+    ntn?: string | null;
+    gstNumber?: string | null;
 }
 
 export interface ExtractedPOData {
@@ -42,18 +46,18 @@ export async function extractDataFromPO(fileBase64: string, mimeType: string): P
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
-            You are an AI assistant for Al-Hamd Printers, a PVC bag manufacturing company in Pakistan.
+            You are an AI assistant for **Al-Hamd Printers** (also known as **ATS**, **M.A Enterprises**, **Muhammad Tanveer**).
+            We manufacture PVC bags in **Pakistan**.
             
-            **CRITICAL BUSINESS CONTEXT:**
-            - Al-Hamd Printers, ATS, M.A Enterprises, Muhammad Tanveer = OUR company names (we are the manufacturer/contractor)
-            - We RECEIVE Purchase Orders FROM customers who want to buy PVC bags from us
-            - The CUSTOMER is the company on the LETTERHEAD (top of the document) - they are SENDING the PO to us
-            - The "CONTRACTOR" or "TO" field usually mentions us (Al-Hamd, etc.) - this is NOT the customer
+            **CRITICAL CONTEXT:**
+            - **VENDOR/SUPPLIER**: "Al-Hamd Printers", "ATS", "M.A Enterprises", "Muhammad Tanveer", "Tanveer Polybag". This is US.
+            - **CUSTOMER**: The entity SENDING this Purchase Order. Their name is usually at the **TOP HEADER** or **Logo**.
+            - **DO NOT** confuse the Customer with the Vendor.
             
-            **PERFORM A DEEP SCAN OF THE ENTIRE DOCUMENT. Extract EVERYTHING visible.**
+            **YOUR TASK:**
+            Perform a deep scan of the document. Extract structured data into the JSON format below.
             
-            Return this JSON structure (extract ALL available fields):
-            
+            **JSON STRUCTURE:**
             {
                 "poNumber": string | null,
                 "date": "YYYY-MM-DD" | null,
@@ -64,7 +68,9 @@ export async function extractDataFromPO(fileBase64: string, mimeType: string): P
                     "fax": string | null,
                     "email": string | null,
                     "address": string | null,
-                    "website": string | null
+                    "website": string | null,
+                    "ntn": string | null,
+                    "gstNumber": string | null
                 },
                 "totalAmount": number,
                 "items": [
@@ -73,6 +79,8 @@ export async function extractDataFromPO(fileBase64: string, mimeType: string): P
                         "quantity": number,
                         "rate": number,
                         "amount": number,
+                        "gstRate": number,
+                        "unit": string | null,
                         "productCode": string | null
                     }
                 ],
@@ -84,35 +92,36 @@ export async function extractDataFromPO(fileBase64: string, mimeType: string): P
 
             **EXTRACTION RULES:**
             
-            1. **CUSTOMER (from LETTERHEAD/HEADER):**
-               - name: Company name on the letterhead (e.g., "TEXWORLD BATH FASHION", "FashionMart")
-               - phone: Look for "Tel:", "Phone:", phone numbers (format: keep as-is with country codes)
-               - fax: Look for "Fax:" numbers
-               - email: Look for "E-mail:", "Email:" addresses
-               - address: Full address from letterhead (sector, area, city, country)
-               - website: Look for "Web:", "www." URLs
+            1. **CUSTOMER IDENTIFICATION:** 
+               - The Customer Name is almost always the **LETTERHEAD TITLE** (e.g., "Tex World Bath Fashion", "FashionMart").
+               - Ignore "Vendor", "Supplier", or "To" fields pointing to Al-Hamd/ATS.
+               - Extract contact details (Phone, Email, Address).
+               - **IMPORTANT**: Look for **"NTN"** and **"STRN" / "GST"** numbers. These are critical. Extract them into 'ntn' and 'gstNumber'.
+
+            2. **DATE PARSING:**
+               - Parse formats like **"05-Feb-2026"**, "05/02/2026", "2026-02-05".
+               - Return strictly in **"YYYY-MM-DD"** format.
+
+            3. **ITEM TABLE EXTRACTION:**
+               - **Item Count Check**: Look for a "Sr. No" or "Item No" column. If it goes up to 3, ENSURE you return 3 items. Do not miss any rows.
+               - **Rates**: A rate of **0.00** is VALID (e.g., for samples or client-supplied material). Do not treat it as null.
+               - **GST %**: Look for columns like "GST %", "Sales Tax", "ST". Extract the percentage number (e.g., 18).
+               - **Units**: Extract units like "Pieces", "KG", "Pcs".
+               - **Description**: Combine Description, Size, Material, and Remarks columns into a single detailed description string.
+
+            4. **PAYMENT TERMS**:
+               - Look for "Payment Terms:", "Terms:", or phrases like "90 days".
+            
+            5. **TOTALS**:
+               - Use the "Grand Total" or "Total" field.
+               - If missing, calculate: sum(amount).
                
-            2. **PO NUMBER:** Look for "P.O.", "PO No.", "Contract No.", "Order No.", "Sr. #"
+            6. **CONFIDENCE**:
+               - Return a score (0.0 - 1.0) based on how well you could read the table and header.
+
+            Scan HANDWRITTEN and PRINTED text. Pakistan-specific context: "NTN" (National Tax Number), "GST" (General Sales Tax).
             
-            3. **DATE:** Convert any format to "YYYY-MM-DD"
-            
-            4. **ITEMS:** Extract ALL line items. For PVC bags look for:
-               - Sizes (e.g., "29x35.50x9 cm")
-               - Material specs (e.g., "9mm Blue SHADE", "with TAP", "without print")
-               - Quantities (often in pieces: "19150 Pcs")
-               - Rates and amounts
-               
-            5. **PAYMENT TERMS:** Look for "Payment will be made in X days" or similar
-            
-            6. **NOTES:** Extract any special instructions like "Kindly make samples for approval"
-            
-            7. **TOTAL:** Calculate sum of item amounts, or extract if stated
-            
-            8. **CONFIDENCE:** 0.0 to 1.0 based on legibility and completeness
-            
-            The document may be HANDWRITTEN. Scan every corner carefully.
-            
-            OUTPUT only VALID JSON. No markdown code blocks.
+            OUTPUT ONLY VALID JSON.
         `;
 
         const result = await model.generateContent([

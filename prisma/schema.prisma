@@ -35,6 +35,8 @@ model Customer {
   nameUrdu               String?
   phone                  String?
   address                String?
+  ntn                    String?
+  gstNumber              String?
   email                  String?                 @unique
   creditLimit            Decimal?                @db.Decimal(15, 2)
   balance                Decimal                 @default(0) @db.Decimal(15, 2)
@@ -328,6 +330,7 @@ model CustomerPurchaseOrderItem {
   quantity                Int
   rate                    Decimal               @default(0) @db.Decimal(10, 2)
   gstRate                 Decimal               @default(0) @db.Decimal(5, 2)
+  unit                    String?               @default("Pieces")
   amount                  Decimal               @default(0) @db.Decimal(15, 2)
   productId               String?
   product                 Product?              @relation(fields: [productId], references: [id])
