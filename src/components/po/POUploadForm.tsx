@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { processPOUpload, confirmCustomerPO } from "@/actions/po-automation";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -13,10 +13,10 @@ import { useRouter } from "@/i18n/navigation";
 
 interface POItem {
     description: string;
-    quantity: number;
-    rate: number;
-    amount: number;
-    gstRate?: number;
+    quantity: number | string;
+    rate: number | string;
+    amount: number | string;
+    gstRate?: number | string;
     unit?: string;
 }
 
@@ -32,7 +32,7 @@ interface POFormData {
     poNumber: string;
     date: string;
     items: POItem[];
-    totalAmount: number;
+    totalAmount: number | string;
     paymentTerms: string;
     notes: string;
 }
@@ -140,7 +140,14 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
         const submissionData = {
             ...extractedData,
             ...data,
-            items: data.items,
+            items: data.items.map(item => ({
+                ...item,
+                quantity: Number(item.quantity) || 0,
+                rate: Number(item.rate) || 0,
+                amount: Number(item.amount) || 0,
+                gstRate: Number(item.gstRate) || 0,
+            })),
+            totalAmount: Number(data.totalAmount) || 0,
             originalFileUrl: extractedData?.originalFileUrl || null,
             ocrText: extractedData?.ocrText || null
         };
@@ -312,14 +319,14 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                             <Input
                                                 {...form.register("newCustomerName")}
                                                 placeholder="Company Name"
-                                                className="mt-1 bg-white border-gray-300 text-gray-900"
+                                                className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                             />
                                         </div>
                                         <div>
                                             <Label className="text-[var(--color-text-secondary)] text-xs">Name (Urdu)</Label>
                                             <Input
                                                 {...form.register("newCustomerNameUrdu")}
-                                                className="mt-1 font-noto-nastaliq bg-white border-gray-300 text-gray-900"
+                                                className="mt-1 font-noto-nastaliq bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                                 dir="rtl"
                                                 placeholder="اردو نام"
                                             />
@@ -333,7 +340,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                             <Input
                                                 {...form.register("newCustomerNTN")}
                                                 placeholder="National Tax Number"
-                                                className="mt-1 bg-white border-gray-300 text-gray-900"
+                                                className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                             />
                                         </div>
                                         <div>
@@ -341,7 +348,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                             <Input
                                                 {...form.register("newCustomerGST")}
                                                 placeholder="Sales Tax Number"
-                                                className="mt-1 bg-white border-gray-300 text-gray-900"
+                                                className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                             />
                                         </div>
                                     </div>
@@ -356,7 +363,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
 
                                                 {...form.register("newCustomerPhone")}
                                                 placeholder="+92 21 35069311"
-                                                className="mt-1 bg-white border-gray-300 text-gray-900"
+                                                className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                             />
                                         </div>
                                         <div>
@@ -367,7 +374,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
 
                                                 {...form.register("newCustomerEmail")}
                                                 placeholder="info@company.com"
-                                                className="mt-1 bg-white border-gray-300 text-gray-900"
+                                                className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                             />
                                         </div>
                                     </div>
@@ -393,7 +400,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 <Label className="text-[var(--color-text-secondary)]">PO Number</Label>
                                 <Input
                                     {...form.register("poNumber")}
-                                    className="mt-1 bg-white border-gray-300 text-gray-900"
+                                    className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                 />
                             </div>
                             <div>
@@ -401,7 +408,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 <Input
                                     type="date"
                                     {...form.register("date")}
-                                    className="mt-1 bg-white border-gray-300 text-gray-900 [color-scheme:light]"
+                                    className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)] [color-scheme:dark]"
                                 />
                             </div>
                         </div>
@@ -415,7 +422,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 <Input
                                     {...form.register("paymentTerms")}
                                     placeholder="e.g., 60 days"
-                                    className="mt-1 bg-white border-gray-300 text-gray-900"
+                                    className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                 />
                             </div>
                             <div>
@@ -423,7 +430,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 <Input
                                     {...form.register("notes")}
                                     placeholder="Special instructions"
-                                    className="mt-1 bg-white border-gray-300 text-gray-900"
+                                    className="mt-1 bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                 />
                             </div>
                         </div>
@@ -437,11 +444,11 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                         <Label className="text-xs text-[var(--color-text-secondary)]">Global Tax %:</Label>
                                         <Input
                                             type="number"
-                                            className="w-16 h-8 text-xs bg-white border-gray-300 text-gray-900"
+                                            className="w-16 h-8 text-xs bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                             value={globalGst}
                                             onChange={(e) => {
-                                                const val = Number(e.target.value);
-                                                setGlobalGst(val);
+                                                const val = e.target.value;
+                                                setGlobalGst(Number(val) || 0);
                                                 const currentItems = form.getValues("items");
                                                 form.setValue("items", currentItems.map(item => ({ ...item, gstRate: val })));
                                             }}
@@ -473,45 +480,98 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                 {fields.map((field, index) => (
                                     <div key={field.id} className="grid grid-cols-12 gap-2 items-center">
                                         <div className="col-span-4">
-                                            <Input
-                                                {...form.register(`items.${index}.description`)}
-                                                placeholder="Item description"
-                                                className="h-9 text-sm bg-white border-gray-300 text-gray-900"
+                                            <Controller
+                                                control={form.control}
+                                                name={`items.${index}.description`}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        value={field.value ?? ''}
+                                                        placeholder="Item description"
+                                                        autoComplete="off"
+                                                        className="h-9 text-sm bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                    />
+                                                )}
                                             />
                                         </div>
                                         <div className="col-span-1">
-                                            <Input
-                                                type="number"
-                                                {...form.register(`items.${index}.quantity`)}
-                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
+                                            <Controller
+                                                control={form.control}
+                                                name={`items.${index}.quantity`}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        value={field.value ?? ''}
+                                                        type="number"
+                                                        autoComplete="off"
+                                                        onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                    />
+                                                )}
                                             />
                                         </div>
                                         <div className="col-span-1">
-                                            <Input
-                                                {...form.register(`items.${index}.unit`)}
-                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
-                                                placeholder="Unit"
+                                            <Controller
+                                                control={form.control}
+                                                name={`items.${index}.unit`}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        value={field.value ?? ''}
+                                                        placeholder="Unit"
+                                                        type="text"
+                                                        autoComplete="off"
+                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                    />
+                                                )}
                                             />
                                         </div>
                                         <div className="col-span-2">
-                                            <Input
-                                                type="number"
-                                                {...form.register(`items.${index}.rate`)}
-                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
+                                            <Controller
+                                                control={form.control}
+                                                name={`items.${index}.rate`}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        value={field.value ?? ''}
+                                                        type="number"
+                                                        autoComplete="off"
+                                                        onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                    />
+                                                )}
                                             />
                                         </div>
                                         <div className="col-span-1">
-                                            <Input
-                                                type="number"
-                                                {...form.register(`items.${index}.gstRate`)} // Use form register for gstRate
-                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
+                                            <Controller
+                                                control={form.control}
+                                                name={`items.${index}.gstRate`}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        value={field.value ?? ''}
+                                                        type="number"
+                                                        autoComplete="off"
+                                                        onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                    />
+                                                )}
                                             />
                                         </div>
                                         <div className="col-span-2">
-                                            <Input
-                                                type="number"
-                                                {...form.register(`items.${index}.amount`)}
-                                                className="h-9 text-sm text-center bg-white border-gray-300 text-gray-900"
+                                            <Controller
+                                                control={form.control}
+                                                name={`items.${index}.amount`}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        value={field.value ?? ''}
+                                                        type="number"
+                                                        autoComplete="off"
+                                                        onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                    />
+                                                )}
                                             />
                                         </div>
                                         <div className="col-span-1 flex justify-center">
@@ -541,7 +601,8 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                             <Label className="text-lg text-[var(--color-text-primary)]">Total Amount:</Label>
                             <Input
                                 {...form.register("totalAmount")}
-                                className="w-40 text-right font-bold text-lg bg-white border-gray-300 text-gray-900"
+                                inputMode="decimal"
+                                className="w-40 text-right font-bold text-lg bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                             />
                         </div>
 
