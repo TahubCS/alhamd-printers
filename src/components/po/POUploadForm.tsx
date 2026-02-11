@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Upload, FileText, Loader2, Plus, Trash, Check, Building2, Phone, Mail, MapPin, Globe, Calendar, CreditCard, X, Settings2 } from "lucide-react";
+import { Upload, FileText, Loader2, Plus, Trash, Check, Building2, Phone, Mail, MapPin, Globe, Calendar, CreditCard, X, Settings2, Eye } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 
 interface POItem {
@@ -42,12 +42,14 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
     const [step, setStep] = useState<"upload" | "review">("upload");
     const [isLoading, setIsLoading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [uploadedFileType, setUploadedFileType] = useState<string>("");
     const [extractedData, setExtractedData] = useState<any>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [globalGst, setGlobalGst] = useState<number>(0);
     const [customColumns, setCustomColumns] = useState<string[]>([]);
     const [showAttrModal, setShowAttrModal] = useState(false);
     const [newAttrName, setNewAttrName] = useState("");
+    const [showPreview, setShowPreview] = useState(false);
     const router = useRouter();
 
     const form = useForm<POFormData>({
@@ -95,6 +97,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
     const handleFile = async (file: File) => {
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
+        setUploadedFileType(file.type);
 
         setIsLoading(true);
         const formData = new FormData();
@@ -176,6 +179,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
             router.push("/purchase-orders");
             router.refresh();
         } else {
+            console.error("PO Save Error:", result.error);
             alert(result.error);
         }
     };
@@ -273,29 +277,26 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
-            {/* Left: Document Preview */}
-            <Card className="h-full overflow-hidden flex flex-col bg-[var(--color-bg-secondary)] border-[var(--color-border)]">
-                <CardHeader className="bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border)] py-3">
-                    <CardTitle className="text-sm font-medium flex items-center text-[var(--color-text-primary)]">
-                        <FileText className="w-4 h-4 mr-2 text-[var(--color-primary)]" />
-                        Original Document
-                    </CardTitle>
-                </CardHeader>
-                <div className="flex-1 bg-[var(--color-bg-tertiary)] p-4 overflow-auto flex items-center justify-center">
-                    {previewUrl && (
-                        <img src={previewUrl} alt="PO Preview" className="max-w-full max-h-full object-contain rounded-lg shadow-lg" />
-                    )}
-                </div>
-            </Card>
-
-            {/* Right: Review Form */}
-            <Card className="h-full overflow-hidden flex flex-col bg-[var(--color-bg-secondary)] border-[var(--color-border)]">
+        <div className="h-[calc(100vh-200px)] flex flex-col">
+            {/* Review Form — Full Width */}
+            <Card className="flex-1 overflow-hidden flex flex-col bg-[var(--color-bg-secondary)] border-[var(--color-border)]">
                 <CardHeader className="bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border)] py-3">
                     <div className="flex justify-between items-center">
                         <CardTitle className="text-[var(--color-text-primary)]">Review Extracted Data</CardTitle>
-                        <div className="text-xs font-mono bg-green-500/20 text-green-400 px-3 py-1 rounded-full">
-                            Confidence: {Math.round((extractedData?.confidence || 0) * 100)}%
+                        <div className="flex items-center gap-3">
+                            {previewUrl && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPreview(true)}
+                                    className="flex items-center gap-1.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                                >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    View Original
+                                </button>
+                            )}
+                            <div className="text-xs font-mono bg-green-500/20 text-green-400 px-3 py-1 rounded-full">
+                                Confidence: {Math.round((extractedData?.confidence || 0) * 100)}%
+                            </div>
                         </div>
                     </div>
                 </CardHeader>
@@ -313,7 +314,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                             <div>
                                 <Label className="text-[var(--color-text-secondary)]">Select Existing Customer</Label>
                                 <select
-                                    className="w-full mt-1 px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-900 focus:border-[var(--color-primary)] focus:outline-none"
+                                    className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:border-[var(--color-accent-primary)] focus:shadow-[0_0_0_3px_var(--color-accent-glow)] focus:outline-none transition-all cursor-pointer"
                                     {...form.register("customerId")}
                                 >
                                     <option value="">-- Create New Customer from PO --</option>
@@ -522,7 +523,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                         value={field.value ?? ''}
                                                         placeholder="Item description"
                                                         autoComplete="off"
-                                                        className="h-9 text-sm bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                        className="h-9 text-sm input-compact bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                                     />
                                                 )}
                                             />
@@ -538,7 +539,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                         type="number"
                                                         autoComplete="off"
                                                         onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                        className="h-9 text-sm text-center input-compact overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                                     />
                                                 )}
                                             />
@@ -551,7 +552,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                     <select
                                                         {...field}
                                                         value={field.value ?? 'Pieces'}
-                                                        className="h-9 text-sm text-center !px-1 !py-1 rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent-primary)] focus:shadow-[0_0_0_3px_var(--color-accent-glow)] transition-all cursor-pointer w-full appearance-none"
+                                                        className="h-9 text-sm text-center px-1 py-1 rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent-primary)] focus:shadow-[0_0_0_3px_var(--color-accent-glow)] transition-all cursor-pointer w-full appearance-none"
                                                     >
                                                         <option value="Pieces">Pcs</option>
                                                         <option value="KG">KG</option>
@@ -559,23 +560,26 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 )}
                                             />
                                         </div>
-                                        {customColumns.map(col => (
-                                            <div key={col} className="flex-[1.5] min-w-0">
-                                                <Input
-                                                    value={form.watch(`items.${index}.customAttributes.${col}`) ?? ''}
-                                                    onChange={(e) => {
-                                                        const current = form.getValues(`items.${index}.customAttributes`) || {};
-                                                        form.setValue(`items.${index}.customAttributes`, {
-                                                            ...current,
-                                                            [col]: e.target.value || null
-                                                        });
-                                                    }}
-                                                    placeholder={col}
-                                                    autoComplete="off"
-                                                    className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
-                                                />
-                                            </div>
-                                        ))}
+                                        {customColumns.map(col => {
+                                            const attrs = form.watch(`items.${index}.customAttributes`) as Record<string, string | null> | undefined;
+                                            return (
+                                                <div key={col} className="flex-[1.5] min-w-0">
+                                                    <input
+                                                        value={attrs?.[col] ?? ''}
+                                                        onChange={(e) => {
+                                                            const current = form.getValues(`items.${index}.customAttributes`) as Record<string, string | null> || {};
+                                                            form.setValue(`items.${index}.customAttributes`, {
+                                                                ...current,
+                                                                [col]: e.target.value || null
+                                                            });
+                                                        }}
+                                                        placeholder={col}
+                                                        autoComplete="off"
+                                                        className="input input-compact h-9 w-full text-sm text-center overflow-hidden bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                    />
+                                                </div>
+                                            );
+                                        })}
                                         <div className="flex-[2] min-w-0">
                                             <Controller
                                                 control={form.control}
@@ -587,7 +591,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                         type="number"
                                                         autoComplete="off"
                                                         onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                        className="h-9 text-sm text-center input-compact overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                                     />
                                                 )}
                                             />
@@ -603,7 +607,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                         type="number"
                                                         autoComplete="off"
                                                         onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                        className="h-9 text-sm text-center input-compact overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                                     />
                                                 )}
                                             />
@@ -619,7 +623,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                         type="number"
                                                         autoComplete="off"
                                                         onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                        className="h-9 text-sm text-center input-compact overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                                                     />
                                                 )}
                                             />
@@ -755,6 +759,25 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                     </form>
                 </CardContent>
             </Card>
+
+            {/* Preview Modal */}
+            {showPreview && previewUrl && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowPreview(false)}>
+                    <div className="relative max-w-4xl max-h-[90vh] w-full mx-4" onClick={e => e.stopPropagation()}>
+                        <button
+                            onClick={() => setShowPreview(false)}
+                            className="absolute -top-10 right-0 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
+                        >
+                            <X className="w-5 h-5 text-white" />
+                        </button>
+                        {uploadedFileType === 'application/pdf' ? (
+                            <iframe src={previewUrl} title="PO Preview" className="w-full h-[85vh] rounded-xl shadow-2xl bg-white" />
+                        ) : (
+                            <img src={previewUrl} alt="PO Preview" className="w-full h-full object-contain rounded-xl shadow-2xl" />
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

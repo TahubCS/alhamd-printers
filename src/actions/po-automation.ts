@@ -181,6 +181,7 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
 
     } catch (error) {
         console.error("Confirm PO Error:", error);
-        return { success: false, error: "Failed to save PO. Detailed error in logs." };
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return { success: false, error: `Failed to save PO: ${errorMessage}` };
     }
 }
