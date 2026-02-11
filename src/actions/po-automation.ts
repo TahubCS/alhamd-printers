@@ -86,6 +86,7 @@ export type ConfirmPOData = ExtractedPOData & {
         amount: number;
         gstRate?: number;
         unit?: string;
+        customAttributes?: Record<string, string | null>;
     }[];
 };
 
@@ -137,7 +138,8 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
                 rate,
                 amount,
                 gstRate,
-                unit: item.unit || "Pieces"
+                unit: item.unit || "Pieces",
+                customAttributes: item.customAttributes || {}
             };
         });
 

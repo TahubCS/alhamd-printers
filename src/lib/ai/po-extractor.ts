@@ -10,6 +10,7 @@ export interface ExtractedPOItem {
     gstRate?: number;
     unit?: string;
     productCode?: string;
+    customAttributes?: Record<string, string | null>;
 }
 
 export interface ExtractedCustomerData {
@@ -81,7 +82,8 @@ export async function extractDataFromPO(fileBase64: string, mimeType: string): P
                         "amount": number,
                         "gstRate": number,
                         "unit": string | null,
-                        "productCode": string | null
+                        "productCode": string | null,
+                        "customAttributes": { "column_name": "value" | null } 
                     }
                 ],
                 "paymentTerms": string | null,
@@ -105,18 +107,27 @@ export async function extractDataFromPO(fileBase64: string, mimeType: string): P
             3. **ITEM TABLE EXTRACTION:**
                - **Item Count Check**: Look for a "Sr. No" or "Item No" column. If it goes up to 3, ENSURE you return 3 items. Do not miss any rows.
                - **Rates**: A rate of **0.00** is VALID (e.g., for samples or client-supplied material). Do not treat it as null.
-               - **GST %**: Look for columns like "GST %", "Sales Tax", "ST". Extract the percentage number (e.g., 18).
+               - **GST %**: Look for columns like "GST %", "Sales Tax", "ST". Extract the percentage number (e.g., 18). If no GST column exists, set gstRate to 0.
                - **Units**: Extract units like "Pieces", "KG", "Pcs".
-               - **Description**: Combine Description, Size, Material, and Remarks columns into a single detailed description string.
+               - **Description**: Put only the item name/description in the description field. Do NOT merge other column values into description.
 
-            4. **PAYMENT TERMS**:
+            4. **CUSTOM ATTRIBUTES (CRITICAL):**
+               - The STANDARD columns are: Sr.No, Item Name/Description, Qty/Quantity, Unit, Rate, Amount/Total.
+               - ANY column in the item table that is NOT one of the standard columns above is a CUSTOM ATTRIBUTE.
+               - Common custom columns include: Brand, Size, Remarks, Material, Color, Quality, Weight, Specifications, etc.
+               - Extract these into the "customAttributes" object using the EXACT column header name as the key.
+               - If a cell is empty for a row, set that key value to null.
+               - Example: If the table has columns [Item Name, Size, Brand, Remarks, Unit, Qty, Rate, GST%, Amount], then Size, Brand, and Remarks are custom attributes.
+               - The "customAttributes" keys should be consistent across ALL items in the same PO (same keys, null for empty cells).
+
+            5. **PAYMENT TERMS**:
                - Look for "Payment Terms:", "Terms:", or phrases like "90 days".
             
-            5. **TOTALS**:
+            6. **TOTALS**:
                - Use the "Grand Total" or "Total" field.
                - If missing, calculate: sum(amount).
                
-            6. **CONFIDENCE**:
+            7. **CONFIDENCE**:
                - Return a score (0.0 - 1.0) based on how well you could read the table and header.
 
             Scan HANDWRITTEN and PRINTED text. Pakistan-specific context: "NTN" (National Tax Number), "GST" (General Sales Tax).

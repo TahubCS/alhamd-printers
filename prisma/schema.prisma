@@ -332,6 +332,7 @@ model CustomerPurchaseOrderItem {
   gstRate                 Decimal               @default(0) @db.Decimal(5, 2)
   unit                    String?               @default("Pieces")
   amount                  Decimal               @default(0) @db.Decimal(15, 2)
+  customAttributes        Json?                 @default("{}")
   productId               String?
   product                 Product?              @relation(fields: [productId], references: [id])
 }

@@ -24,7 +24,8 @@ function serializePO(po: any) {
             ...item,
             rate: Number(item.rate),
             amount: Number(item.amount),
-            gstRate: Number(item.gstRate || 0)
+            gstRate: Number(item.gstRate || 0),
+            customAttributes: item.customAttributes || {}
         })),
         // Handle nested invoices if present
         invoices: po.invoices?.map((inv: any) => ({

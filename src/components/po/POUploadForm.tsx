@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Upload, FileText, Loader2, Plus, Trash, Check, Building2, Phone, Mail, MapPin, Globe, Calendar, CreditCard } from "lucide-react";
+import { Upload, FileText, Loader2, Plus, Trash, Check, Building2, Phone, Mail, MapPin, Globe, Calendar, CreditCard, X, Settings2 } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 
 interface POItem {
@@ -18,6 +18,7 @@ interface POItem {
     amount: number | string;
     gstRate?: number | string;
     unit?: string;
+    customAttributes?: Record<string, string | null>;
 }
 
 interface POFormData {
@@ -44,6 +45,9 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
     const [extractedData, setExtractedData] = useState<any>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [globalGst, setGlobalGst] = useState<number>(0);
+    const [customColumns, setCustomColumns] = useState<string[]>([]);
+    const [showAttrModal, setShowAttrModal] = useState(false);
+    const [newAttrName, setNewAttrName] = useState("");
     const router = useRouter();
 
     const form = useForm<POFormData>({
@@ -124,9 +128,21 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                     rate: item.rate || 0,
                     amount: item.amount || 0,
                     gstRate: item.gstRate || 0,
-                    unit: item.unit || "Pieces"
+                    unit: item.unit || "Pieces",
+                    customAttributes: item.customAttributes || {}
                 })) || []
             });
+
+            // Auto-detect custom columns from AI extraction
+            const detectedColumns = new Set<string>();
+            extracted.items?.forEach((item: any) => {
+                if (item.customAttributes) {
+                    Object.keys(item.customAttributes).forEach((key: string) => detectedColumns.add(key));
+                }
+            });
+            if (detectedColumns.size > 0) {
+                setCustomColumns(Array.from(detectedColumns));
+            }
 
             setStep("review");
         } else {
@@ -146,6 +162,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                 rate: Number(item.rate) || 0,
                 amount: Number(item.amount) || 0,
                 gstRate: Number(item.gstRate) || 0,
+                customAttributes: item.customAttributes || {},
             })),
             totalAmount: Number(data.totalAmount) || 0,
             originalFileUrl: extractedData?.originalFileUrl || null,
@@ -458,28 +475,44 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                         type="button"
                                         size="sm"
                                         variant="ghost"
-                                        onClick={() => append({ description: "", quantity: 1, rate: 0, amount: 0, gstRate: globalGst, unit: "Pieces" })}
+                                        onClick={() => {
+                                            const emptyAttrs: Record<string, string | null> = {};
+                                            customColumns.forEach(col => emptyAttrs[col] = null);
+                                            append({ description: "", quantity: 1, rate: 0, amount: 0, gstRate: globalGst, unit: "Pieces", customAttributes: emptyAttrs });
+                                        }}
                                         className="text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                                     >
                                         <Plus className="w-4 h-4 mr-1" /> Add Item
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => setShowAttrModal(true)}
+                                        className="text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]"
+                                    >
+                                        <Settings2 className="w-4 h-4 mr-1" /> Attributes{customColumns.length > 0 && ` (${customColumns.length})`}
                                     </Button>
                                 </div>
                             </div>
 
                             <div className="space-y-2 bg-[var(--color-bg-tertiary)] rounded-lg p-3 border border-[var(--color-border)]">
-                                <div className="grid grid-cols-12 gap-2 text-xs font-medium text-[var(--color-text-secondary)] pb-2 border-b border-[var(--color-border)]">
-                                    <div className="col-span-4">Description</div>
-                                    <div className="col-span-1 text-center">Qty</div>
-                                    <div className="col-span-1 text-center">Unit</div>
-                                    <div className="col-span-2 text-center">Rate</div>
-                                    <div className="col-span-1 text-center">Tax %</div>
-                                    <div className="col-span-2 text-center">Amount</div>
-                                    <div className="col-span-1"></div>
+                                <div className="flex gap-2 text-xs font-medium text-[var(--color-text-secondary)] pb-2 border-b border-[var(--color-border)]">
+                                    <div className="flex-[3] min-w-0">Description</div>
+                                    <div className="w-16 text-center shrink-0">Qty</div>
+                                    <div className="w-14 text-center shrink-0">Unit</div>
+                                    {customColumns.map(col => (
+                                        <div key={col} className="flex-[1.5] min-w-0 text-center truncate" title={col}>{col}</div>
+                                    ))}
+                                    <div className="flex-[2] min-w-0 text-center">Rate</div>
+                                    <div className="w-14 text-center shrink-0">Tax %</div>
+                                    <div className="flex-[2] min-w-0 text-center">Amount</div>
+                                    <div className="w-9 shrink-0"></div>
                                 </div>
 
                                 {fields.map((field, index) => (
-                                    <div key={field.id} className="grid grid-cols-12 gap-2 items-center">
-                                        <div className="col-span-4">
+                                    <div key={field.id} className="flex gap-2 items-center">
+                                        <div className="flex-[3] min-w-0">
                                             <Controller
                                                 control={form.control}
                                                 name={`items.${index}.description`}
@@ -494,7 +527,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 )}
                                             />
                                         </div>
-                                        <div className="col-span-1">
+                                        <div className="w-16 shrink-0">
                                             <Controller
                                                 control={form.control}
                                                 name={`items.${index}.quantity`}
@@ -510,23 +543,40 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 )}
                                             />
                                         </div>
-                                        <div className="col-span-1">
+                                        <div className="w-14 shrink-0">
                                             <Controller
                                                 control={form.control}
                                                 name={`items.${index}.unit`}
                                                 render={({ field }) => (
-                                                    <Input
+                                                    <select
                                                         {...field}
-                                                        value={field.value ?? ''}
-                                                        placeholder="Unit"
-                                                        type="text"
-                                                        autoComplete="off"
-                                                        className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
-                                                    />
+                                                        value={field.value ?? 'Pieces'}
+                                                        className="h-9 text-sm text-center !px-1 !py-1 rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent-primary)] focus:shadow-[0_0_0_3px_var(--color-accent-glow)] transition-all cursor-pointer w-full appearance-none"
+                                                    >
+                                                        <option value="Pieces">Pcs</option>
+                                                        <option value="KG">KG</option>
+                                                    </select>
                                                 )}
                                             />
                                         </div>
-                                        <div className="col-span-2">
+                                        {customColumns.map(col => (
+                                            <div key={col} className="flex-[1.5] min-w-0">
+                                                <Input
+                                                    value={form.watch(`items.${index}.customAttributes.${col}`) ?? ''}
+                                                    onChange={(e) => {
+                                                        const current = form.getValues(`items.${index}.customAttributes`) || {};
+                                                        form.setValue(`items.${index}.customAttributes`, {
+                                                            ...current,
+                                                            [col]: e.target.value || null
+                                                        });
+                                                    }}
+                                                    placeholder={col}
+                                                    autoComplete="off"
+                                                    className="h-9 text-sm text-center !px-2 !py-1 overflow-hidden bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                />
+                                            </div>
+                                        ))}
+                                        <div className="flex-[2] min-w-0">
                                             <Controller
                                                 control={form.control}
                                                 name={`items.${index}.rate`}
@@ -542,7 +592,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 )}
                                             />
                                         </div>
-                                        <div className="col-span-1">
+                                        <div className="w-14 shrink-0">
                                             <Controller
                                                 control={form.control}
                                                 name={`items.${index}.gstRate`}
@@ -558,7 +608,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 )}
                                             />
                                         </div>
-                                        <div className="col-span-2">
+                                        <div className="flex-[2] min-w-0">
                                             <Controller
                                                 control={form.control}
                                                 name={`items.${index}.amount`}
@@ -574,16 +624,14 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                 )}
                                             />
                                         </div>
-                                        <div className="col-span-1 flex justify-center">
-                                            <Button
+                                        <div className="w-9 shrink-0 flex justify-center">
+                                            <button
                                                 type="button"
-                                                size="sm"
-                                                variant="ghost"
                                                 onClick={() => remove(index)}
-                                                className="h-9 w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-500/10"
+                                                className="h-9 w-9 p-0 flex items-center justify-center rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
                                             >
-                                                <Trash className="w-4 h-4" />
-                                            </Button>
+                                                <Trash className="w-4 h-4" style={{ color: '#f87171', stroke: '#f87171' }} />
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -594,9 +642,97 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                     </div>
                                 )}
                             </div>
-                        </div>
 
-                        {/* Total */}
+                            {/* Custom Attributes Modal */}
+                            {showAttrModal && (
+                                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowAttrModal(false)}>
+                                    <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Custom Attributes</h3>
+                                            <button onClick={() => setShowAttrModal(false)} className="p-1 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer">
+                                                <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
+                                            </button>
+                                        </div>
+                                        <p className="text-sm text-[var(--color-text-tertiary)] mb-4">Add custom columns like Brand, Size, Remarks, etc. They appear between Unit and Rate for every item.</p>
+
+                                        <div className="flex gap-2 mb-4">
+                                            <Input
+                                                value={newAttrName}
+                                                onChange={(e) => setNewAttrName(e.target.value)}
+                                                placeholder="Attribute name (e.g. Brand)"
+                                                autoComplete="off"
+                                                className="flex-1 h-10 text-sm bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-primary)]"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && newAttrName.trim()) {
+                                                        e.preventDefault();
+                                                        const name = newAttrName.trim();
+                                                        if (!customColumns.includes(name)) {
+                                                            setCustomColumns(prev => [...prev, name]);
+                                                            const items = form.getValues('items');
+                                                            items.forEach((_, i) => {
+                                                                const current = form.getValues(`items.${i}.customAttributes`) || {};
+                                                                form.setValue(`items.${i}.customAttributes`, { ...current, [name]: null });
+                                                            });
+                                                        }
+                                                        setNewAttrName("");
+                                                    }
+                                                }}
+                                            />
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="primary"
+                                                disabled={!newAttrName.trim() || customColumns.includes(newAttrName.trim())}
+                                                onClick={() => {
+                                                    const name = newAttrName.trim();
+                                                    if (name && !customColumns.includes(name)) {
+                                                        setCustomColumns(prev => [...prev, name]);
+                                                        const items = form.getValues('items');
+                                                        items.forEach((_, i) => {
+                                                            const current = form.getValues(`items.${i}.customAttributes`) || {};
+                                                            form.setValue(`items.${i}.customAttributes`, { ...current, [name]: null });
+                                                        });
+                                                    }
+                                                    setNewAttrName("");
+                                                }}
+                                                className="h-10 px-4"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+
+                                        {customColumns.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {customColumns.map((col) => (
+                                                    <div key={col} className="flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
+                                                        <span className="text-sm text-[var(--color-text-primary)]">{col}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setCustomColumns(prev => prev.filter(c => c !== col));
+                                                                const items = form.getValues('items');
+                                                                items.forEach((__item, i) => {
+                                                                    const current = form.getValues(`items.${i}.customAttributes`) || {};
+                                                                    const { [col]: _removed, ...rest } = current;
+                                                                    form.setValue(`items.${i}.customAttributes`, rest);
+                                                                });
+                                                            }}
+                                                            className="p-1 rounded hover:bg-red-500/10 transition-colors cursor-pointer"
+                                                        >
+                                                            <X className="w-4 h-4" style={{ color: '#f87171', stroke: '#f87171' }} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-4 text-sm text-[var(--color-text-tertiary)]">
+                                                No custom attributes yet. Add one above.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <div className="flex justify-end items-center gap-4 pt-4 border-t border-[var(--color-border)]">
                             <Label className="text-lg text-[var(--color-text-primary)]">Total Amount:</Label>
                             <Input
