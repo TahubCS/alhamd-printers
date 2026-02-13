@@ -4,7 +4,8 @@
         "language": "English",
         "toggleLanguage": "اردو",
         "items": "Items",
-        "amount": "Amount"
+        "amount": "Amount",
+        "billTo": "Bill To"
     },
     "inventory": {
         "title": "Inventory Management",
@@ -44,6 +45,7 @@
         "details": {
             "title": "Invoice Details",
             "invoiceNo": "Invoice #",
+            "date": "Date",
             "dueDate": "Due Date",
             "items": "Items",
             "subtotal": "Subtotal",

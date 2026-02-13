@@ -4,7 +4,8 @@
         "language": "اردو",
         "toggleLanguage": "English",
         "items": "اشیاء",
-        "amount": "رقم"
+        "amount": "رقم",
+        "billTo": "بل بنام"
     },
     "inventory": {
         "title": "انوینٹری",
@@ -44,6 +45,7 @@
         "details": {
             "title": "انوائس کی تفصیلات",
             "invoiceNo": "انوائس نمبر",
+            "date": "تاریخ",
             "dueDate": "ادائیگی کی تاریخ",
             "items": "اشیاء",
             "subtotal": "سب ٹوٹل",

@@ -15,6 +15,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Printer, ArrowLeft } from "lucide-react";
 import PrintButton from "@/components/invoices/PrintButton";
+import DownloadInvoiceButton from "@/components/invoices/DownloadInvoiceButton";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,10 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                         {tActions("view")}
                     </Button>
                 </Link>
-                <PrintButton />
+                <div className="flex gap-2">
+                    <DownloadInvoiceButton invoice={invoice} company={invoice.company} />
+                    <PrintButton />
+                </div>
             </div>
 
             <div className="card print:p-0 print:border-0 print:shadow-none print:w-full print:bg-white print:text-black" style={{ padding: isUrdu ? '28px' : '24px' }}>

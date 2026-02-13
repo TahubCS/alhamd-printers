@@ -76,16 +76,25 @@ export async function getInvoiceById(id: string) {
         const serializedInvoice = {
             ...invoice,
             subtotal: Number(invoice.subtotal),
-            taxTotal: Number(invoice.taxTotal || 0), // Handle potential null/undefined for old records if any
+            taxTotal: Number(invoice.taxTotal || 0),
             total: Number(invoice.total),
+            customer: {
+                ...invoice.customer,
+                creditLimit: invoice.customer.creditLimit ? Number(invoice.customer.creditLimit) : null,
+                balance: Number(invoice.customer.balance),
+            },
             items: invoice.items.map(item => ({
                 ...item,
                 rate: Number(item.rate),
                 amount: Number(item.amount),
                 gstRate: Number(item.gstRate || 0),
+                sizeWidth: item.sizeWidth ? Number(item.sizeWidth) : null,
+                sizeLength: item.sizeLength ? Number(item.sizeLength) : null,
+                sizeDepth: item.sizeDepth ? Number(item.sizeDepth) : null,
                 product: item.product ? {
                     ...item.product,
                     basePrice: Number(item.product.basePrice),
+                    buttonPrice: item.product.buttonPrice ? Number(item.product.buttonPrice) : null,
                 } : null
             })),
             ledgerEntry: invoice.ledgerEntry ? {
