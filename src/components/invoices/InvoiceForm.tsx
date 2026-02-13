@@ -1,3 +1,5 @@
+"use client";
+
 import { createInvoice } from "@/actions/invoice";
 import { getCustomers } from "@/actions/customer";
 import { getProducts } from "@/actions/product";

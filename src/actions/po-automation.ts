@@ -96,20 +96,31 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
 
         // 1. Create New Customer if needed with ALL extracted data
         if (!customerId && (data.newCustomerName || data.customer?.name)) {
-            const customerData = {
-                name: data.newCustomerName || data.customer?.name || "Unknown Customer",
-                nameUrdu: data.newCustomerNameUrdu || data.customer?.nameUrdu || null,
-                phone: data.newCustomerPhone || data.customer?.phone || null,
-                email: data.newCustomerEmail || data.customer?.email || `auto-${Date.now()}@placeholder.com`,
-                address: data.newCustomerAddress || data.customer?.address || null,
-                ntn: data.newCustomerNTN || data.customer?.ntn || null,
-                gstNumber: data.newCustomerGST || data.customer?.gstNumber || null,
-            };
+            const customerName = data.newCustomerName || data.customer?.name || "Unknown Customer";
 
-            const newCustomer = await prisma.customer.create({
-                data: customerData
+            // Check if a customer with this name already exists
+            const existingCustomer = await prisma.customer.findFirst({
+                where: { name: { equals: customerName, mode: "insensitive" } },
             });
-            customerId = newCustomer.id;
+
+            if (existingCustomer) {
+                customerId = existingCustomer.id;
+            } else {
+                const customerData = {
+                    name: customerName,
+                    nameUrdu: data.newCustomerNameUrdu || data.customer?.nameUrdu || null,
+                    phone: data.newCustomerPhone || data.customer?.phone || null,
+                    email: data.newCustomerEmail || data.customer?.email || `auto-${Date.now()}@placeholder.com`,
+                    address: data.newCustomerAddress || data.customer?.address || null,
+                    ntn: data.newCustomerNTN || data.customer?.ntn || null,
+                    gstNumber: data.newCustomerGST || data.customer?.gstNumber || null,
+                };
+
+                const newCustomer = await prisma.customer.create({
+                    data: customerData
+                });
+                customerId = newCustomer.id;
+            }
         }
 
         if (!customerId) {

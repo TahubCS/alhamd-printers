@@ -8,6 +8,14 @@ export async function createCustomer(data: CustomerFormValues) {
     try {
         const validated = CustomerSchema.parse(data);
 
+        // Check for duplicate name
+        const existingByName = await prisma.customer.findUnique({
+            where: { name: validated.name },
+        });
+        if (existingByName) {
+            return { success: false, error: `A customer named "${validated.name}" already exists` };
+        }
+
         // Check for duplicate email if provided
         if (validated.email) {
             const existing = await prisma.customer.findUnique({
@@ -219,5 +227,56 @@ export async function getCustomerLedger(customerId: string) {
     } catch (error) {
         console.error("Get Ledger Error:", error);
         return { success: false, error: "Failed to fetch ledger" };
+    }
+}
+
+export async function deleteCustomer(id: string) {
+    try {
+        // Safety check: count related records
+        const customer = await prisma.customer.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        invoices: true,
+                        customerPurchaseOrders: true,
+                        ledgerEntries: true,
+                        payments: true,
+                        cheques: true,
+                    }
+                }
+            }
+        });
+
+        if (!customer) {
+            return { success: false, error: "Customer not found" };
+        }
+
+        const relatedCount = customer._count.invoices
+            + customer._count.customerPurchaseOrders
+            + customer._count.ledgerEntries
+            + customer._count.payments
+            + customer._count.cheques;
+
+        if (relatedCount > 0) {
+            const details: string[] = [];
+            if (customer._count.invoices > 0) details.push(`${customer._count.invoices} invoice(s)`);
+            if (customer._count.customerPurchaseOrders > 0) details.push(`${customer._count.customerPurchaseOrders} purchase order(s)`);
+            if (customer._count.ledgerEntries > 0) details.push(`${customer._count.ledgerEntries} ledger entry(ies)`);
+            if (customer._count.payments > 0) details.push(`${customer._count.payments} payment(s)`);
+            if (customer._count.cheques > 0) details.push(`${customer._count.cheques} cheque(s)`);
+            return {
+                success: false,
+                error: `Cannot delete "${customer.name}": has ${details.join(", ")}. Remove related records first.`
+            };
+        }
+
+        await prisma.customer.delete({ where: { id } });
+
+        revalidatePath("/customers");
+        return { success: true };
+    } catch (error) {
+        console.error("Delete Customer Error:", error);
+        return { success: false, error: "Failed to delete customer" };
     }
 }

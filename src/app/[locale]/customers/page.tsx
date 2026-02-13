@@ -14,6 +14,7 @@ import {
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import DeleteCustomerButton from "@/components/customers/DeleteCustomerButton";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +132,11 @@ export default async function CustomersPage({ params, searchParams }: PageProps)
                                                         {tActions("view")}
                                                     </Button>
                                                 </Link>
+                                                <DeleteCustomerButton
+                                                    customerId={customer.id}
+                                                    customerName={customer.name}
+                                                    label={tActions("delete")}
+                                                />
                                             </div>
                                         </TableCell>
                                     </TableRow>
