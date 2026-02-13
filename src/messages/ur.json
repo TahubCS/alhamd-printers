@@ -6,6 +6,10 @@
         "items": "اشیاء",
         "amount": "رقم"
     },
+    "inventory": {
+        "title": "انوینٹری",
+        "subtitle": "خام مال اور اسٹاک کی سطح کو ٹریک کریں"
+    },
     "nav": {
         "dashboard": "ڈیش بورڈ",
         "customers": "صارف",

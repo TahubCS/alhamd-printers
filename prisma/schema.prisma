@@ -175,6 +175,49 @@ enum PaymentMethod {
 }
 
 // ============================================
+// INVENTORY - Raw Materials
+// ============================================
+
+model RawMaterial {
+  id                String                 @id @default(cuid())
+  name              String                 @unique
+  type              RawMaterialType
+  attributes        Json?                  // Flexible attributes: thickness, quality, size
+  quantity          Decimal                @default(0) @db.Decimal(15, 2)
+  minimumStockLevel Decimal                @default(0) @db.Decimal(15, 2)
+  transactions      InventoryTransaction[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+}
+
+enum RawMaterialType {
+  ROLL
+  HANGER
+  BUTTON
+  TAPE
+  OTHER
+}
+
+model InventoryTransaction {
+  id                      String                 @id @default(cuid())
+  date                    DateTime               @default(now())
+  materialId              String
+  material                RawMaterial            @relation(fields: [materialId], references: [id])
+  type                    TransactionType
+  quantity                Decimal                @db.Decimal(15, 2) // + for IN, - for OUT (logic handled in code, or store absolute and use type)
+  notes                   String?
+  customerPurchaseOrderId String? // Link to PO (Usage)
+  customerPurchaseOrder   CustomerPurchaseOrder? @relation(fields: [customerPurchaseOrderId], references: [id])
+  createdAt               DateTime               @default(now())
+}
+
+enum TransactionType {
+  IN          // Purchase
+  OUT         // Usage
+  ADJUSTMENT  // Correction
+}
+
+// ============================================
 // CHEQUE - with status tracking
 // ============================================
 model Cheque {
@@ -312,6 +355,7 @@ model CustomerPurchaseOrder {
   invoices        Invoice[]
   createdAt       DateTime                    @default(now())
   updatedAt       DateTime                    @updatedAt
+  inventoryTransactions InventoryTransaction[]
 }
 
 enum CustomerPOStatus {

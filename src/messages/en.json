@@ -6,6 +6,10 @@
         "items": "Items",
         "amount": "Amount"
     },
+    "inventory": {
+        "title": "Inventory Management",
+        "subtitle": "Track raw materials and stock levels"
+    },
     "nav": {
         "dashboard": "Dashboard",
         "customers": "Customers",
