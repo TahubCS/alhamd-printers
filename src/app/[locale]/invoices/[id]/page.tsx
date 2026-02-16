@@ -1,4 +1,4 @@
-import { getInvoiceById } from "@/actions/invoice";
+import { fetchInvoiceDetails } from "@/actions/invoice";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -29,7 +29,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
     const tCommon = await getTranslations("common");
     const tActions = await getTranslations("actions");
 
-    const { success, data: invoice, error } = await getInvoiceById(id);
+    const { success, data: invoice, error } = await fetchInvoiceDetails(id);
 
     if (!success || !invoice) {
         notFound();

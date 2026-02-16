@@ -53,8 +53,9 @@ export async function getInvoices(filters?: {
     }
 }
 
-export async function getInvoiceById(id: string) {
+export async function fetchInvoiceDetails(id: string) {
     try {
+        console.log("Fetching Invoice Details for:", id);
         const invoice = await prisma.invoice.findUnique({
             where: { id },
             include: {
@@ -73,18 +74,38 @@ export async function getInvoiceById(id: string) {
             return { success: false, error: "Invoice not found" };
         }
 
+        // Explicit serialization to ensure no Decimals leak
         const serializedInvoice = {
-            ...invoice,
+            id: invoice.id,
+            invoiceNo: invoice.invoiceNo,
+            date: invoice.date,
+            dueDate: invoice.dueDate,
+            creditDays: invoice.creditDays,
+            status: invoice.status,
+            notes: invoice.notes,
+            createdAt: invoice.createdAt,
+            updatedAt: invoice.updatedAt,
+            companyId: invoice.companyId,
+            customerId: invoice.customerId,
+            customerPurchaseOrderId: invoice.customerPurchaseOrderId,
+
+            // Decimal Fields
             subtotal: Number(invoice.subtotal),
             taxTotal: Number(invoice.taxTotal || 0),
             total: Number(invoice.total),
+
+            // Relations
+            company: invoice.company,
             customer: {
                 ...invoice.customer,
                 creditLimit: invoice.customer.creditLimit ? Number(invoice.customer.creditLimit) : null,
                 balance: Number(invoice.customer.balance),
             },
             items: invoice.items.map(item => ({
-                ...item,
+                id: item.id,
+                description: item.description,
+                quantity: item.quantity,
+                // Decimals
                 rate: Number(item.rate),
                 amount: Number(item.amount),
                 gstRate: Number(item.gstRate || 0),
