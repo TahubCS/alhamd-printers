@@ -180,7 +180,12 @@
         "amount": "رقم",
         "actions": "اقدامات",
         "total": "کل",
+        "grandTotal": "مجموعی کل",
         "noExpenses": "ابھی تک کوئی خرچہ درج نہیں",
+        "filterByMonth": "فلٹر",
+        "allMonths": "تمام مہینے",
+        "applyFilter": "لاگو",
+        "clearFilter": "صاف",
         "form": {
             "createTitle": "نیا خرچہ درج کریں",
             "createSubtitle": "خرچے کی تفصیل خود درج کریں یا رسید اسکین کریں",

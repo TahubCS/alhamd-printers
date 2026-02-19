@@ -17,14 +17,20 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
     params: Promise<{ locale: string }>;
+    searchParams: Promise<{ month?: string; year?: string }>;
 }
 
-export default async function ExpensesPage({ params }: PageProps) {
+export default async function ExpensesPage({ params, searchParams }: PageProps) {
     const { locale } = await params;
+    const { month, year } = await searchParams;
     const t = await getTranslations("expenses");
     const tActions = await getTranslations("actions");
 
-    const { success, data: expenses, total, error } = await getExpenses();
+    const filters: { month?: number; year?: number } = {};
+    if (month) filters.month = parseInt(month);
+    if (year) filters.year = parseInt(year);
+
+    const { success, data: expenses, total, error } = await getExpenses(filters);
 
     if (!success || !expenses) {
         console.error(error);
@@ -38,6 +44,47 @@ export default async function ExpensesPage({ params }: PageProps) {
             currency: "PKR",
             minimumFractionDigits: 0,
         }).format(amount);
+
+    // Group expenses by month
+    interface ExpenseEntry {
+        id: string;
+        date: Date;
+        description: string;
+        amount: number;
+        receiptUrl: string | null;
+        createdAt: Date;
+    }
+
+    const groupedExpenses: Record<string, { expenses: ExpenseEntry[]; total: number; label: string }> = {};
+
+    if (expenses) {
+        for (const expense of expenses) {
+            const d = new Date(expense.date);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+            const label = d.toLocaleDateString(isUrdu ? "ur-PK" : "en-PK", {
+                month: "long",
+                year: "numeric",
+            });
+
+            if (!groupedExpenses[key]) {
+                groupedExpenses[key] = { expenses: [], total: 0, label };
+            }
+            groupedExpenses[key].expenses.push(expense);
+            groupedExpenses[key].total += expense.amount;
+        }
+    }
+
+    // Sort groups by date (newest first)
+    const sortedGroups = Object.entries(groupedExpenses).sort(
+        ([a], [b]) => b.localeCompare(a)
+    );
+
+    // Generate month options for filter
+    const currentYear = new Date().getFullYear();
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+    ];
 
     return (
         <div className="animate-fade-in" style={{ padding: isUrdu ? "16px" : "12px" }}>
@@ -71,30 +118,109 @@ export default async function ExpensesPage({ params }: PageProps) {
                 </Link>
             </div>
 
-            <Card className="card" style={{ padding: isUrdu ? "28px" : "24px" }}>
-                <CardHeader className="p-0 mb-6">
-                    <CardTitle className="text-xl text-[var(--color-text-primary)]">
-                        {t("recentExpenses")}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t("date")}</TableHead>
-                                <TableHead>{t("description")}</TableHead>
-                                <TableHead className="text-right">{t("amount")}</TableHead>
-                                <TableHead className="text-right w-[80px]">{t("actions")}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {expenses && expenses.length > 0 ? (
-                                <>
-                                    {expenses.map((expense) => (
+            {/* Month/Year Filter */}
+            <Card className="card mb-6" style={{ padding: "16px" }}>
+                <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+                        {t("filterByMonth")}:
+                    </span>
+                    <div className="flex gap-2">
+                        <select
+                            className="input text-sm h-9 w-[160px]"
+                            defaultValue={month || ""}
+                            onChange={undefined}
+                            name="month-filter"
+                            id="month-filter"
+                        >
+                            <option value="">{t("allMonths")}</option>
+                            {months.map((m, i) => (
+                                <option key={i + 1} value={i + 1}>
+                                    {m}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            className="input text-sm h-9 w-[100px]"
+                            defaultValue={year || String(currentYear)}
+                            name="year-filter"
+                            id="year-filter"
+                        >
+                            {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
+                                <option key={y} value={y}>
+                                    {y}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <Link
+                        id="apply-filter-link"
+                        href={`/${locale}/expenses`}
+                        className="hidden"
+                    />
+                    <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={undefined}
+                        id="apply-filter-btn"
+                    >
+                        {t("applyFilter")}
+                    </Button>
+                    {(month || year) && (
+                        <Link href={`/${locale}/expenses`}>
+                            <Button size="sm" variant="outline">
+                                {t("clearFilter")}
+                            </Button>
+                        </Link>
+                    )}
+                </div>
+                {/* Client-side filter script */}
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                            document.getElementById('apply-filter-btn')?.addEventListener('click', function() {
+                                var m = document.getElementById('month-filter').value;
+                                var y = document.getElementById('year-filter').value;
+                                var params = new URLSearchParams();
+                                if (m) params.set('month', m);
+                                if (y) params.set('year', y);
+                                window.location.href = '/${locale}/expenses' + (params.toString() ? '?' + params.toString() : '');
+                            });
+                        `,
+                    }}
+                />
+            </Card>
+
+            {/* Grouped Expenses */}
+            {sortedGroups.length > 0 ? (
+                sortedGroups.map(([key, group]) => (
+                    <Card key={key} className="card mb-4" style={{ padding: isUrdu ? "28px" : "24px" }}>
+                        <CardHeader className="p-0 mb-4">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg text-[var(--color-text-primary)]">
+                                    {group.label}
+                                </CardTitle>
+                                <span className="text-sm font-bold text-[var(--color-primary)]">
+                                    {formatCurrency(group.total)}
+                                </span>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>{t("date")}</TableHead>
+                                        <TableHead>{t("description")}</TableHead>
+                                        <TableHead className="text-right">{t("amount")}</TableHead>
+                                        <TableHead className="text-right w-[80px]">{t("actions")}</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {group.expenses.map((expense) => (
                                         <TableRow key={expense.id}>
                                             <TableCell className="text-[var(--color-text-secondary)]">
                                                 {new Date(expense.date).toLocaleDateString(
-                                                    isUrdu ? "ur-PK" : "en-PK"
+                                                    isUrdu ? "ur-PK" : "en-PK",
+                                                    { day: "numeric", month: "short" }
                                                 )}
                                             </TableCell>
                                             <TableCell className="font-medium text-[var(--color-text-primary)]">
@@ -108,31 +234,32 @@ export default async function ExpensesPage({ params }: PageProps) {
                                             </TableCell>
                                         </TableRow>
                                     ))}
-                                    {/* Total Row */}
-                                    <TableRow className="border-t-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-                                        <TableCell className="font-bold text-[var(--color-text-primary)]" colSpan={2}>
-                                            {t("total")}
-                                        </TableCell>
-                                        <TableCell className="text-right font-bold text-lg text-[var(--color-primary)]">
-                                            {formatCurrency(total || 0)}
-                                        </TableCell>
-                                        <TableCell />
-                                    </TableRow>
-                                </>
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={4}
-                                        className="h-24 text-center text-[var(--color-text-muted)]"
-                                    >
-                                        {t("noExpenses")}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                ))
+            ) : (
+                <Card className="card" style={{ padding: "24px" }}>
+                    <div className="text-center py-12 text-[var(--color-text-muted)]">
+                        {t("noExpenses")}
+                    </div>
+                </Card>
+            )}
+
+            {/* Grand Total */}
+            {sortedGroups.length > 0 && (
+                <Card className="card" style={{ padding: "16px 24px" }}>
+                    <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-[var(--color-text-primary)]">
+                            {t("grandTotal")}
+                        </span>
+                        <span className="text-xl font-bold text-[var(--color-primary)]">
+                            {formatCurrency(total || 0)}
+                        </span>
+                    </div>
+                </Card>
+            )}
         </div>
     );
 }

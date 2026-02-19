@@ -180,7 +180,12 @@
         "amount": "Amount",
         "actions": "Actions",
         "total": "Total",
+        "grandTotal": "Grand Total",
         "noExpenses": "No expenses recorded yet",
+        "filterByMonth": "Filter",
+        "allMonths": "All Months",
+        "applyFilter": "Apply",
+        "clearFilter": "Clear",
         "form": {
             "createTitle": "Add New Expense",
             "createSubtitle": "Record a business expense manually or scan a receipt",
