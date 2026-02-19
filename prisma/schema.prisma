@@ -399,6 +399,19 @@ model DeliveryChallan {
 }
 
 // ============================================
+// EXPENSE - Simple expense tracking
+// ============================================
+model Expense {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  description String
+  amount      Decimal  @db.Decimal(15, 2)
+  receiptUrl  String?  // Optional: stored receipt image path
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
 // BANK ACCOUNT - Secure storage
 // ============================================
 model BankAccount {

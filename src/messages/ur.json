@@ -169,5 +169,31 @@
             "depositDate": "جمع کرانے کی تاریخ",
             "clearDate": "کلیئرنس کی تاریخ"
         }
+    },
+    "expenses": {
+        "title": "اخراجات",
+        "subtitle": "کاروباری اخراجات کا ریکارڈ رکھیں",
+        "newExpense": "نیا خرچہ",
+        "recentExpenses": "حالیہ اخراجات",
+        "date": "تاریخ",
+        "description": "تفصیل",
+        "amount": "رقم",
+        "actions": "اقدامات",
+        "total": "کل",
+        "noExpenses": "ابھی تک کوئی خرچہ درج نہیں",
+        "form": {
+            "createTitle": "نیا خرچہ درج کریں",
+            "createSubtitle": "خرچے کی تفصیل خود درج کریں یا رسید اسکین کریں",
+            "date": "تاریخ",
+            "description": "تفصیل",
+            "descriptionPlaceholder": "مثلاً ڈیزل، بجلی کا بل، دفتری سامان",
+            "amount": "رقم",
+            "descriptionRequired": "تفصیل درج کریں",
+            "amountRequired": "رقم صفر سے زیادہ ہونی چاہیے",
+            "scanReceipt": "AI سے رسید اسکین کریں",
+            "scanDescription": "رسید کی تصویر اپ لوڈ کریں تاکہ تفصیل اور رقم خودکار بھری جائے",
+            "uploadReceipt": "رسید اپ لوڈ کریں",
+            "scanning": "اسکین ہو رہا ہے..."
+        }
     }
 }

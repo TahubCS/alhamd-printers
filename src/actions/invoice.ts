@@ -43,7 +43,14 @@ export async function getInvoices(filters?: {
         const serializedInvoices = invoices.map(invoice => ({
             ...invoice,
             subtotal: Number(invoice.subtotal),
+            taxTotal: Number(invoice.taxTotal || 0),
             total: Number(invoice.total),
+            // Serialize nested customer Decimals
+            customer: invoice.customer ? {
+                ...invoice.customer,
+                creditLimit: invoice.customer.creditLimit ? Number(invoice.customer.creditLimit) : null,
+                balance: Number(invoice.customer.balance),
+            } : undefined,
         }));
 
         return { success: true, data: serializedInvoices };
@@ -53,9 +60,9 @@ export async function getInvoices(filters?: {
     }
 }
 
-export async function fetchInvoiceDetails(id: string) {
+export async function getInvoiceDetailsForPDF(id: string) {
     try {
-        console.log("Fetching Invoice Details for:", id);
+        console.log("--- DEBUG: Fetching Invoice For PDF (v2) ---", id);
         const invoice = await prisma.invoice.findUnique({
             where: { id },
             include: {
@@ -89,7 +96,7 @@ export async function fetchInvoiceDetails(id: string) {
             customerId: invoice.customerId,
             customerPurchaseOrderId: invoice.customerPurchaseOrderId,
 
-            // Decimal Fields
+            // Decimal Fields (Explicitly Cast to Number)
             subtotal: Number(invoice.subtotal),
             taxTotal: Number(invoice.taxTotal || 0),
             total: Number(invoice.total),
@@ -128,7 +135,7 @@ export async function fetchInvoiceDetails(id: string) {
 
         return { success: true, data: serializedInvoice };
     } catch (error) {
-        console.error("Get Invoice Error:", error);
+        console.error("Get Invoice Details Error:", error);
         return { success: false, error: "Failed to fetch invoice" };
     }
 }
@@ -258,10 +265,95 @@ export async function createInvoice(data: {
 
         revalidatePath('/invoices');
         revalidatePath('/customers');
-        return { success: true, data: result };
+
+        // Serialize the result to prevent Decimal objects from leaking to client components
+        return {
+            success: true,
+            data: {
+                id: result.id,
+                invoiceNo: result.invoiceNo,
+                subtotal: Number(result.subtotal),
+                taxTotal: Number(result.taxTotal || 0),
+                total: Number(result.total),
+            }
+        };
 
     } catch (error) {
         console.error("Create Invoice Error:", error);
         return { success: false, error: "Failed to create invoice" };
+    }
+}
+
+export async function deleteInvoice(id: string) {
+    try {
+        // 1. Fetch the invoice with its relations
+        const invoice = await prisma.invoice.findUnique({
+            where: { id },
+            include: {
+                ledgerEntry: true,
+                items: true,
+            }
+        });
+
+        if (!invoice) {
+            return { success: false, error: "Invoice not found" };
+        }
+
+        // 2. Perform atomic reversal transaction
+        await prisma.$transaction(async (tx) => {
+            // 2a. Reverse customer balance (subtract what was debited)
+            await tx.customer.update({
+                where: { id: invoice.customerId },
+                data: {
+                    balance: { decrement: Number(invoice.total) }
+                }
+            });
+
+            // 2b. Delete ledger entry (if exists)
+            if (invoice.ledgerEntry) {
+                await tx.ledgerEntry.delete({
+                    where: { id: invoice.ledgerEntry.id }
+                });
+            }
+
+            // 2c. Delete invoice items
+            await tx.invoiceItem.deleteMany({
+                where: { invoiceId: id }
+            });
+
+            // 2d. Delete the invoice
+            await tx.invoice.delete({
+                where: { id }
+            });
+
+            // 2e. If linked to a PO, re-evaluate PO status
+            if (invoice.customerPurchaseOrderId) {
+                const po = await tx.customerPurchaseOrder.findUnique({
+                    where: { id: invoice.customerPurchaseOrderId },
+                    select: { totalAmount: true, invoices: { select: { total: true } } }
+                });
+
+                if (po) {
+                    const remainingTotal = po.invoices.reduce(
+                        (sum: number, inv: { total: any }) => sum + Number(inv.total), 0
+                    );
+                    const status = remainingTotal >= Number(po.totalAmount) ? 'CLOSED' :
+                        remainingTotal > 0 ? 'PARTIAL' : 'OPEN';
+
+                    await tx.customerPurchaseOrder.update({
+                        where: { id: invoice.customerPurchaseOrderId },
+                        data: { status }
+                    });
+                }
+            }
+        });
+
+        revalidatePath('/invoices');
+        revalidatePath('/customers');
+        return { success: true };
+
+    } catch (error) {
+        console.error("Delete Invoice Error:", error);
+        return { success: false, error: "Failed to delete invoice" };
     }
 }

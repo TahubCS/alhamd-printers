@@ -169,5 +169,31 @@
             "depositDate": "Deposit Date",
             "clearDate": "Clearance Date"
         }
+    },
+    "expenses": {
+        "title": "Expenses",
+        "subtitle": "Track and manage business expenses",
+        "newExpense": "Add Expense",
+        "recentExpenses": "Recent Expenses",
+        "date": "Date",
+        "description": "Description",
+        "amount": "Amount",
+        "actions": "Actions",
+        "total": "Total",
+        "noExpenses": "No expenses recorded yet",
+        "form": {
+            "createTitle": "Add New Expense",
+            "createSubtitle": "Record a business expense manually or scan a receipt",
+            "date": "Date",
+            "description": "Description",
+            "descriptionPlaceholder": "e.g. Diesel fuel, Electricity bill, Office supplies",
+            "amount": "Amount",
+            "descriptionRequired": "Please enter a description",
+            "amountRequired": "Amount must be greater than 0",
+            "scanReceipt": "Scan Receipt with AI",
+            "scanDescription": "Upload a photo of a receipt to auto-fill the description and amount",
+            "uploadReceipt": "Upload Receipt",
+            "scanning": "Scanning..."
+        }
     }
 }
