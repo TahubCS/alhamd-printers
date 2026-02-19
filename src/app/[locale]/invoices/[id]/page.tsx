@@ -1,4 +1,4 @@
-import { fetchInvoiceDetails } from "@/actions/invoice";
+import { getInvoiceDetailsForPDF } from "@/actions/invoice";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -16,6 +16,7 @@ import { notFound } from "next/navigation";
 import { Printer, ArrowLeft } from "lucide-react";
 import PrintButton from "@/components/invoices/PrintButton";
 import DownloadInvoiceButton from "@/components/invoices/DownloadInvoiceButton";
+import DeleteInvoiceButton from "@/components/invoices/DeleteInvoiceButton";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
     const tCommon = await getTranslations("common");
     const tActions = await getTranslations("actions");
 
-    const { success, data: invoice, error } = await fetchInvoiceDetails(id);
+    const { success, data: invoice, error } = await getInvoiceDetailsForPDF(id);
 
     if (!success || !invoice) {
         notFound();
@@ -50,6 +51,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                 <div className="flex gap-2">
                     <DownloadInvoiceButton invoice={invoice} company={invoice.company} />
                     <PrintButton />
+                    <DeleteInvoiceButton invoiceId={invoice.id} invoiceNo={invoice.invoiceNo} />
                 </div>
             </div>
 

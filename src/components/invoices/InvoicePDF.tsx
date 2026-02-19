@@ -187,12 +187,20 @@ const InvoicePDF = ({ invoice, company }: InvoicePDFProps) => {
                 <View style={styles.footer}>
                     <View style={styles.totalRow}>
                         <Text style={styles.totalLabel}>Subtotal</Text>
-                        <Text style={styles.totalValue}>{Number(invoice.subtotal || invoice.totalAmount).toFixed(2)}</Text>
+                        <Text style={styles.totalValue}>{formatCurrency(invoice.subtotal)}</Text>
                     </View>
-                    {/* Add Tax/Discount here if needed */}
+
+                    {/* Tax / GST - Displayed as accumulated total */}
+                    {Number(invoice.taxTotal) > 0 && (
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>GST / Tax</Text>
+                            <Text style={styles.totalValue}>{formatCurrency(invoice.taxTotal)}</Text>
+                        </View>
+                    )}
+
                     <View style={[styles.totalRow, { marginTop: 4 }]}>
                         <Text style={[styles.totalLabel, styles.finalTotal]}>Total</Text>
-                        <Text style={[styles.totalValue, styles.finalTotal]}>{Number(invoice.totalAmount).toFixed(2)}</Text>
+                        <Text style={[styles.totalValue, styles.finalTotal]}>{formatCurrency(invoice.total)}</Text>
                     </View>
                 </View>
 
