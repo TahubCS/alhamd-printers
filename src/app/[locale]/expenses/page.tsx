@@ -10,6 +10,7 @@ import {
     TableRow,
 } from "@/components/ui/Table";
 import DeleteExpenseButton from "@/components/expenses/DeleteExpenseButton";
+import ExpenseFilter from "@/components/expenses/ExpenseFilter";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
@@ -120,74 +121,7 @@ export default async function ExpensesPage({ params, searchParams }: PageProps) 
 
             {/* Month/Year Filter */}
             <Card className="card mb-6" style={{ padding: "16px" }}>
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-sm font-medium text-[var(--color-text-secondary)]">
-                        {t("filterByMonth")}:
-                    </span>
-                    <div className="flex gap-2">
-                        <select
-                            className="input text-sm h-9 w-[160px]"
-                            defaultValue={month || ""}
-                            onChange={undefined}
-                            name="month-filter"
-                            id="month-filter"
-                        >
-                            <option value="">{t("allMonths")}</option>
-                            {months.map((m, i) => (
-                                <option key={i + 1} value={i + 1}>
-                                    {m}
-                                </option>
-                            ))}
-                        </select>
-                        <select
-                            className="input text-sm h-9 w-[100px]"
-                            defaultValue={year || String(currentYear)}
-                            name="year-filter"
-                            id="year-filter"
-                        >
-                            {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
-                                <option key={y} value={y}>
-                                    {y}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <Link
-                        id="apply-filter-link"
-                        href={`/${locale}/expenses`}
-                        className="hidden"
-                    />
-                    <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={undefined}
-                        id="apply-filter-btn"
-                    >
-                        {t("applyFilter")}
-                    </Button>
-                    {(month || year) && (
-                        <Link href={`/${locale}/expenses`}>
-                            <Button size="sm" variant="outline">
-                                {t("clearFilter")}
-                            </Button>
-                        </Link>
-                    )}
-                </div>
-                {/* Client-side filter script */}
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                            document.getElementById('apply-filter-btn')?.addEventListener('click', function() {
-                                var m = document.getElementById('month-filter').value;
-                                var y = document.getElementById('year-filter').value;
-                                var params = new URLSearchParams();
-                                if (m) params.set('month', m);
-                                if (y) params.set('year', y);
-                                window.location.href = '/${locale}/expenses' + (params.toString() ? '?' + params.toString() : '');
-                            });
-                        `,
-                    }}
-                />
+                <ExpenseFilter />
             </Card>
 
             {/* Grouped Expenses */}

@@ -198,7 +198,9 @@
             "scanReceipt": "Scan Receipt with AI",
             "scanDescription": "Upload a photo of a receipt to auto-fill the description and amount",
             "uploadReceipt": "Upload Receipt",
-            "scanning": "Scanning..."
+            "scanning": "Scanning...",
+            "dropHere": "Drop your receipt here!",
+            "dragDrop": "or drag & drop a receipt image here"
         }
     }
 }

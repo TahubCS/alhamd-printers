@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { createExpense, scanReceipt } from "@/actions/expense";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Upload, Sparkles, Loader2 } from "lucide-react";
+import { Upload, Sparkles, Loader2, ImageIcon } from "lucide-react";
 
 export default function ExpenseForm() {
     const t = useTranslations("expenses.form");
@@ -20,15 +20,19 @@ export default function ExpenseForm() {
     const [amount, setAmount] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const [scanResult, setScanResult] = useState<{
         confidence: number;
         description: string;
         amount: number;
     } | null>(null);
 
-    const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    // Shared scan logic for both file input and drag-drop
+    const processFile = useCallback(async (file: File) => {
+        if (!file.type.startsWith("image/")) {
+            alert("Please upload an image file");
+            return;
+        }
 
         setIsScanning(true);
         setScanResult(null);
@@ -59,7 +63,34 @@ export default function ExpenseForm() {
         } finally {
             setIsScanning(false);
         }
+    }, []);
+
+    const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) processFile(file);
     };
+
+    // Drag & Drop handlers
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    }, []);
+
+    const handleDrop = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const file = e.dataTransfer.files?.[0];
+        if (file) processFile(file);
+    }, [processFile]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -103,38 +134,60 @@ export default function ExpenseForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {/* AI Receipt Scanner */}
-            <Card className="border-dashed border-2 border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5">
-                <CardContent className="p-6">
+            {/* AI Receipt Scanner — Drag & Drop Zone */}
+            <Card
+                className={`border-dashed border-2 transition-all duration-200 ${isDragging
+                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/15 scale-[1.01]"
+                        : "border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5"
+                    }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
+                <CardContent className="p-8">
                     <div className="text-center space-y-4">
                         <div className="flex items-center justify-center gap-2 text-[var(--color-primary)]">
                             <Sparkles className="w-5 h-5" />
                             <h3 className="text-lg font-semibold">{t("scanReceipt")}</h3>
                         </div>
-                        <p className="text-sm text-[var(--color-text-secondary)]">
-                            {t("scanDescription")}
-                        </p>
 
-                        <label className="inline-flex items-center gap-2 px-6 py-3 rounded-lg cursor-pointer bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity">
-                            {isScanning ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
+                        {isDragging ? (
+                            <div className="py-6">
+                                <ImageIcon className="w-12 h-12 mx-auto text-[var(--color-primary)] animate-bounce" />
+                                <p className="text-lg font-medium text-[var(--color-primary)] mt-3">
+                                    {t("dropHere")}
+                                </p>
+                            </div>
+                        ) : isScanning ? (
+                            <div className="py-6">
+                                <Loader2 className="w-10 h-10 mx-auto text-[var(--color-primary)] animate-spin" />
+                                <p className="text-sm text-[var(--color-text-secondary)] mt-3">
                                     {t("scanning")}
-                                </>
-                            ) : (
-                                <>
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-sm text-[var(--color-text-secondary)]">
+                                    {t("scanDescription")}
+                                </p>
+
+                                <label className="inline-flex items-center gap-2 px-6 py-3 rounded-lg cursor-pointer bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity">
                                     <Upload className="w-5 h-5" />
                                     {t("uploadReceipt")}
-                                </>
-                            )}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleScan}
-                                disabled={isScanning}
-                                className="hidden"
-                            />
-                        </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileInput}
+                                        disabled={isScanning}
+                                        className="hidden"
+                                    />
+                                </label>
+
+                                <p className="text-xs text-[var(--color-text-muted)]">
+                                    {t("dragDrop")}
+                                </p>
+                            </>
+                        )}
 
                         {scanResult && (
                             <div className="mt-4 p-3 rounded-lg bg-[var(--color-bg-secondary)] text-left text-sm">
