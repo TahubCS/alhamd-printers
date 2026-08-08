@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "WageType" ADD VALUE 'ADJUSTMENT';

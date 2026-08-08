@@ -282,6 +282,7 @@ enum WageType {
   PAYMENT
   ADVANCE
   DEDUCTION
+  ADJUSTMENT
 }
 
 // ============================================
@@ -410,6 +411,7 @@ model Expense {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
 
 // ============================================
 // BANK ACCOUNT - Secure storage

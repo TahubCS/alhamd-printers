@@ -97,13 +97,13 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-medium text-[var(--color-text-primary)]">{invoice.customer.name}</div>
+                                            <div className="font-medium text-[var(--color-text-primary)]">{invoice.customer?.name || "—"}</div>
                                             <div className="text-xs text-[var(--color-text-muted)] font-noto-nastaliq">
-                                                {invoice.customer.nameUrdu}
+                                                {invoice.customer?.nameUrdu}
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-sm text-[var(--color-text-secondary)]">
-                                            {invoice.company.name}
+                                            {invoice.company?.name || "—"}
                                         </TableCell>
                                         <TableCell className="text-right font-medium text-[var(--color-text-primary)]">
                                             {new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {

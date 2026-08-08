@@ -202,5 +202,56 @@
             "dropHere": "Drop your receipt here!",
             "dragDrop": "or drag & drop a receipt image here"
         }
+    },
+    "wages": {
+        "title": "Wages Tracking",
+        "subtitle": "Manage worker balances, advances, and weekly wage payments",
+        "addWorker": "Add Worker",
+        "workerList": "Workers",
+        "name": "Name",
+        "phone": "Phone",
+        "balance": "Balance",
+        "lastActivity": "Last Activity",
+        "actions": "Actions",
+        "owes": "Owes",
+        "owed": "Owed",
+        "settled": "Settled",
+        "viewLedger": "View Ledger",
+        "noWorkers": "No workers added yet",
+        "currentBalance": "Current Balance",
+        "workerOwes": "Worker owes company",
+        "companyOwes": "Company owes worker",
+        "date": "Date",
+        "credit": "Credit (+)",
+        "debit": "Debit (-)",
+        "noEntries": "No wage entries recorded",
+        "recordEntry": "Record Entry",
+        "form": {
+            "createTitle": "Add New Worker",
+            "createSubtitle": "Create a profile to start tracking wages and advances",
+            "name": "Full Name",
+            "namePlaceholder": "e.g. Ali Ahmed",
+            "nameRequired": "Name is required",
+            "phone": "Phone Number",
+            "phonePlaceholder": "Optional"
+        },
+        "entry": {
+            "recordTitle": "Record Wage Entry",
+            "recordSubtitle": "Add a payment, advance, deduction, or adjustment",
+            "worker": "Worker",
+            "type": "Entry Type",
+            "wagePayment": "Wage Payment",
+            "advance": "Advance",
+            "deduction": "Deduction",
+            "adjustment": "Adjustment",
+            "amount": "Amount",
+            "amountRequired": "Amount must be greater than 0",
+            "advanceNote": "Advance will be added to the worker's debt balance.",
+            "paymentNote": "Payment will reduce the worker's debt balance.",
+            "date": "Date",
+            "description": "Notes",
+            "descriptionPlaceholder": "Optional details about this entry",
+            "notes": "Notes"
+        }
     }
 }
