@@ -10,8 +10,6 @@ import {
     Package,
     Wallet,
     Banknote,
-    BarChart3,
-    Settings,
     Printer,
     CreditCard
 } from 'lucide-react';
@@ -25,11 +23,9 @@ const navItems = [
     { key: 'inventory', href: '/inventory', icon: Package },
     { key: 'expenses', href: '/expenses', icon: Wallet },
     { key: 'wages', href: '/wages', icon: Banknote },
-    { key: 'reports', href: '/reports', icon: BarChart3 },
-    { key: 'settings', href: '/settings', icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ open = false, onNavigate }: { open?: boolean; onNavigate?: () => void }) {
     const t = useTranslations('nav');
     const tCommon = useTranslations('common');
     const pathname = usePathname();
@@ -37,7 +33,7 @@ export default function Sidebar() {
     const isUrdu = locale === 'ur';
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${open ? 'open' : ''}`} aria-label={t('primaryNavigation')}>
             {/* Logo */}
             <div className={`${isUrdu ? 'p-8' : 'p-6'} border-b border-[var(--color-border)]`}>
                 <div className={`flex items-center ${isUrdu ? 'gap-4' : 'gap-3'}`}>
@@ -66,6 +62,8 @@ export default function Sidebar() {
                             key={item.key}
                             href={item.href}
                             className={`nav-item relative ${isActive ? 'active' : ''}`}
+                            aria-current={isActive ? 'page' : undefined}
+                            onClick={onNavigate}
                         >
                             <Icon className={`${isUrdu ? 'w-6 h-6' : 'w-5 h-5'}`} />
                             <span>{t(item.key)}</span>

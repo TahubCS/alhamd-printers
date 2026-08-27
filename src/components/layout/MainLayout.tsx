@@ -13,19 +13,20 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <div className="main-layout">
-            <Sidebar />
+            <Sidebar open={sidebarOpen} onNavigate={() => setSidebarOpen(false)} />
 
             {/* Mobile overlay */}
             {sidebarOpen && (
                 <div
                     className="fixed inset-0 bg-black/50 z-30 md:hidden"
                     onClick={() => setSidebarOpen(false)}
+                    aria-hidden="true"
                 />
             )}
 
             <main className="main-content">
-                <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-                <div className="page-content px-8 py-8 w-full">
+                <Navbar sidebarOpen={sidebarOpen} onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+                <div className="page-content w-full">
                     {children}
                 </div>
             </main>
