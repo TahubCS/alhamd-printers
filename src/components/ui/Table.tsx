@@ -2,7 +2,7 @@ import { HTMLAttributes, forwardRef, TableHTMLAttributes, TdHTMLAttributes, ThHT
 
 export const Table = forwardRef<HTMLTableElement, TableHTMLAttributes<HTMLTableElement>>(
     ({ className = '', ...props }, ref) => (
-        <div className="relative w-full overflow-auto">
+        <div className="relative w-full overflow-auto" tabIndex={0} role="region" aria-label="Scrollable data table">
             <table
                 ref={ref}
                 className={`w-full caption-bottom text-sm ${className}`}
@@ -46,7 +46,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLT
     ({ className = '', ...props }, ref) => (
         <th
             ref={ref}
-            className={`h-12 px-4 text-left align-middle font-medium text-[var(--color-text-secondary)] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${className}`}
+            className={`h-12 px-4 text-start align-middle font-medium text-[var(--color-text-secondary)] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${className}`}
             {...props}
         />
     )

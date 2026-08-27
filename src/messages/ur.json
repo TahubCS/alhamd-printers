@@ -5,7 +5,9 @@
         "toggleLanguage": "English",
         "items": "اشیاء",
         "amount": "رقم",
-        "billTo": "بل بنام"
+        "billTo": "بل بنام",
+        "openMenu": "نیویگیشن مینو کھولیں",
+        "switchLanguage": "انگریزی میں تبدیل کریں"
     },
     "inventory": {
         "title": "انوینٹری",
@@ -21,7 +23,8 @@
         "expenses": "اخراجات",
         "wages": "تنخواہیں",
         "reports": "رپورٹس",
-        "settings": "ترتیبات"
+        "settings": "ترتیبات",
+        "primaryNavigation": "مرکزی نیویگیشن"
     },
     "invoices": {
         "title": "انوائسز",
@@ -84,7 +87,19 @@
         "todaySales": "آج کی فروخت",
         "pendingInvoices": "زیر التواء بل",
         "totalCustomers": "کل گاہک",
-        "lowStock": "کم اسٹاک"
+        "lowStock": "کم اسٹاک",
+        "eyebrow": "کاروباری ورک اسپیس",
+        "workspace": "کاروباری ریکارڈ سنبھالیں",
+        "workspaceDescription": "ریکارڈ دیکھنے یا اپ ڈیٹ کرنے کے لیے شعبہ منتخب کریں۔",
+        "modules": {
+            "customers": "گاہکوں کے پروفائل اور بیلنس",
+            "orders": "پرچیز آرڈرز اور تکمیل",
+            "invoices": "بلنگ اور ادائیگی کی حیثیت",
+            "cheques": "چیکس اور کلیئرنس",
+            "inventory": "خام مال اور اسٹاک کی نقل و حرکت",
+            "expenses": "کاروباری اخراجات کا ریکارڈ",
+            "wages": "مزدوروں کی اجرت اور ایڈوانس"
+        }
     },
     "actions": {
         "newInvoice": "نیا بل",
@@ -253,5 +268,10 @@
             "descriptionPlaceholder": "اس اندراج کے بارے میں اضافی معلومات",
             "notes": "تفصیل"
         }
+    },
+    "errors": {
+        "title": "کچھ خرابی ہو گئی",
+        "message": "صفحہ لوڈ نہیں ہو سکا۔ آپ کے ریکارڈ میں کوئی تبدیلی نہیں کی گئی۔",
+        "retry": "دوبارہ کوشش کریں"
     }
 }

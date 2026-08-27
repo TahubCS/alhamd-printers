@@ -10,7 +10,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         return (
             <div className="w-full">
                 {label && (
-                    <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor={id} className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
                         {label}
                     </label>
                 )}
@@ -19,9 +19,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     ref={ref}
                     className={`input ${error ? 'border-red-500 focus-visible:ring-red-500' : ''
                         } ${className}`}
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error && id ? `${id}-error` : undefined}
                     {...props}
                 />
-                {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+                {error && <p id={id ? `${id}-error` : undefined} role="alert" className="mt-2 text-sm text-[var(--color-error)]">{error}</p>}
             </div>
         );
     }
