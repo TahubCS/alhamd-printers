@@ -2,7 +2,8 @@
 
 A bilingual operations application for a printing and packaging business. It replaces disconnected paper records and spreadsheets with one workspace for customer accounts, purchasing, invoicing, cheque clearance, raw-material inventory, expenses, and worker wages.
 
-> This repository is a portfolio demonstration of a real-client management workflow. It contains no production credentials and the interface should only be demonstrated with anonymized or seeded data.
+> [!IMPORTANT]
+> **Public demo and client deployment:** The version deployed on Vercel is a portfolio demonstration that uses seeded, fictional, or anonymized data. It is not connected to Al-Hamd Printers’ operational database. The application used for actual business operations runs locally for the client and stores real records in a privately managed PostgreSQL database. Real customer information, invoices, payments, inventory figures, expenses, employee records, documents, and analytics are not exposed through the public demo.
 
 ## The problem and solution
 
@@ -94,9 +95,11 @@ The repository currently has no automated test script. Add server-action unit te
 
 English and Urdu message catalogs have matching business concepts. Urdu activates document-level RTL direction and an Urdu-appropriate font stack; direction-aware spacing and alignment are used for navigation and tables. When adding a feature, add both catalog entries and review it at mobile and desktop widths in both locales.
 
-## Demo and screenshots
+## Public demo and data privacy
 
-A safe demo can be created with `npx prisma db seed`. Screenshots are intentionally not stored until a fully anonymized demo database and repeatable capture workflow are available. Recommended portfolio captures are the dashboard, an empty-state list, an invoice form, and the same table in Urdu RTL—never use real names, phone numbers, addresses, documents, balances, or account details.
+Visitors can explore the Vercel deployment to review the application's interface, bilingual workflows, and responsive behavior. Its records and figures are seeded, fictional, or anonymized demonstration content; they do not represent Al-Hamd Printers’ customers, finances, inventory, workforce, performance, or actual business operations.
+
+The client’s operational installation runs locally and uses a privately managed PostgreSQL database that is separate from the public demo. Do not upload real client documents or enter real customer, payment, employee, or operational information into the Vercel deployment. Screenshots and other portfolio materials must likewise use demonstration data and must not expose private client records.
 
 ## Production readiness notes
 
