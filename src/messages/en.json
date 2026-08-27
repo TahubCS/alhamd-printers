@@ -5,7 +5,9 @@
         "toggleLanguage": "اردو",
         "items": "Items",
         "amount": "Amount",
-        "billTo": "Bill To"
+        "billTo": "Bill To",
+        "openMenu": "Open navigation menu",
+        "switchLanguage": "Switch to Urdu"
     },
     "inventory": {
         "title": "Inventory Management",
@@ -21,7 +23,8 @@
         "expenses": "Expenses",
         "wages": "Wages",
         "reports": "Reports",
-        "settings": "Settings"
+        "settings": "Settings",
+        "primaryNavigation": "Primary navigation"
     },
     "invoices": {
         "title": "Invoices",
@@ -84,7 +87,19 @@
         "todaySales": "Today's Sales",
         "pendingInvoices": "Pending Invoices",
         "totalCustomers": "Total Customers",
-        "lowStock": "Low Stock Items"
+        "lowStock": "Low Stock Items",
+        "eyebrow": "Operations workspace",
+        "workspace": "Manage business records",
+        "workspaceDescription": "Choose an area to review or update its records.",
+        "modules": {
+            "customers": "Customer profiles and balances",
+            "orders": "Purchase orders and fulfillment",
+            "invoices": "Billing and payment status",
+            "cheques": "Cheque lifecycle and clearance",
+            "inventory": "Materials and stock movements",
+            "expenses": "Business expense records",
+            "wages": "Worker wages and advances"
+        }
     },
     "actions": {
         "newInvoice": "New Invoice",
@@ -253,5 +268,10 @@
             "descriptionPlaceholder": "Optional details about this entry",
             "notes": "Notes"
         }
+    },
+    "errors": {
+        "title": "Something went wrong",
+        "message": "The page could not be loaded. Your records have not been changed.",
+        "retry": "Try again"
     }
 }
