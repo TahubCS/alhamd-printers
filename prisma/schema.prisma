@@ -189,6 +189,7 @@ model RawMaterial {
   quantity          Decimal                @default(0) @db.Decimal(15, 2)
   minimumStockLevel Decimal                @default(0) @db.Decimal(15, 2)
   transactions      InventoryTransaction[]
+  purchaseItems     PurchaseOrderItem[]
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
 }
@@ -211,6 +212,8 @@ model InventoryTransaction {
   notes                   String?
   customerPurchaseOrderId String? // Link to PO (Usage)
   customerPurchaseOrder   CustomerPurchaseOrder? @relation(fields: [customerPurchaseOrderId], references: [id])
+  purchaseOrderId         String? // Link to supplier PO (Receipt)
+  purchaseOrder           PurchaseOrder?         @relation(fields: [purchaseOrderId], references: [id])
   createdAt               DateTime               @default(now())
 }
 
@@ -290,33 +293,35 @@ enum WageType {
 // SUPPLIER - for PVC rolls
 // ============================================
 model Supplier {
-  id             String          @id @default(cuid())
+  id             String            @id @default(cuid())
   name           String
   nameUrdu       String?
   phone          String?
   address        String?
-  balance        Decimal         @default(0) @db.Decimal(15, 2)
+  balance        Decimal           @default(0) @db.Decimal(15, 2) // Amount we owe the supplier
   notes          String?
   purchaseOrders PurchaseOrder[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  payments       SupplierPayment[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 }
 
 // ============================================
 // PURCHASE ORDER - buying raw materials
 // ============================================
 model PurchaseOrder {
-  id         String              @id @default(cuid())
-  poNumber   Int                 @unique @default(autoincrement())
-  date       DateTime            @default(now())
-  supplierId String
-  supplier   Supplier            @relation(fields: [supplierId], references: [id])
-  items      PurchaseOrderItem[]
-  total      Decimal             @db.Decimal(15, 2)
-  status     PurchaseStatus      @default(PENDING)
-  notes      String?
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
+  id                    String                 @id @default(cuid())
+  poNumber              Int                    @unique @default(autoincrement())
+  date                  DateTime               @default(now())
+  supplierId            String
+  supplier              Supplier               @relation(fields: [supplierId], references: [id])
+  items                 PurchaseOrderItem[]
+  total                 Decimal                @db.Decimal(15, 2)
+  status                PurchaseStatus         @default(PENDING)
+  notes                 String?
+  inventoryTransactions InventoryTransaction[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
 }
 
 enum PurchaseStatus {
@@ -330,14 +335,32 @@ enum PurchaseStatus {
 // PURCHASE ORDER ITEM
 // ============================================
 model PurchaseOrderItem {
-  id              String        @id @default(cuid())
-  purchaseOrderId String
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-  description     String
-  specification   String?
-  quantity        Int
-  rate            Decimal       @db.Decimal(10, 2)
-  amount          Decimal       @db.Decimal(15, 2)
+  id               String        @id @default(cuid())
+  purchaseOrderId  String
+  purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  description      String
+  specification    String?
+  quantity         Int
+  receivedQuantity Int           @default(0)
+  rate             Decimal       @db.Decimal(10, 2)
+  amount           Decimal       @db.Decimal(15, 2)
+  materialId       String? // Received goods are added to this raw material's stock
+  material         RawMaterial?  @relation(fields: [materialId], references: [id])
+}
+
+// ============================================
+// SUPPLIER PAYMENT - money paid against the supplier balance
+// ============================================
+model SupplierPayment {
+  id         String        @id @default(cuid())
+  date       DateTime      @default(now())
+  supplierId String
+  supplier   Supplier      @relation(fields: [supplierId], references: [id])
+  amount     Decimal       @db.Decimal(15, 2)
+  method     PaymentMethod
+  reference  String? // Cheque number or transfer reference
+  notes      String?
+  createdAt  DateTime      @default(now())
 }
 
 // ============================================

@@ -14,7 +14,8 @@ import {
     CreditCard,
     Settings,
     Boxes,
-    Truck
+    Truck,
+    Factory
 } from 'lucide-react';
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
     { key: 'products', href: '/products', icon: Boxes },
     { key: 'cheques', href: '/cheques', icon: CreditCard },
     { key: 'inventory', href: '/inventory', icon: Package },
+    { key: 'suppliers', href: '/suppliers', icon: Factory },
     { key: 'expenses', href: '/expenses', icon: Wallet },
     { key: 'wages', href: '/wages', icon: Banknote },
     { key: 'settings', href: '/settings', icon: Settings },

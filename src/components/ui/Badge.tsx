@@ -18,7 +18,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
         return (
             <span
                 ref={ref}
-                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${variants[variant]} ${className}`}
+                className={`inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${variants[variant]} ${className}`}
                 {...props}
             />
         );
