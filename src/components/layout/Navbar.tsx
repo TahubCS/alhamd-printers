@@ -1,9 +1,8 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
-import { useRouter, usePathname } from '@/i18n/navigation';
-import { Globe, Menu } from 'lucide-react';
-import { useTransition } from 'react';
+import { LogOut, Menu } from 'lucide-react';
+import LanguageToggle from './LanguageToggle';
 
 interface NavbarProps {
     onMenuClick?: () => void;
@@ -12,17 +11,8 @@ interface NavbarProps {
 
 export default function Navbar({ onMenuClick, sidebarOpen = false }: NavbarProps) {
     const t = useTranslations('common');
+    const tAuth = useTranslations('auth');
     const locale = useLocale();
-    const router = useRouter();
-    const pathname = usePathname();
-    const [isPending, startTransition] = useTransition();
-
-    const toggleLanguage = () => {
-        const newLocale = locale === 'en' ? 'ur' : 'en';
-        startTransition(() => {
-            router.replace(pathname, { locale: newLocale });
-        });
-    };
 
     return (
         <header className="navbar">
@@ -40,17 +30,15 @@ export default function Navbar({ onMenuClick, sidebarOpen = false }: NavbarProps
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-                {/* Language Toggle */}
-                <button
-                    onClick={toggleLanguage}
-                    disabled={isPending}
-                    className="lang-toggle"
-                    aria-label={t('switchLanguage')}
-                >
-                    <Globe className="w-4 h-4" />
-                    <span>{t('toggleLanguage')}</span>
-                </button>
+                <LanguageToggle />
 
+                <form method="post" action="/api/auth/logout">
+                    <input type="hidden" name="locale" value={locale} />
+                    <button type="submit" className="lang-toggle" aria-label={tAuth('logout')}>
+                        <LogOut className="w-4 h-4 rtl:-scale-x-100" aria-hidden="true" />
+                        <span className="hidden sm:inline">{tAuth('logout')}</span>
+                    </button>
+                </form>
             </div>
         </header>
     );

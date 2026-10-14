@@ -273,5 +273,20 @@
         "title": "Something went wrong",
         "message": "The page could not be loaded. Your records have not been changed.",
         "retry": "Try again"
+    },
+    "auth": {
+        "title": "Sign in",
+        "subtitle": "Sign in to manage Al-Hamd Printers records.",
+        "username": "Username",
+        "password": "Password",
+        "submit": "Sign in",
+        "logout": "Sign out",
+        "demoTitle": "Public demo account",
+        "demoNotice": "This demo uses fictional data. Do not enter real customer or business information.",
+        "errors": {
+            "invalid": "Incorrect username or password.",
+            "throttled": "Too many failed attempts. Please wait 15 minutes and try again.",
+            "config": "Sign-in is not configured. Set AUTH_USERNAME, AUTH_PASSWORD and AUTH_SECRET."
+        }
     }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from '@/i18n/navigation';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
@@ -10,6 +11,12 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const pathname = usePathname();
+
+    // The login screen renders on its own, without navigation chrome
+    if (pathname === '/login') {
+        return <>{children}</>;
+    }
 
     return (
         <div className="main-layout">

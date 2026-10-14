@@ -34,6 +34,7 @@ jobs:
       # Throwaway CI database; no real data is ever used here
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/alhamd_test?schema=public
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/alhamd_test?schema=public
+      AUTH_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
       NEXT_TELEMETRY_DISABLED: 1
 
     steps:
