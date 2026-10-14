@@ -84,27 +84,54 @@
     "dashboard": {
         "title": "Dashboard",
         "welcome": "Welcome to Al-Hamd Printers",
-        "subtitle": "Manage your business operations efficiently",
-        "quickActions": "Quick Actions",
-        "recentActivity": "Recent Activity",
-        "todaySales": "Today's Sales",
-        "pendingInvoices": "Pending Invoices",
-        "totalCustomers": "Total Customers",
-        "lowStock": "Low Stock Items",
-        "eyebrow": "Operations workspace",
-        "workspace": "Manage business records",
-        "workspaceDescription": "Choose an area to review or update its records.",
-        "modules": {
-            "customers": "Customer profiles and balances",
-            "orders": "Purchase orders and fulfillment",
-            "invoices": "Billing and payment status",
-            "cheques": "Cheque lifecycle and clearance",
-            "inventory": "Materials and stock movements",
-            "expenses": "Business expense records",
-            "wages": "Worker wages and advances",
-            "products": "Bag specifications and prices",
-            "challans": "Dispatch notes for deliveries",
-            "suppliers": "Purchases and payables"
+        "subtitle": "Today's money, stock and follow-ups at a glance.",
+        "eyebrow": "Operations overview",
+        "quickActions": "Quick actions",
+        "kpiLabel": "Key figures",
+        "viewAll": "View all",
+        "loadError": "The dashboard figures could not be loaded. Your records have not been changed.",
+        "actions": {
+            "invoice": "Invoice",
+            "order": "Customer PO",
+            "challan": "Challan",
+            "expense": "Expense",
+            "purchase": "Purchase"
+        },
+        "kpi": {
+            "receivables": "Receivable from customers",
+            "customersOwing": "{count} of {total} customers have a balance",
+            "overdue": "Overdue invoices",
+            "overdueDetail": "Past their due date and not fully paid",
+            "cheques": "Cheques awaiting clearance",
+            "chequesDetail": "{count, plural, =0 {No cheques pending} one {# cheque received or deposited} other {# cheques received or deposited}}",
+            "sales": "Invoiced this month",
+            "expenses": "Expenses this month",
+            "thisMonth": "Since the 1st of this month",
+            "payables": "Payable to suppliers",
+            "suppliersOwed": "{count, plural, =0 {Nothing owed} one {Owed to # supplier} other {Owed to # suppliers}}"
+        },
+        "trend": {
+            "title": "Sales and expenses",
+            "subtitle": "Invoiced amount and recorded expenses for the last six months",
+            "sales": "Invoiced",
+            "expenses": "Expenses",
+            "month": "Month",
+            "legend": "Series",
+            "showTable": "Show as table",
+            "showChart": "Show as chart",
+            "ariaLabel": "Bar chart of invoiced amount and expenses per month for the last six months",
+            "empty": "No invoices or expenses in this period yet"
+        },
+        "lowStock": {
+            "title": "Low stock",
+            "none": "All materials are above their alert level.",
+            "level": "{quantity} / min {minimum}"
+        },
+        "overdue": {
+            "title": "Overdue invoices",
+            "none": "No overdue invoices. Well done!",
+            "invoice": "Invoice #{number}",
+            "days": "{count, plural, one {# day overdue} other {# days overdue}}"
         }
     },
     "actions": {

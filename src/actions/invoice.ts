@@ -27,7 +27,19 @@ export async function getInvoices(filters?: {
         }
 
         if (filters?.status && filters.status in InvoiceStatus) {
-            where.status = filters.status as InvoiceStatus;
+            const now = new Date();
+            if (filters.status === "OVERDUE") {
+                // Stored status can still read PENDING/PARTIAL after the due date passes
+                where.OR = [
+                    { status: "OVERDUE" },
+                    { status: { in: ["PENDING", "PARTIAL"] }, dueDate: { lt: now } },
+                ];
+            } else if (filters.status === "PENDING" || filters.status === "PARTIAL") {
+                where.status = filters.status;
+                where.dueDate = { gte: now };
+            } else {
+                where.status = filters.status as InvoiceStatus;
+            }
         }
 
         const invoices = await prisma.invoice.findMany({
