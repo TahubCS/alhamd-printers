@@ -528,6 +528,11 @@ input[type="number"] {
   gap: var(--spacing-md);
 }
 
+/* Grid columns may shrink below their content so tables scroll instead of overflowing */
+.grid > * {
+  min-width: 0;
+}
+
 @media (min-width: 640px) {
   .grid {
     gap: var(--spacing-lg);
