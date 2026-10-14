@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { canTransitionCheque } from "@/lib/finance";
+import { syncInvoiceStatuses } from "@/lib/invoice-status";
 
 // Validation schema for payment
 const PaymentSchema = z.object({
@@ -49,18 +51,14 @@ export async function recordPayment(data: PaymentFormValues) {
             }
         }
 
-        // Get current customer balance
         const customer = await prisma.customer.findUnique({
             where: { id: validated.customerId },
-            select: { balance: true, name: true }
+            select: { id: true }
         });
 
         if (!customer) {
             return { success: false, error: "Customer not found" };
         }
-
-        const currentBalance = Number(customer.balance);
-        const newBalance = currentBalance - validated.amount; // Payment reduces balance
 
         // Perform atomic transaction
         const result = await prisma.$transaction(async (tx) => {
@@ -96,10 +94,11 @@ export async function recordPayment(data: PaymentFormValues) {
                 }
             });
 
-            // 3. Update customer balance
-            await tx.customer.update({
+            // 3. Update customer balance atomically (a read-then-write here
+            // could lose a concurrent invoice or payment)
+            const updated = await tx.customer.update({
                 where: { id: validated.customerId },
-                data: { balance: newBalance }
+                data: { balance: { decrement: validated.amount } }
             });
 
             // 4. Create ledger entry (Credit side - customer paid us)
@@ -116,16 +115,20 @@ export async function recordPayment(data: PaymentFormValues) {
                     particulars: particularsText,
                     debit: 0,
                     credit: validated.amount,
-                    balance: newBalance,
+                    balance: updated.balance,
                     date: new Date(),
                 }
             });
+
+            await syncInvoiceStatuses(tx, validated.customerId);
 
             return payment;
         });
 
         revalidatePath(`/customers/${validated.customerId}`);
         revalidatePath("/customers");
+        revalidatePath("/invoices");
+        revalidatePath("/cheques");
 
         return {
             success: true,
@@ -226,61 +229,59 @@ export async function updateChequeStatus(
     newStatus: "DEPOSITED" | "CLEARED" | "BOUNCED"
 ) {
     try {
-        const updateData: {
-            status: typeof newStatus;
-            depositDate?: Date;
-            clearDate?: Date;
-        } = { status: newStatus };
-
-        // Set appropriate date based on status
-        if (newStatus === "DEPOSITED") {
-            updateData.depositDate = new Date();
-        } else if (newStatus === "CLEARED") {
-            updateData.clearDate = new Date();
+        const existing = await prisma.cheque.findUnique({
+            where: { id: chequeId },
+            include: { payment: true }
+        });
+        if (!existing) {
+            return { success: false, error: "Cheque not found" };
+        }
+        if (!canTransitionCheque(existing.status, newStatus)) {
+            return { success: false, error: `A ${existing.status.toLowerCase()} cheque cannot be marked ${newStatus.toLowerCase()}` };
         }
 
-        const cheque = await prisma.cheque.update({
-            where: { id: chequeId },
-            data: updateData
-        });
-
-        // If cheque bounced, we need to reverse the payment
-        if (newStatus === "BOUNCED") {
-            // Get the payment associated with this cheque
-            const payment = await prisma.payment.findUnique({
-                where: { chequeId: chequeId },
-                include: { customer: true }
+        const now = new Date();
+        const cheque = await prisma.$transaction(async (tx) => {
+            // Guard on the current status so two clicks can't bounce the same cheque twice
+            const { count } = await tx.cheque.updateMany({
+                where: { id: chequeId, status: existing.status },
+                data: {
+                    status: newStatus,
+                    ...(newStatus === "DEPOSITED" && { depositDate: now }),
+                    ...(newStatus === "CLEARED" && { clearDate: now }),
+                }
             });
+            if (count === 0) {
+                throw new Error("Cheque status changed concurrently");
+            }
 
-            if (payment) {
-                const currentBalance = Number(payment.customer.balance);
-                const newBalance = currentBalance + Number(payment.amount); // Add back the amount
-
-                await prisma.$transaction(async (tx) => {
-                    // Update customer balance (add back the amount)
-                    await tx.customer.update({
-                        where: { id: payment.customerId },
-                        data: { balance: newBalance }
-                    });
-
-                    // Create a debit entry for the bounced cheque
-                    await tx.ledgerEntry.create({
-                        data: {
-                            customerId: payment.customerId,
-                            particulars: `Cheque bounced (#${cheque.chequeNo})`,
-                            debit: Number(payment.amount),
-                            credit: 0,
-                            balance: newBalance,
-                            date: new Date(),
-                        }
-                    });
+            // A bounced cheque reverses the payment it was recorded against
+            if (newStatus === "BOUNCED" && existing.payment) {
+                const customer = await tx.customer.update({
+                    where: { id: existing.customerId },
+                    data: { balance: { increment: existing.payment.amount } }
                 });
 
-                revalidatePath(`/customers/${payment.customerId}`);
+                await tx.ledgerEntry.create({
+                    data: {
+                        customerId: existing.customerId,
+                        particulars: `Cheque bounced (#${existing.chequeNo})`,
+                        debit: existing.payment.amount,
+                        credit: 0,
+                        balance: customer.balance,
+                        date: now,
+                    }
+                });
+
+                await syncInvoiceStatuses(tx, existing.customerId);
             }
-        }
+
+            return tx.cheque.findUniqueOrThrow({ where: { id: chequeId } });
+        });
 
         revalidatePath("/cheques");
+        revalidatePath("/invoices");
+        revalidatePath(`/customers/${existing.customerId}`);
 
         return {
             success: true,

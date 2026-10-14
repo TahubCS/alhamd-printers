@@ -22,8 +22,10 @@ export default function ChequeActionMenu({ chequeId, currentStatus }: ChequeActi
 
         setIsLoading(true);
         try {
-            await updateChequeStatus(chequeId, status);
-            // Router refresh is handled in server action but we can do it here too just in case
+            const result = await updateChequeStatus(chequeId, status);
+            if (!result.success) {
+                alert(result.error);
+            }
             router.refresh();
         } catch (error) {
             console.error(error);

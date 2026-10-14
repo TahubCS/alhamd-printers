@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { InvoiceStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { addDays, calculateDocumentTotals, effectiveInvoiceStatus } from "@/lib/finance";
+import { syncInvoiceStatuses, syncPOStatus } from "@/lib/invoice-status";
 
 export async function getInvoices(filters?: {
     companyId?: string;
@@ -47,6 +49,7 @@ export async function getInvoices(filters?: {
             subtotal: Number(invoice.subtotal),
             taxTotal: Number(invoice.taxTotal || 0),
             total: Number(invoice.total),
+            status: effectiveInvoiceStatus(invoice.status, invoice.dueDate),
             // Serialize nested customer Decimals
             customer: invoice.customer ? {
                 ...invoice.customer,
@@ -89,7 +92,7 @@ export async function getInvoiceDetailsForPDF(id: string) {
             date: invoice.date,
             dueDate: invoice.dueDate,
             creditDays: invoice.creditDays,
-            status: invoice.status,
+            status: effectiveInvoiceStatus(invoice.status, invoice.dueDate),
             notes: invoice.notes,
             createdAt: invoice.createdAt,
             updatedAt: invoice.updatedAt,
@@ -152,55 +155,51 @@ export async function createInvoice(data: {
         description: string;
         quantity: number;
         rate: number;
-        amount: number;
-        gstRate?: number; // New optional field
+        amount?: number;
+        gstRate?: number;
         sizeWidth?: number;
         sizeLength?: number;
         sizeDepth?: number;
     }[];
 }) {
     try {
-        // Calculate due date
-        const dueDate = new Date(data.date);
-        dueDate.setDate(dueDate.getDate() + data.creditDays);
+        const items = data.items.filter(item => item.description.trim() !== "");
+        if (items.length === 0) {
+            return { success: false, error: "Add at least one line item" };
+        }
+        if (items.some(item => !(item.quantity > 0) || item.rate < 0 || (item.gstRate ?? 0) < 0)) {
+            return { success: false, error: "Quantities must be positive and rates cannot be negative" };
+        }
+        if (data.creditDays < 0) {
+            return { success: false, error: "Credit days cannot be negative" };
+        }
 
-        // Calculate totals
-        const subtotal = data.items.reduce((sum, item) => sum + item.amount, 0);
+        const dueDate = addDays(data.date, data.creditDays);
 
-        // Calculate Tax Total
-        // Formula: item.amount * (item.gstRate / 100)
-        let taxTotal = 0;
-        data.items.forEach(item => {
-            const rate = item.gstRate || 0;
-            const tax = (item.amount * rate) / 100;
-            taxTotal += tax;
-        });
+        // Never trust client-side amounts: recompute every line and the totals here
+        const { lines, subtotal, taxTotal, total } = calculateDocumentTotals(items);
 
-        const total = subtotal + taxTotal;
-
-        // Transaction: Invoice -> Items -> Ledger -> Customer Balance
         const result = await prisma.$transaction(async (tx) => {
-            // 1. Create Invoice
             const invoice = await tx.invoice.create({
                 data: {
                     companyId: data.companyId,
                     customerId: data.customerId,
                     date: data.date,
-                    dueDate: dueDate,
+                    dueDate,
                     creditDays: data.creditDays,
                     notes: data.notes,
-                    subtotal: subtotal,
-                    taxTotal: taxTotal,
-                    total: total,
+                    subtotal,
+                    taxTotal,
+                    total,
                     status: 'PENDING',
-                    customerPurchaseOrderId: data.customerPurchaseOrderId, // Linked PO
+                    customerPurchaseOrderId: data.customerPurchaseOrderId,
                     items: {
-                        create: data.items.map(item => ({
+                        create: items.map((item, index) => ({
                             productId: item.productId || null,
-                            description: item.description,
+                            description: item.description.trim(),
                             quantity: item.quantity,
                             rate: item.rate,
-                            amount: item.amount,
+                            amount: lines[index].amount,
                             gstRate: item.gstRate || 0,
                             sizeWidth: item.sizeWidth,
                             sizeLength: item.sizeLength,
@@ -210,64 +209,36 @@ export async function createInvoice(data: {
                 }
             });
 
-            // 1b. Update PO Status if linked
-            if (data.customerPurchaseOrderId) {
-                const po = await tx.customerPurchaseOrder.findUnique({
-                    where: { id: data.customerPurchaseOrderId },
-                    select: { totalAmount: true, invoices: { select: { total: true } } }
-                });
+            // Debit the customer and record the running balance atomically
+            const customer = await tx.customer.update({
+                where: { id: data.customerId },
+                data: { balance: { increment: total } }
+            });
 
-                if (po) {
-                    // Calculate total invoiced amount for this PO (including past invoices)
-                    const pastTotal = po.invoices.reduce((sum: number, inv: { total: Prisma.Decimal }) => sum + Number(inv.total), 0);
-                    const newTotalInvoiced = pastTotal + total; // current invoice total
-
-                    // Check if fully invoiced
-                    const status = newTotalInvoiced >= Number(po.totalAmount) ? 'CLOSED' : 'PARTIAL';
-
-                    await tx.customerPurchaseOrder.update({
-                        where: { id: data.customerPurchaseOrderId },
-                        data: { status }
-                    });
-                }
-            }
-
-            // 2. Create Ledger Entry (Debit Customer)
-            const ledgerEntry = await tx.ledgerEntry.create({
+            await tx.ledgerEntry.create({
                 data: {
                     date: data.date,
                     customerId: data.customerId,
                     invoiceId: invoice.id,
                     particulars: `Invoice #${invoice.invoiceNo}`,
-                    debit: total, // Debit the full amount including tax
+                    debit: total,
                     credit: 0,
-                    balance: 0
-                }
-            });
-
-            // 3. Update Customer Balance
-            const customer = await tx.customer.update({
-                where: { id: data.customerId },
-                data: {
-                    balance: { increment: total }
-                }
-            });
-
-            // 4. Update the Ledger Entry with the new running balance
-            await tx.ledgerEntry.update({
-                where: { id: ledgerEntry.id },
-                data: {
                     balance: customer.balance
                 }
             });
+
+            if (data.customerPurchaseOrderId) {
+                await syncPOStatus(tx, data.customerPurchaseOrderId);
+            }
+            await syncInvoiceStatuses(tx, data.customerId);
 
             return invoice;
         });
 
         revalidatePath('/invoices');
         revalidatePath('/customers');
+        revalidatePath('/purchase-orders');
 
-        // Serialize the result to prevent Decimal objects from leaking to client components
         return {
             success: true,
             data: {
@@ -287,70 +258,50 @@ export async function createInvoice(data: {
 
 export async function deleteInvoice(id: string) {
     try {
-        // 1. Fetch the invoice with its relations
         const invoice = await prisma.invoice.findUnique({
             where: { id },
-            include: {
-                ledgerEntry: true,
-                items: true,
-            }
+            include: { ledgerEntry: true }
         });
 
         if (!invoice) {
             return { success: false, error: "Invoice not found" };
         }
 
-        // 2. Perform atomic reversal transaction
         await prisma.$transaction(async (tx) => {
-            // 2a. Reverse customer balance (subtract what was debited)
-            await tx.customer.update({
+            const customer = await tx.customer.update({
                 where: { id: invoice.customerId },
-                data: {
-                    balance: { decrement: Number(invoice.total) }
-                }
+                data: { balance: { decrement: invoice.total } }
             });
 
-            // 2b. Delete ledger entry (if exists)
+            // Keep the original debit in the ledger and post a reversing credit,
+            // so the statement still explains how the balance moved
             if (invoice.ledgerEntry) {
-                await tx.ledgerEntry.delete({
-                    where: { id: invoice.ledgerEntry.id }
+                await tx.ledgerEntry.update({
+                    where: { id: invoice.ledgerEntry.id },
+                    data: { invoiceId: null }
                 });
             }
-
-            // 2c. Delete invoice items
-            await tx.invoiceItem.deleteMany({
-                where: { invoiceId: id }
-            });
-
-            // 2d. Delete the invoice
-            await tx.invoice.delete({
-                where: { id }
-            });
-
-            // 2e. If linked to a PO, re-evaluate PO status
-            if (invoice.customerPurchaseOrderId) {
-                const po = await tx.customerPurchaseOrder.findUnique({
-                    where: { id: invoice.customerPurchaseOrderId },
-                    select: { totalAmount: true, invoices: { select: { total: true } } }
-                });
-
-                if (po) {
-                    const remainingTotal = po.invoices.reduce(
-                        (sum: number, inv: { total: Prisma.Decimal }) => sum + Number(inv.total), 0
-                    );
-                    const status = remainingTotal >= Number(po.totalAmount) ? 'CLOSED' :
-                        remainingTotal > 0 ? 'PARTIAL' : 'OPEN';
-
-                    await tx.customerPurchaseOrder.update({
-                        where: { id: invoice.customerPurchaseOrderId },
-                        data: { status }
-                    });
+            await tx.ledgerEntry.create({
+                data: {
+                    customerId: invoice.customerId,
+                    particulars: `Invoice #${invoice.invoiceNo} cancelled`,
+                    debit: 0,
+                    credit: invoice.total,
+                    balance: customer.balance,
                 }
+            });
+
+            await tx.invoice.delete({ where: { id } }); // items cascade
+
+            if (invoice.customerPurchaseOrderId) {
+                await syncPOStatus(tx, invoice.customerPurchaseOrderId);
             }
+            await syncInvoiceStatuses(tx, invoice.customerId);
         });
 
         revalidatePath('/invoices');
         revalidatePath('/customers');
+        revalidatePath('/purchase-orders');
         return { success: true };
 
     } catch (error) {

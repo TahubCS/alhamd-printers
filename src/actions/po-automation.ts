@@ -110,7 +110,7 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
                     name: customerName,
                     nameUrdu: data.newCustomerNameUrdu || data.customer?.nameUrdu || null,
                     phone: data.newCustomerPhone || data.customer?.phone || null,
-                    email: data.newCustomerEmail || data.customer?.email || `auto-${Date.now()}@placeholder.com`,
+                    email: data.newCustomerEmail || data.customer?.email || null,
                     address: data.newCustomerAddress || data.customer?.address || null,
                     ntn: data.newCustomerNTN || data.customer?.ntn || null,
                     gstNumber: data.newCustomerGST || data.customer?.gstNumber || null,

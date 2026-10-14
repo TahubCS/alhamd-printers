@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { WageType } from "@prisma/client";
+import { wageBalanceChange } from "@/lib/finance";
 
 // ============================================
 // CREATE WORKER
@@ -118,14 +119,12 @@ export async function createWageEntry(data: {
     description?: string;
 }) {
     try {
-        // Calculate balance change:
-        // WAGE_PAYMENT & DEDUCTION → credit (increase balance, worker gets paid / debt reduced)
-        // ADVANCE → debit (decrease balance, worker takes money)
-        // ADJUSTMENT → can be positive or negative, applied directly
-        let balanceChange = data.amount;
-        if (data.type === "ADVANCE") {
-            balanceChange = -data.amount; // Worker takes advance → owes more
+        if (!(data.amount > 0)) {
+            return { success: false, error: "Amount must be greater than 0" };
         }
+
+        // Advances push the balance negative (worker owes); everything else credits the worker
+        const balanceChange = wageBalanceChange(data.type, data.amount);
 
         const result = await prisma.$transaction(async (tx) => {
             const entry = await tx.wagePayment.create({
@@ -177,11 +176,7 @@ export async function deleteWageEntry(entryId: string) {
             return { success: false, error: "Entry not found" };
         }
 
-        // Reverse the balance change
-        let reversal = -Number(entry.amount);
-        if (entry.type === "ADVANCE") {
-            reversal = Number(entry.amount); // Reverse: give balance back
-        }
+        const reversal = -wageBalanceChange(entry.type, Number(entry.amount));
 
         await prisma.$transaction(async (tx) => {
             await tx.wagePayment.delete({ where: { id: entryId } });

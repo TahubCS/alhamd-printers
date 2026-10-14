@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { RawMaterial, InventoryTransaction } from "@prisma/client";
+import { stockChange } from "@/lib/finance";
 
 export type RawMaterialType = "ROLL" | "HANGER" | "BUTTON" | "TAPE" | "OTHER";
 export type TransactionType = "IN" | "OUT" | "ADJUSTMENT";
@@ -24,6 +25,12 @@ export interface CreateMaterialInput {
     attributes?: Record<string, string | number | null>;
     quantity: number;
     minimumStockLevel: number;
+}
+
+class InsufficientStockError extends Error {
+    constructor(public available: number) {
+        super("Insufficient stock");
+    }
 }
 
 function serializeMaterial(material: RawMaterial): SerializedRawMaterial {
@@ -69,34 +76,41 @@ export async function adjustStock(
     relatedPoId?: string
 ) {
     try {
-        // Calculate new quantity
-        // IN: +quantity
-        // OUT: -quantity
-        // ADJUSTMENT: +quantity (can be negative)
+        if (!Number.isFinite(quantity) || quantity === 0 || (type !== "ADJUSTMENT" && quantity < 0)) {
+            return { success: false, error: "Enter a valid quantity" };
+        }
 
-        let change = 0;
-        if (type === "IN") change = quantity;
-        if (type === "OUT") change = -quantity;
-        if (type === "ADJUSTMENT") change = quantity; // User provides +/- adjustment
+        // IN adds, OUT removes, ADJUSTMENT carries its own sign
+        const change = stockChange(type, quantity);
 
-        const material = await prisma.rawMaterial.update({
-            where: { id: materialId },
-            data: {
-                quantity: { increment: change }, // Atomic increment
-                transactions: {
-                    create: {
-                        type,
-                        quantity: quantity, // Store absolute value
-                        notes,
-                        customerPurchaseOrderId: relatedPoId
+        const material = await prisma.$transaction(async (tx) => {
+            const updated = await tx.rawMaterial.update({
+                where: { id: materialId },
+                data: {
+                    quantity: { increment: change },
+                    transactions: {
+                        create: {
+                            type,
+                            quantity,
+                            notes,
+                            customerPurchaseOrderId: relatedPoId
+                        }
                     }
                 }
+            });
+            // Checked after the atomic increment so concurrent withdrawals can't both pass
+            if (Number(updated.quantity) < 0) {
+                throw new InsufficientStockError(Number(updated.quantity) - change);
             }
+            return updated;
         });
 
         revalidatePath("/inventory");
         return { success: true, data: serializeMaterial(material) };
     } catch (error) {
+        if (error instanceof InsufficientStockError) {
+            return { success: false, error: `Not enough stock: only ${error.available} available` };
+        }
         console.error("Adjust Stock Error:", error);
         return { success: false, error: "Failed to adjust stock" };
     }

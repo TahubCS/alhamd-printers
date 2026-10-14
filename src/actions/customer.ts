@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CustomerSchema, CustomerFormValues } from "@/lib/validations/customer";
 import { revalidatePath } from "next/cache";
+import { syncInvoiceStatuses } from "@/lib/invoice-status";
 
 export async function createCustomer(data: CustomerFormValues) {
     try {
@@ -26,34 +27,38 @@ export async function createCustomer(data: CustomerFormValues) {
             }
         }
 
-        const customer = await prisma.customer.create({
-            data: {
-                name: validated.name,
-                nameUrdu: validated.nameUrdu,
-                phone: validated.phone,
-                address: validated.address,
-                email: validated.email,
-                creditLimit: validated.creditLimit,
-                isBadDebt: validated.isBadDebt,
-                // If opening balance is provided, we set the initial balance
-                // A separate ledger entry for opening balance should be created if balance > 0
-                balance: validated.openingBalance || 0,
-            },
-        });
+        const openingBalance = validated.openingBalance || 0;
 
-        if (validated.openingBalance && validated.openingBalance > 0) {
-            // Create opening balance ledger entry
-            await prisma.ledgerEntry.create({
+        const customer = await prisma.$transaction(async (tx) => {
+            const created = await tx.customer.create({
                 data: {
-                    customerId: customer.id,
-                    particulars: "Opening Balance",
-                    debit: validated.openingBalance, // Assuming positive balance means they owe us (Debit)
-                    credit: 0,
-                    balance: validated.openingBalance,
-                    date: new Date(),
+                    name: validated.name,
+                    nameUrdu: validated.nameUrdu,
+                    phone: validated.phone,
+                    address: validated.address,
+                    email: validated.email || null,
+                    creditLimit: validated.creditLimit,
+                    isBadDebt: validated.isBadDebt,
+                    balance: openingBalance,
                 },
             });
-        }
+
+            // Positive opening balance: customer owes us (debit). Negative: advance held (credit).
+            if (openingBalance !== 0) {
+                await tx.ledgerEntry.create({
+                    data: {
+                        customerId: created.id,
+                        particulars: "Opening Balance",
+                        debit: openingBalance > 0 ? openingBalance : 0,
+                        credit: openingBalance < 0 ? -openingBalance : 0,
+                        balance: openingBalance,
+                        date: new Date(),
+                    },
+                });
+            }
+
+            return created;
+        });
 
         revalidatePath("/customers");
         const serializedCustomer = {
@@ -93,24 +98,35 @@ export async function updateCustomer(id: string, data: CustomerFormValues) {
             }
         }
 
-        const customer = await prisma.customer.update({
-            where: { id },
-            data: {
-                name: validated.name,
-                nameUrdu: validated.nameUrdu,
-                phone: validated.phone,
-                address: validated.address,
-                email: validated.email,
-                creditLimit: validated.creditLimit,
-                isBadDebt: validated.isBadDebt,
-                // Balance is updated via transactions, not directly here usually
-                // But for corrections, we might want to allow it? 
-                // For now, let's NOT update balance directly to preserve ledger integrity
-            },
+        const duplicateName = await prisma.customer.findFirst({
+            where: { name: validated.name, NOT: { id } },
+        });
+        if (duplicateName) {
+            return { success: false, error: `A customer named "${validated.name}" already exists` };
+        }
+
+        const customer = await prisma.$transaction(async (tx) => {
+            // Balance only changes through invoices, payments and cheques to keep the ledger intact
+            const updated = await tx.customer.update({
+                where: { id },
+                data: {
+                    name: validated.name,
+                    nameUrdu: validated.nameUrdu,
+                    phone: validated.phone,
+                    address: validated.address,
+                    email: validated.email || null,
+                    creditLimit: validated.creditLimit,
+                    isBadDebt: validated.isBadDebt,
+                },
+            });
+            // Bad-debt status flows through to the customer's unpaid invoices
+            await syncInvoiceStatuses(tx, id);
+            return updated;
         });
 
         revalidatePath("/customers");
         revalidatePath(`/customers/${id}`);
+        revalidatePath("/invoices");
 
         const serializedCustomer = {
             id: customer.id,
