@@ -101,10 +101,10 @@ export default function WageEntryForm({ workerId, workerName }: WageEntryFormPro
                             required
                         />
                         {type === "ADVANCE" && (
-                            <p className="mt-1 text-xs text-red-500">{t("advanceNote")}</p>
+                            <p className="mt-1 text-xs text-[var(--color-error)]">{t("advanceNote")}</p>
                         )}
                         {type === "PAYMENT" && (
-                            <p className="mt-1 text-xs text-green-500">{t("paymentNote")}</p>
+                            <p className="mt-1 text-xs text-[var(--color-success)]">{t("paymentNote")}</p>
                         )}
                     </div>
 

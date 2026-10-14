@@ -278,7 +278,7 @@ export default function InvoiceForm() {
                             </select>
                             {customerId && (
                                 <div className="mt-2 text-right">
-                                    <span className="text-lg font-bold text-[var(--color-primary)]">
+                                    <span className="text-lg font-semibold text-[var(--color-primary)]">
                                         {customers.find(c => c.id === customerId)?.nameUrdu}
                                     </span>
                                 </div>
@@ -401,7 +401,7 @@ export default function InvoiceForm() {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => removeItem(index)}
-                                                        className="text-red-500"
+                                                        className="text-[var(--color-error)]"
                                                     >
                                                         <Trash className="w-4 h-4" />
                                                     </Button>
@@ -426,8 +426,8 @@ export default function InvoiceForm() {
                                         <td></td>
                                     </tr>
                                     <tr className="border-t-2 border-[var(--color-border)]">
-                                        <td colSpan={4} className="p-4 text-end font-bold text-lg">{t("grandTotal")}</td>
-                                        <td className="p-4 text-end font-bold text-lg text-[var(--color-primary)]">
+                                        <td colSpan={4} className="p-4 text-end font-semibold text-lg">{t("grandTotal")}</td>
+                                        <td className="p-4 text-end font-semibold text-lg text-[var(--color-primary)]">
                                             {total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                                         </td>
                                         <td></td>

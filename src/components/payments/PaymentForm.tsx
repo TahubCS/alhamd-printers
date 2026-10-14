@@ -127,13 +127,13 @@ export default function PaymentForm({
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                className="absolute inset-0 bg-[#111827]/45"
                 onClick={onClose}
             />
 
             {/* Modal */}
             <div
-                className="relative w-full max-w-lg mx-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl shadow-2xl animate-fade-in"
+                className="relative w-full max-w-lg mx-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg shadow-[var(--shadow-lg)] animate-fade-in"
                 style={{ maxHeight: '90vh', overflowY: 'auto' }}
             >
                 {/* Header */}
@@ -160,7 +160,7 @@ export default function PaymentForm({
                         <span className="text-sm text-[var(--color-text-secondary)]">
                             {isUrdu ? 'موجودہ بقایا' : 'Current Balance'}
                         </span>
-                        <span className={`text-lg font-bold ${currentBalance > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                        <span className={`text-lg font-semibold ${currentBalance > 0 ? 'text-[var(--color-error)]' : 'text-[var(--color-success)]'}`}>
                             {new Intl.NumberFormat(isUrdu ? 'ur-PK' : 'en-PK', {
                                 style: 'currency',
                                 currency: 'PKR',
@@ -173,7 +173,7 @@ export default function PaymentForm({
                 <form onSubmit={handleSubmit} className="p-6" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     {/* Error Message */}
                     {error && (
-                        <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                        <div className="p-4 rounded-lg bg-[var(--color-error-soft)] border border-[#F3C3BE] text-[var(--color-error)] text-sm">
                             {error}
                         </div>
                     )}
@@ -214,7 +214,7 @@ export default function PaymentForm({
                                         key={method.value}
                                         type="button"
                                         onClick={() => setFormData({ ...formData, method: method.value as 'CASH' | 'CHEQUE' | 'BANK_TRANSFER' })}
-                                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${isSelected
+                                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border transition-all ${isSelected
                                             ? 'bg-[var(--color-accent-primary)]/10 border-[var(--color-accent-primary)] text-[var(--color-accent-primary)]'
                                             : 'bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-light)]'
                                             }`}
@@ -229,7 +229,7 @@ export default function PaymentForm({
 
                     {/* Cheque Fields - Conditional */}
                     {formData.method === 'CHEQUE' && (
-                        <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div className="p-4 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                                 <CreditCard className="w-4 h-4" />
                                 {isUrdu ? 'چیک کی تفصیلات' : 'Cheque Details'}
@@ -286,7 +286,7 @@ export default function PaymentForm({
 
                     {/* Bank Transfer Fields - Conditional */}
                     {formData.method === 'BANK_TRANSFER' && (
-                        <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div className="p-4 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                                 <ArrowRightLeft className="w-4 h-4" />
                                 {isUrdu ? 'بینک ٹرانسفر کی تفصیلات' : 'Bank Transfer Details'}

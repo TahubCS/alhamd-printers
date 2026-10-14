@@ -138,7 +138,7 @@ export default function ChallanForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-                <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
                     {error}
                 </p>
             )}
@@ -183,7 +183,7 @@ export default function ChallanForm({
                     </div>
 
                     {lines.map((line, index) => (
-                        <div key={index} className="grid gap-3 rounded-xl border border-[var(--color-border)] p-4 sm:grid-cols-[1fr_8rem_8rem_auto] sm:items-start">
+                        <div key={index} className="grid gap-3 rounded-lg border border-[var(--color-border)] p-4 sm:grid-cols-[1fr_8rem_8rem_auto] sm:items-start">
                             <Input
                                 id={`line-${index}-desc`}
                                 label={t("description")}
@@ -213,7 +213,7 @@ export default function ChallanForm({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                className="text-red-400 sm:mt-9"
+                                className="text-[var(--color-error)] sm:mt-9"
                                 disabled={lines.length === 1}
                                 onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))}
                                 aria-label={t("removeLine")}

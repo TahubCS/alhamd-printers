@@ -65,7 +65,7 @@ export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
     return (
         <Dialog title={t("addMaterial")} closeLabel={tActions("cancel")} onClose={onClose}>
             <form onSubmit={handleSubmit} className="space-y-4">
-                {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+                {error && <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-3 py-2 text-sm text-[var(--color-error)]">{error}</p>}
                 <div>
                     <Label htmlFor="material-type" className="mb-2 block text-[var(--color-text-primary)]">{t("type")}</Label>
                     <select id="material-type" className="input" value={type} onChange={(e) => setType(e.target.value as RawMaterialType)}>

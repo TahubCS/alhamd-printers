@@ -84,7 +84,7 @@ export default function InventoryDashboard({ initialMaterials }: Props) {
                 </Button>
             </div>
 
-            <Card className="p-4 sm:p-6">
+            <Card className="overflow-hidden">
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader>
@@ -112,7 +112,7 @@ export default function InventoryDashboard({ initialMaterials }: Props) {
                                                 <TableCell className="text-[var(--color-text-secondary)]">{t(`types.${material.type}`)}</TableCell>
                                                 <TableCell className="text-sm text-[var(--color-text-secondary)]">{formatAttributes(material.attributes)}</TableCell>
                                                 <TableCell className="text-end">
-                                                    <span className="font-bold text-[var(--color-text-primary)]">{number.format(material.quantity)}</span>
+                                                    <span className="font-semibold text-[var(--color-text-primary)]">{number.format(material.quantity)}</span>
                                                     <div className="mt-1 flex justify-end">
                                                         {low ? (
                                                             <Badge variant={material.quantity <= 0 ? "danger" : "warning"}>
@@ -165,7 +165,7 @@ export default function InventoryDashboard({ initialMaterials }: Props) {
                                                                                 {formatDisplayDate(row.date, locale)} · {t(`movement.${row.type}`)}
                                                                                 {row.notes && <span className="text-[var(--color-text-muted)]"> · {row.notes}</span>}
                                                                             </span>
-                                                                            <span className={`font-medium ${signed < 0 ? "text-red-300" : "text-green-300"}`} dir="ltr">
+                                                                            <span className={`font-medium ${signed < 0 ? "text-[var(--color-error)]" : "text-[var(--color-success)]"}`} dir="ltr">
                                                                                 {signed > 0 ? "+" : ""}{number.format(signed)}
                                                                             </span>
                                                                         </li>

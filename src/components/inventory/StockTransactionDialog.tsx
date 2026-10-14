@@ -47,7 +47,7 @@ export default function StockTransactionDialog({ type, materialId, materialName,
     return (
         <Dialog title={t(`title.${type}`)} description={materialName} closeLabel={tActions("cancel")} onClose={onClose}>
             <form onSubmit={handleSubmit} className="space-y-4">
-                {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+                {error && <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-3 py-2 text-sm text-[var(--color-error)]">{error}</p>}
                 <Input
                     id="stock-qty"
                     type="number"

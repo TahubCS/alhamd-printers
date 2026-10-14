@@ -127,10 +127,10 @@ export default function ExpenseForm() {
 
     const confidenceColor =
         scanResult && scanResult.confidence >= 0.8
-            ? "text-green-500"
+            ? "text-[var(--color-success)]"
             : scanResult && scanResult.confidence >= 0.5
-                ? "text-yellow-500"
-                : "text-red-500";
+                ? "text-[var(--color-warning)]"
+                : "text-[var(--color-error)]";
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -193,7 +193,7 @@ export default function ExpenseForm() {
                             <div className="mt-4 p-3 rounded-lg bg-[var(--color-bg-secondary)] text-left text-sm">
                                 <p className="text-[var(--color-text-secondary)]">
                                     AI Confidence:{" "}
-                                    <span className={`font-bold ${confidenceColor}`}>
+                                    <span className={`font-semibold ${confidenceColor}`}>
                                         {Math.round(scanResult.confidence * 100)}%
                                     </span>
                                 </p>

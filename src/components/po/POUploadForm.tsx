@@ -306,14 +306,14 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                                 <button
                                     type="button"
                                     onClick={() => setShowPreview(true)}
-                                    className="flex items-center gap-1.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                                    className="flex items-center gap-1.5 text-xs font-medium bg-[var(--color-success-soft)] text-[var(--color-success)] hover:bg-[var(--color-success-soft)] px-3 py-1.5 rounded-full transition-colors cursor-pointer"
                                 >
                                     <Eye className="w-3.5 h-3.5" />
                                     {t("viewOriginal")}
                                 </button>
                             )}
                             {previewUrl && (
-                                <div className="text-xs font-mono bg-green-500/20 text-green-400 px-3 py-1 rounded-full">
+                                <div className="text-xs font-mono bg-[var(--color-success-soft)] text-[var(--color-success)] px-3 py-1 rounded-full">
                                     {t("confidence", { value: Math.round((extractedData?.confidence || 0) * 100) })}
                                 </div>
                             )}
@@ -642,9 +642,9 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                                                 type="button"
                                                 onClick={() => remove(index)}
                                                 aria-label={t("removeItem")}
-                                                className="h-9 w-9 p-0 flex items-center justify-center rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
+                                                className="h-9 w-9 p-0 flex items-center justify-center rounded-lg hover:bg-[var(--color-error-soft)] transition-colors cursor-pointer"
                                             >
-                                                <Trash className="w-4 h-4" style={{ color: '#f87171', stroke: '#f87171' }} />
+                                                <Trash className="w-4 h-4" style={{ color: 'var(--color-error)', stroke: 'var(--color-error)' }} />
                                             </button>
                                         </div>
                                     </div>
@@ -660,8 +660,8 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
 
                             {/* Custom Attributes Modal */}
                             {showAttrModal && (
-                                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowAttrModal(false)}>
-                                    <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <div className="fixed inset-0 bg-[#111827]/45 flex items-center justify-center z-50" onClick={() => setShowAttrModal(false)}>
+                                    <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg p-6 w-full max-w-md shadow-[var(--shadow-lg)]" onClick={e => e.stopPropagation()}>
                                         <div className="flex items-center justify-between mb-4">
                                             <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">{t("customColumns")}</h3>
                                             <button type="button" onClick={() => setShowAttrModal(false)} aria-label={t("close")} className="p-1 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer">
@@ -734,10 +734,10 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                                                                     form.setValue(`items.${i}.customAttributes`, rest);
                                                                 });
                                                             }}
-                                                            className="p-1 rounded hover:bg-red-500/10 transition-colors cursor-pointer"
+                                                            className="p-1 rounded hover:bg-[var(--color-error-soft)] transition-colors cursor-pointer"
                                                             aria-label={`${t("removeColumn")}: ${col}`}
                                                         >
-                                                            <X className="w-4 h-4" style={{ color: '#f87171', stroke: '#f87171' }} />
+                                                            <X className="w-4 h-4" style={{ color: 'var(--color-error)', stroke: 'var(--color-error)' }} />
                                                         </button>
                                                     </div>
                                                 ))}
@@ -756,8 +756,8 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                             <dd className="text-end text-[var(--color-text-primary)]">{formatPKR(totals.subtotal, locale, 2)}</dd>
                             <dt className="text-[var(--color-text-secondary)]">{t("gstTotal")}</dt>
                             <dd className="text-end text-[var(--color-text-primary)]">{formatPKR(totals.taxTotal, locale, 2)}</dd>
-                            <dt className="text-lg font-bold text-[var(--color-text-primary)]">{t("total")}</dt>
-                            <dd className="text-end text-lg font-bold text-[var(--color-text-primary)]">{formatPKR(totals.total, locale, 2)}</dd>
+                            <dt className="text-lg font-semibold text-[var(--color-text-primary)]">{t("total")}</dt>
+                            <dd className="text-end text-lg font-semibold text-[var(--color-text-primary)]">{formatPKR(totals.total, locale, 2)}</dd>
                         </dl>
 
                         <div className="pt-4 flex justify-end gap-3">
@@ -776,7 +776,7 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
 
             {/* Preview Modal */}
             {showPreview && previewUrl && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowPreview(false)}>
+                <div className="fixed inset-0 bg-[#111827]/75 flex items-center justify-center z-50" onClick={() => setShowPreview(false)}>
                     <div className="relative max-w-4xl max-h-[90vh] w-full mx-4" onClick={e => e.stopPropagation()}>
                         <button
                             type="button"
@@ -787,9 +787,9 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                             <X className="w-5 h-5 text-white" />
                         </button>
                         {uploadedFileType === 'application/pdf' ? (
-                            <iframe src={previewUrl} title={t("preview")} className="w-full h-[85vh] rounded-xl shadow-2xl bg-white" />
+                            <iframe src={previewUrl} title={t("preview")} className="w-full h-[85vh] rounded-lg shadow-[var(--shadow-lg)] bg-white" />
                         ) : (
-                            <img src={previewUrl} alt={t("preview")} className="w-full h-full object-contain rounded-xl shadow-2xl" />
+                            <img src={previewUrl} alt={t("preview")} className="w-full h-full object-contain rounded-lg shadow-[var(--shadow-lg)]" />
                         )}
                     </div>
                 </div>

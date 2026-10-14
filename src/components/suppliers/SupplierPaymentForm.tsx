@@ -38,7 +38,7 @@ export default function SupplierPaymentForm({ supplierId }: { supplierId: string
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+            {error && <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-3 py-2 text-sm text-[var(--color-error)]">{error}</p>}
             <Input id="pay-amount" type="number" min="0.01" step="0.01" label={tPayments("amount")} value={amount} onChange={(e) => setAmount(e.target.value)} required />
             <div>
                 <Label htmlFor="pay-method" className="mb-2 block text-[var(--color-text-primary)]">{tPayments("method")}</Label>

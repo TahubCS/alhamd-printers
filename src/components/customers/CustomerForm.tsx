@@ -83,7 +83,7 @@ export function CustomerForm({ customer, mode, locale }: CustomerFormProps) {
             <CardContent className="pt-6">
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-md text-sm">
+                        <div className="bg-[var(--color-error-soft)] border border-[#F3C3BE] text-[var(--color-error)] px-4 py-3 rounded-md text-sm">
                             {error}
                         </div>
                     )}

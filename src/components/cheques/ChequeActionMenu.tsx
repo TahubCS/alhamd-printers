@@ -61,7 +61,7 @@ export default function ChequeActionMenu({ chequeId, currentStatus }: ChequeActi
                     variant="outline"
                     onClick={() => handleUpdate('CLEARED')}
                     isLoading={isLoading}
-                    className="h-8 px-2 text-xs text-green-600 border-green-200 hover:bg-green-50"
+                    className="h-8 px-2 text-xs text-[var(--color-success)] border-[#BFE3CC] hover:bg-[var(--color-success-soft)]"
                 >
                     <Check className="w-3 h-3 mr-1" />
                     {t('markCleared')}
@@ -73,7 +73,7 @@ export default function ChequeActionMenu({ chequeId, currentStatus }: ChequeActi
                 variant="ghost"
                 onClick={() => handleUpdate('BOUNCED')}
                 isLoading={isLoading}
-                className="h-8 px-2 text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
+                className="h-8 px-2 text-xs text-[var(--color-error)] hover:text-[#912018] hover:bg-[var(--color-error-soft)]"
                 title={t('markBounced')}
             >
                 <X className="w-3 h-3" />

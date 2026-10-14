@@ -43,7 +43,7 @@ export default function ReceiveGoodsForm({ purchaseOrderId, lines }: { purchaseO
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-sm text-[var(--color-text-secondary)]">{t("receiveHint")}</p>
-            {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+            {error && <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-3 py-2 text-sm text-[var(--color-error)]">{error}</p>}
             {open.map((line) => (
                 <div key={line.id} className="space-y-2">
                     <label htmlFor={`receive-${line.id}`} className="block text-sm text-[var(--color-text-primary)]">

@@ -65,8 +65,8 @@ export default function ChequeList({ cheques }: ChequeListProps) {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-wrap gap-2">
+        <div className="space-y-4">
+            <div className="inline-flex flex-wrap gap-0.5 rounded-md bg-[var(--color-neutral-soft)] p-0.5">
                 {[
                     { id: 'all', label: t('tabs.all') },
                     { id: 'received', label: t('tabs.received') },
@@ -76,21 +76,20 @@ export default function ChequeList({ cheques }: ChequeListProps) {
                 ].map((tab) => (
                     <button
                         key={tab.id}
+                        type="button"
+                        aria-pressed={filter === tab.id}
                         onClick={() => setFilter(tab.id)}
-                        className={`
-                            px-4 py-2 rounded-full text-sm font-medium transition-all
-                            ${filter === tab.id
-                                ? 'bg-[var(--color-accent-primary)]/15 text-[var(--color-accent-primary)] border border-[var(--color-accent-primary)]/30'
-                                : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'
-                            }
-                        `}
+                        className={`inline-flex h-8 items-center rounded px-3 text-[13px] font-medium transition-colors ${filter === tab.id
+                            ? 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]'
+                            : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                            }`}
                     >
                         {tab.label}
                     </button>
                 ))}
             </div>
 
-            <div className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-secondary)]">
+            <div className="rounded-lg border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-secondary)]">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]">
@@ -131,7 +130,7 @@ export default function ChequeList({ cheques }: ChequeListProps) {
                                     <TableCell className="font-medium">
                                         {isUrdu ? (cheque.customer.nameUrdu || cheque.customer.name) : cheque.customer.name}
                                     </TableCell>
-                                    <TableCell className="text-right font-bold">
+                                    <TableCell className="text-right font-semibold">
                                         {formatCurrency(cheque.amount)}
                                     </TableCell>
                                     <TableCell className="text-center">

@@ -32,57 +32,40 @@ export default function ChequeStats({ stats }: ChequeStatsProps) {
             value: formatCurrency(stats.totalPendingAmount),
             count: stats.received + stats.deposited,
             icon: Clock,
-            color: 'text-amber-400',
-            bg: 'bg-amber-400/10',
-            border: 'border-amber-400/20'
+            color: 'text-[var(--color-text-primary)]',
         },
         {
             title: t('cleared'),
             value: stats.cleared.toString(),
             count: null,
             icon: CheckCircle,
-            color: 'text-green-400',
-            bg: 'bg-green-400/10',
-            border: 'border-green-400/20'
+            color: 'text-[var(--color-success)]',
         },
         {
             title: t('bounced'),
             value: stats.bounced.toString(),
             count: null,
             icon: XCircle,
-            color: 'text-red-400',
-            bg: 'bg-red-400/10',
-            border: 'border-red-400/20'
+            color: stats.bounced > 0 ? 'text-[var(--color-error)]' : 'text-[var(--color-text-primary)]',
         }
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {cards.map((card, index) => {
+        <div className="kpi-grid grid-cols-1 md:grid-cols-3">
+            {cards.map((card) => {
                 const Icon = card.icon;
                 return (
-                    <div
-                        key={index}
-                        className={`p-6 rounded-2xl border ${card.border} ${card.bg} backdrop-blur-sm relative overflow-hidden group`}
-                    >
-                        <div className="flex justify-between items-start z-10 relative">
-                            <div>
-                                <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                                    {card.title}
-                                </p>
-                                <h3 className={`text-2xl font-bold ${card.color}`}>
-                                    {card.value}
-                                </h3>
-                                {card.count !== null && (
-                                    <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-                                        {card.count} {isUrdu ? 'چیکس' : 'Cheques'}
-                                    </p>
-                                )}
-                            </div>
-                            <div className={`p-3 rounded-xl bg-[var(--color-bg-primary)]/50 ${card.color}`}>
-                                <Icon className="w-6 h-6" />
-                            </div>
+                    <div key={card.title} className="stat-card">
+                        <div className="flex items-start justify-between gap-3">
+                            <p className="text-[13px] text-[var(--color-text-secondary)]">{card.title}</p>
+                            <Icon className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" strokeWidth={1.75} aria-hidden="true" />
                         </div>
+                        <p className={`mt-1.5 text-2xl font-semibold leading-8 tabular-nums ${card.color}`}>{card.value}</p>
+                        {card.count !== null && (
+                            <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                                {card.count} {isUrdu ? 'چیکس' : 'Cheques'}
+                            </p>
+                        )}
                     </div>
                 );
             })}

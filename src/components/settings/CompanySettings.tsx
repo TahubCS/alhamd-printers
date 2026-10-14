@@ -93,7 +93,7 @@ export default function CompanySettings({ companies }: { companies: CompanyRow[]
         <Card className="p-4 sm:p-6 sm:rtl:p-7">
             <CardHeader className="mb-6 flex-col items-start gap-4 space-y-0 p-0 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <CardTitle className="text-xl text-[var(--color-text-primary)]">{t("title")}</CardTitle>
+                    <CardTitle className="text-[var(--color-text-primary)]">{t("title")}</CardTitle>
                     <p className="mt-2 text-sm text-[var(--color-text-secondary)]">{t("description")}</p>
                 </div>
                 {editingId === null && (
@@ -105,13 +105,13 @@ export default function CompanySettings({ companies }: { companies: CompanyRow[]
             </CardHeader>
             <CardContent className="space-y-4 p-0">
                 {error && (
-                    <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                    <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
                         {error}
                     </p>
                 )}
 
                 {editingId !== null && (
-                    <form onSubmit={handleSubmit} className="grid gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-tertiary)] p-5 sm:grid-cols-2">
+                    <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-tertiary)] p-5 sm:grid-cols-2">
                         <Input id="company-name" label={t("name")} value={form.name} onChange={update("name")} required />
                         <Input id="company-name-ur" label={t("nameUrdu")} value={form.nameUrdu ?? ""} onChange={update("nameUrdu")} dir="rtl" />
                         <Input id="company-phone" label={t("phone")} value={form.phone ?? ""} onChange={update("phone")} />

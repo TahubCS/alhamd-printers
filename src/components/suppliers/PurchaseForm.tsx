@@ -79,7 +79,7 @@ export default function PurchaseForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
+            {error && <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">{error}</p>}
 
             <Card>
                 <CardContent className="grid gap-5 p-6 sm:grid-cols-3">
@@ -105,7 +105,7 @@ export default function PurchaseForm({
                         </Button>
                     </div>
                     {lines.map((line, index) => (
-                        <div key={index} className="grid gap-3 rounded-xl border border-[var(--color-border)] p-4 sm:grid-cols-6">
+                        <div key={index} className="grid gap-3 rounded-lg border border-[var(--color-border)] p-4 sm:grid-cols-6">
                             <div className="sm:col-span-2">
                                 <Label htmlFor={`po-line-${index}-material`} className="mb-2 block text-[var(--color-text-primary)]">{t("stockItem")}</Label>
                                 <select id={`po-line-${index}-material`} className="input" value={line.materialId} onChange={(e) => updateLine(index, "materialId", e.target.value)}>
@@ -131,7 +131,7 @@ export default function PurchaseForm({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="mb-1 text-red-400"
+                                    className="mb-1 text-[var(--color-error)]"
                                     disabled={lines.length === 1}
                                     onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))}
                                     aria-label={t("removeLine")}
@@ -141,7 +141,7 @@ export default function PurchaseForm({
                             </div>
                         </div>
                     ))}
-                    <div className="flex justify-end border-t border-[var(--color-border)] pt-4 text-lg font-bold text-[var(--color-text-primary)]">
+                    <div className="flex justify-end border-t border-[var(--color-border)] pt-4 text-lg font-semibold text-[var(--color-text-primary)]">
                         {t("orderTotal")}: <span className="ms-2 text-[var(--color-accent-primary)]">{formatPKR(totals.total, locale, 2)}</span>
                     </div>
                 </CardContent>

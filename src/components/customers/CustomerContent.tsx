@@ -60,7 +60,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
             <TabsContent value="ledger" activeValue={activeTab}>
                 <Card className="bg-[var(--color-bg-secondary)] border-[var(--color-border)]">
                     <CardHeader className="pb-4 flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg text-[var(--color-text-primary)]">
+                        <CardTitle className="text-[var(--color-text-primary)]">
                             {t("history")}
                         </CardTitle>
                     </CardHeader>
@@ -87,10 +87,10 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                                                     {entry.particulars}
                                                     {entry.payment?.method && ` (${entry.payment.method})`}
                                                 </TableCell>
-                                                <TableCell className="text-end text-red-400">
+                                                <TableCell className="text-end text-[var(--color-error)]">
                                                     {Number(entry.debit) > 0 ? formatCurrency(Number(entry.debit)) : "-"}
                                                 </TableCell>
-                                                <TableCell className="text-end text-green-400">
+                                                <TableCell className="text-end text-[var(--color-success)]">
                                                     {Number(entry.credit) > 0 ? formatCurrency(Number(entry.credit)) : "-"}
                                                 </TableCell>
                                                 <TableCell className="text-end font-semibold text-[var(--color-text-primary)]">
@@ -118,7 +118,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
             <TabsContent value="po" activeValue={activeTab}>
                 <Card className="bg-[var(--color-bg-secondary)] border-[var(--color-border)]">
                     <CardHeader className="pb-4 flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg text-[var(--color-text-primary)]">
+                        <CardTitle className="text-[var(--color-text-primary)]">
                             {t("ordersTab")}
                         </CardTitle>
                         <Link href={`/${locale}/purchase-orders/new`}>

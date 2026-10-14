@@ -53,7 +53,7 @@ export default function SupplierForm({ supplier }: { supplier?: SupplierValues }
             <Card>
                 <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
                     {error && (
-                        <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300 sm:col-span-2">{error}</p>
+                        <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)] sm:col-span-2">{error}</p>
                     )}
                     <Input id="supplier-name" label={t("name")} value={form.name} onChange={update("name")} required />
                     <Input id="supplier-name-ur" label={t("nameUrdu")} value={form.nameUrdu} onChange={update("nameUrdu")} dir="rtl" />

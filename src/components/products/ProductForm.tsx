@@ -51,7 +51,7 @@ export default function ProductForm({ product }: { product?: SerializedProduct }
             <Card>
                 <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
                     {error && (
-                        <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300 sm:col-span-2">
+                        <p role="alert" className="rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)] sm:col-span-2">
                             {error}
                         </p>
                     )}
