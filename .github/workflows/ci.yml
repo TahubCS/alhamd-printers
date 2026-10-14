@@ -60,6 +60,9 @@ jobs:
       - name: Check schema and migrations are in sync
         run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
 
+      - name: Seed demo data (smoke test)
+        run: npx prisma db seed
+
       - run: npm test
 
       - run: npm run build
