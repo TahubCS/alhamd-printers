@@ -34,15 +34,15 @@ interface KpiProps {
 }
 
 function Kpi({ label, value, detail, href, icon: Icon, tone = "default" }: KpiProps) {
-    const toneClass = tone === "danger" ? "text-red-300" : tone === "warning" ? "text-amber-300" : "text-[var(--color-text-primary)]";
+    const toneClass = tone === "danger" ? "text-[var(--color-error)]" : tone === "warning" ? "text-[var(--color-warning)]" : "text-[var(--color-text-primary)]";
     return (
-        <Link href={href} className="stat-card group block p-5 focus-visible:outline-none">
+        <Link href={href} className="stat-card group">
             <div className="flex items-start justify-between gap-3">
-                <p className="text-sm text-[var(--color-text-secondary)]">{label}</p>
-                <Icon className="h-5 w-5 shrink-0 text-[var(--color-accent-primary)]" aria-hidden="true" />
+                <p className="text-[13px] text-[var(--color-text-secondary)]">{label}</p>
+                <Icon className="h-4 w-4 shrink-0 text-[var(--color-text-muted)] group-hover:text-[var(--color-accent-primary)]" strokeWidth={1.75} aria-hidden="true" />
             </div>
-            <p className={`mt-2 text-2xl font-bold ${toneClass}`}>{value}</p>
-            <p className="mt-1 text-xs text-[var(--color-text-muted)]">{detail}</p>
+            <p className={`mt-1.5 text-2xl font-semibold leading-8 tabular-nums ${toneClass}`}>{value}</p>
+            <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{detail}</p>
         </Link>
     );
 }
@@ -61,18 +61,17 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     ];
 
     return (
-        <div className="animate-fade-in space-y-8 p-3 rtl:p-4">
-            <header className="space-y-5">
-                <div className="max-w-3xl">
-                    <p className="mb-3 text-sm font-semibold uppercase tracking-[.18em] text-[var(--color-accent-primary)] rtl:tracking-normal">{t("eyebrow")}</p>
-                    <h1 className="text-3xl font-bold leading-tight text-[var(--color-text-primary)] sm:text-4xl rtl:leading-snug">{t("welcome")}</h1>
-                    <p className="mt-3 text-base text-[var(--color-text-secondary)] sm:text-lg">{t("subtitle")}</p>
+        <div className="animate-fade-in space-y-6">
+            <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p className="text-[13px] text-[var(--color-text-secondary)]">{t("eyebrow")}</p>
+                    <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[var(--color-text-primary)] rtl:leading-10">{t("welcome")}</h1>
+                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{t("subtitle")}</p>
                 </div>
                 <nav aria-label={t("quickActions")} className="flex flex-wrap gap-2">
-                    {quickActions.map(({ href, label, icon: Icon }) => (
-                        <Link key={href} href={href} className="btn btn-secondary px-3 py-2 text-sm">
-                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                            <Icon className="h-4 w-4" aria-hidden="true" />
+                    {quickActions.map(({ href, label, icon: Icon }, i) => (
+                        <Link key={href} href={href} className={`btn ${i === 0 ? "btn-primary" : "btn-secondary"}`}>
+                            {i === 0 ? <Plus className="h-4 w-4" aria-hidden="true" /> : <Icon className="h-4 w-4 text-[var(--color-text-muted)]" strokeWidth={1.75} aria-hidden="true" />}
                             {label}
                         </Link>
                     ))}
@@ -80,12 +79,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             </header>
 
             {!data ? (
-                <Card className="p-6">
+                <Card className="p-5">
                     <p role="alert" className="text-[var(--color-text-secondary)]">{t("loadError")}</p>
                 </Card>
             ) : (
                 <>
-                    <section aria-label={t("kpiLabel")} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                    <section aria-label={t("kpiLabel")} className="kpi-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                         <Kpi
                             label={t("kpi.receivables")}
                             value={formatPKR(data.kpis.receivables, locale)}
@@ -132,31 +131,31 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                         />
                     </section>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3">
-                        <Card className="p-5 sm:p-6 lg:col-span-2">
-                            <CardHeader className="mb-2 p-0">
-                                <CardTitle className="text-lg text-[var(--color-text-primary)]">{t("trend.title")}</CardTitle>
-                                <p className="text-sm text-[var(--color-text-secondary)]">{t("trend.subtitle")}</p>
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                        <Card className="lg:col-span-2">
+                            <CardHeader className="pb-2">
+                                <CardTitle>{t("trend.title")}</CardTitle>
+                                <p className="text-[13px] text-[var(--color-text-secondary)]">{t("trend.subtitle")}</p>
                             </CardHeader>
-                            <CardContent className="p-0">
+                            <CardContent>
                                 <TrendChart data={data.trend} />
                             </CardContent>
                         </Card>
 
-                        <Card className="p-5 sm:p-6">
-                            <CardHeader className="mb-4 flex-row items-center justify-between space-y-0 p-0">
-                                <CardTitle className="text-lg text-[var(--color-text-primary)]">{t("lowStock.title")}</CardTitle>
-                                <Link href="/inventory" className="text-sm text-[var(--color-accent-primary)] hover:underline">{t("viewAll")}</Link>
+                        <Card className="overflow-hidden">
+                            <CardHeader className="flex-row items-center justify-between border-b border-[var(--color-border)] px-5 py-3">
+                                <CardTitle>{t("lowStock.title")}</CardTitle>
+                                <Link href="/inventory" className="text-[13px] font-medium text-[var(--color-accent-primary)] hover:text-[var(--color-accent-secondary)]">{t("viewAll")}</Link>
                             </CardHeader>
                             <CardContent className="p-0">
                                 {data.lowStock.length === 0 ? (
-                                    <p className="py-6 text-center text-sm text-[var(--color-text-muted)]">{t("lowStock.none")}</p>
+                                    <p className="px-5 py-8 text-center text-sm text-[var(--color-text-muted)]">{t("lowStock.none")}</p>
                                 ) : (
-                                    <ul className="divide-y divide-[var(--color-border)]">
+                                    <ul className="divide-y divide-[var(--color-divider)]">
                                         {data.lowStock.slice(0, 6).map((item) => (
-                                            <li key={item.id} className="flex items-center justify-between gap-3 py-3">
+                                            <li key={item.id} className="flex items-center justify-between gap-3 px-5 py-2.5">
                                                 <span className="flex min-w-0 items-start gap-2 text-sm text-[var(--color-text-primary)]">
-                                                    <PackageX className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
+                                                    <PackageX className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-warning)]" strokeWidth={1.75} aria-hidden="true" />
                                                     <span>{item.name}</span>
                                                 </span>
                                                 <Badge variant={item.quantity <= 0 ? "danger" : "warning"}>
@@ -170,26 +169,26 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                         </Card>
                     </div>
 
-                    <Card className="p-5 sm:p-6">
-                        <CardHeader className="mb-4 flex-row items-center justify-between space-y-0 p-0">
-                            <CardTitle className="text-lg text-[var(--color-text-primary)]">{t("overdue.title")}</CardTitle>
-                            <Link href="/invoices?status=OVERDUE" className="text-sm text-[var(--color-accent-primary)] hover:underline">{t("viewAll")}</Link>
+                    <Card className="overflow-hidden">
+                        <CardHeader className="flex-row items-center justify-between border-b border-[var(--color-border)] px-5 py-3">
+                            <CardTitle>{t("overdue.title")}</CardTitle>
+                            <Link href="/invoices?status=OVERDUE" className="text-[13px] font-medium text-[var(--color-accent-primary)] hover:text-[var(--color-accent-secondary)]">{t("viewAll")}</Link>
                         </CardHeader>
                         <CardContent className="p-0">
                             {data.overdue.length === 0 ? (
-                                <p className="py-6 text-center text-sm text-[var(--color-text-muted)]">{t("overdue.none")}</p>
+                                <p className="px-5 py-8 text-center text-sm text-[var(--color-text-muted)]">{t("overdue.none")}</p>
                             ) : (
-                                <ul className="divide-y divide-[var(--color-border)]">
+                                <ul className="divide-y divide-[var(--color-divider)]">
                                     {data.overdue.map((inv) => (
                                         <li key={inv.id}>
-                                            <Link href={`/invoices/${inv.id}`} className="flex items-center justify-between gap-4 py-3 hover:bg-[var(--color-bg-hover)] sm:px-2">
+                                            <Link href={`/invoices/${inv.id}`} className="flex items-center justify-between gap-4 px-5 py-2.5 hover:bg-[var(--color-bg-hover)]">
                                                 <span className="min-w-0">
                                                     <span className="block font-medium text-[var(--color-text-primary)]">{inv.customer.name}</span>
-                                                    <span className="text-xs text-[var(--color-text-muted)]">
+                                                    <span className="text-xs text-[var(--color-error)]">
                                                         {t("overdue.invoice", { number: inv.invoiceNo })} · {t("overdue.days", { count: inv.daysOverdue })}
                                                     </span>
                                                 </span>
-                                                <span className="flex shrink-0 items-center gap-2 font-semibold text-[var(--color-text-primary)]">
+                                                <span className="flex shrink-0 items-center gap-2 font-medium tabular-nums text-[var(--color-text-primary)]">
                                                     {formatPKR(inv.total, locale)}
                                                     <ArrowUpRight className="h-4 w-4 text-[var(--color-text-muted)] rtl:-scale-x-100" aria-hidden="true" />
                                                 </span>

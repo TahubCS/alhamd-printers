@@ -11,8 +11,8 @@ export interface TrendPoint {
 
 // Categorical slots 1–2 of the dark palette, validated against the card surface
 const SERIES = [
-    { key: "sales", color: "#3987e5" },
-    { key: "expenses", color: "#d95926" },
+    { key: "sales", color: "#2A78D6" },
+    { key: "expenses", color: "#EB6834" },
 ] as const;
 
 const WIDTH = 640;
@@ -110,7 +110,7 @@ export default function TrendChart({ data }: { data: TrendPoint[] }) {
                     <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="h-auto w-full" role="img" aria-label={t("ariaLabel")}>
                         {ticks.map((tick) => (
                             <g key={tick}>
-                                <line x1={PAD.left} x2={WIDTH - PAD.right} y1={y(tick)} y2={y(tick)} stroke="var(--color-border)" strokeWidth={1} />
+                                <line x1={PAD.left} x2={WIDTH - PAD.right} y1={y(tick)} y2={y(tick)} stroke="var(--color-divider)" strokeWidth={1} />
                                 <text x={PAD.left - 8} y={y(tick)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill="var(--color-text-muted)">
                                     {compact.format(tick)}
                                 </text>

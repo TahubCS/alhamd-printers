@@ -341,6 +341,11 @@ input[type="number"] {
   color: var(--color-sidebar-muted);
 }
 
+[dir="rtl"] .nav-group-label {
+  font-size: 12px;
+  text-transform: none;
+}
+
 .nav-item {
   display: flex;
   align-items: center;
