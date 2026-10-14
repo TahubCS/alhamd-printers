@@ -41,7 +41,7 @@ function Kpi({ label, value, detail, href, icon: Icon, tone = "default" }: KpiPr
                 <p className="text-[13px] text-[var(--color-text-secondary)]">{label}</p>
                 <Icon className="h-4 w-4 shrink-0 text-[var(--color-text-muted)] group-hover:text-[var(--color-accent-primary)]" strokeWidth={1.75} aria-hidden="true" />
             </div>
-            <p className={`mt-1.5 text-2xl font-semibold leading-8 tabular-nums ${toneClass}`}>{value}</p>
+            <p className={`mt-1.5 text-xl font-semibold leading-7 tabular-nums sm:text-2xl sm:leading-8 ${toneClass}`}>{value}</p>
             <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{detail}</p>
         </Link>
     );
@@ -84,7 +84,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 </Card>
             ) : (
                 <>
-                    <section aria-label={t("kpiLabel")} className="kpi-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                    <section aria-label={t("kpiLabel")} className="kpi-grid grid-cols-2 xl:grid-cols-3">
                         <Kpi
                             label={t("kpi.receivables")}
                             value={formatPKR(data.kpis.receivables, locale)}

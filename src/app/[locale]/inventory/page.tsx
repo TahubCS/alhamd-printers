@@ -11,7 +11,7 @@ export default async function InventoryPage() {
     const { data: materials } = await getRawMaterials();
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <PageHeader title={t("title")} subtitle={t("subtitle")} />
             <InventoryDashboard initialMaterials={materials || []} />
         </div>

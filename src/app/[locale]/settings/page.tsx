@@ -11,7 +11,7 @@ export default async function SettingsPage() {
     const [{ data: companies }, { data: accounts }] = await Promise.all([getCompanies(), getAllBankAccounts()]);
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <PageHeader title={t("title")} subtitle={t("subtitle")} />
             <div className="space-y-8">
                 <CompanySettings

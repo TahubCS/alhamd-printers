@@ -35,29 +35,15 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
         console.error(error);
     }
 
-    const isUrdu = locale === 'ur';
 
     return (
-        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
+        <div className="animate-fade-in">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1
-                        className="font-bold text-[var(--color-text-primary)]"
-                        style={{
-                            fontSize: isUrdu ? '2.5rem' : '2rem',
-                            marginBottom: isUrdu ? '16px' : '12px',
-                            lineHeight: isUrdu ? '1.4' : '1.2'
-                        }}
-                    >
+                    <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[var(--color-text-primary)] rtl:leading-10">
                         {t("title")}
                     </h1>
-                    <p
-                        className="text-[var(--color-text-secondary)]"
-                        style={{
-                            fontSize: isUrdu ? '1.2rem' : '1.1rem',
-                            lineHeight: isUrdu ? '1.8' : '1.5'
-                        }}
-                    >
+                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
                         {t("subtitle")}
                     </p>
                 </div>
@@ -66,7 +52,7 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                 </Link>
             </div>
 
-            <nav aria-label={t("statusLabel")} className="mb-6 flex flex-wrap gap-2">
+            <nav aria-label={t("statusLabel")} className="mb-4 inline-flex flex-wrap gap-0.5 rounded-md bg-[var(--color-neutral-soft)] p-0.5">
                 {[undefined, "PENDING", "PARTIAL", "OVERDUE", "PAID", "BAD_DEBT"].map((value) => {
                     const active = (status ?? undefined) === value;
                     return (
@@ -74,9 +60,9 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                             key={value ?? "all"}
                             href={value ? `/${locale}/invoices?status=${value}` : `/${locale}/invoices`}
                             aria-current={active ? "page" : undefined}
-                            className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${active
-                                ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-primary)]/15 text-[var(--color-text-primary)]"
-                                : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-light)]"}`}
+                            className={`inline-flex h-8 items-center rounded px-3 text-[13px] font-medium transition-colors ${active
+                                ? "bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+                                : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"}`}
                         >
                             {value ? t(`status.${value}`) : t("filterAll")}
                         </Link>
@@ -84,9 +70,9 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                 })}
             </nav>
 
-            <Card className="card" style={{ padding: isUrdu ? '28px' : '24px' }}>
-                <CardHeader className="p-0 mb-6">
-                    <CardTitle className="text-xl text-[var(--color-text-primary)]">{t("recentInvoices")}</CardTitle>
+            <Card className="overflow-hidden">
+                <CardHeader className="border-b border-[var(--color-border)] px-5 py-3.5">
+                    <CardTitle className="text-[var(--color-text-primary)]">{t("recentInvoices")}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>

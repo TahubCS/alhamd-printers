@@ -12,7 +12,7 @@ export default async function NewChallanPage({ searchParams }: { searchParams: P
     const [{ data: customers = [] }, { data: pos = [] }] = await Promise.all([getCustomers(), getAllPOs()]);
 
     return (
-        <div className="mx-auto max-w-4xl animate-fade-in p-3 rtl:p-4">
+        <div className="mx-auto max-w-4xl animate-fade-in">
             <PageHeader title={t("newChallan")} subtitle={t("formSubtitle")} />
             <ChallanForm
                 customers={customers.map((c) => ({ id: c.id, name: c.name, nameUrdu: c.nameUrdu }))}

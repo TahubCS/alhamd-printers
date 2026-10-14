@@ -12,7 +12,7 @@ export default async function EditSupplierPage({ params }: { params: Promise<{ i
     const { data: supplier } = await getSupplierById(id);
     if (!supplier) notFound();
     return (
-        <div className="mx-auto max-w-3xl animate-fade-in p-3 rtl:p-4">
+        <div className="mx-auto max-w-3xl animate-fade-in">
             <PageHeader title={t("editSupplier")} subtitle={supplier.name} />
             <SupplierForm supplier={supplier} />
         </div>

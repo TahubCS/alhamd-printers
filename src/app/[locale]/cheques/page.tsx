@@ -5,10 +5,8 @@ import { getCheques } from '@/actions/payment';
 
 export const dynamic = "force-dynamic";
 
-export default async function ChequesPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params;
+export default async function ChequesPage() {
     const t = await getTranslations('cheques');
-    const isUrdu = locale === 'ur';
 
     // Fetch data
     const result = await getCheques();
@@ -27,31 +25,21 @@ export default async function ChequesPage({ params }: { params: Promise<{ locale
     };
 
     return (
-        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
+        <div className="animate-fade-in">
             {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1
-                        className="font-bold text-[var(--color-text-primary)]"
-                        style={{
-                            fontSize: isUrdu ? '2.5rem' : '2rem',
-                            marginBottom: isUrdu ? '16px' : '12px',
-                            lineHeight: isUrdu ? '1.4' : '1.2'
-                        }}
-                    >
+                    <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[var(--color-text-primary)] rtl:leading-10">
                         {t('title')}
                     </h1>
-                    <p
-                        className="text-[var(--color-text-secondary)]"
-                        style={{ fontSize: isUrdu ? '1.125rem' : '1rem' }}
-                    >
+                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
                         {t('subtitle')}
                     </p>
                 </div>
             </div>
 
             {/* Stats Dashboard */}
-            <div style={{ marginBottom: isUrdu ? '40px' : '32px' }}>
+            <div className="mb-6">
                 <ChequeStats stats={stats} />
             </div>
 

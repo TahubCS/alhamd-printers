@@ -25,7 +25,7 @@ export default async function PurchaseDetailPage({ params }: { params: Promise<{
     const canCancel = po.status === "PENDING" && po.items.every((item) => item.receivedQuantity === 0);
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <div className="mb-8 flex flex-wrap items-center justify-between gap-3 print:hidden">
                 <Link href={`/suppliers/${po.supplier.id}`}>
                     <Button variant="outline" size="sm">
@@ -44,12 +44,12 @@ export default async function PurchaseDetailPage({ params }: { params: Promise<{
                     <header className="mb-6 flex flex-col gap-4 border-b border-[var(--color-border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{t("supplier")}</p>
-                            <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{po.supplier.name}</h1>
+                            <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">{po.supplier.name}</h1>
                             {po.supplier.address && <p className="text-sm text-[var(--color-text-secondary)]">{po.supplier.address}</p>}
                             {po.supplier.phone && <p className="text-sm text-[var(--color-text-secondary)]" dir="ltr">{po.supplier.phone}</p>}
                         </div>
                         <div className="sm:text-end">
-                            <p className="text-xl font-bold uppercase tracking-wide text-[var(--color-text-primary)]">{t("purchaseOrder")}</p>
+                            <p className="text-xl font-semibold uppercase tracking-wide text-[var(--color-text-primary)]">{t("purchaseOrder")}</p>
                             <p className="text-[var(--color-text-secondary)]"># {po.poNumber}</p>
                             <p className="text-sm text-[var(--color-text-secondary)]">{formatDisplayDate(po.date, locale)}</p>
                             <div className="mt-2 print:hidden"><PurchaseStatusBadge status={po.status} /></div>
@@ -78,7 +78,7 @@ export default async function PurchaseDetailPage({ params }: { params: Promise<{
                                         )}
                                     </TableCell>
                                     <TableCell className="text-end">{number.format(item.quantity)}</TableCell>
-                                    <TableCell className={`text-end print:hidden ${item.remaining === 0 ? "text-green-300" : "text-[var(--color-text-secondary)]"}`}>
+                                    <TableCell className={`text-end print:hidden ${item.remaining === 0 ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)]"}`}>
                                         {number.format(item.receivedQuantity)}
                                     </TableCell>
                                     <TableCell className="text-end">{formatPKR(item.rate, locale, 2)}</TableCell>
@@ -87,7 +87,7 @@ export default async function PurchaseDetailPage({ params }: { params: Promise<{
                             ))}
                         </TableBody>
                     </Table>
-                    <div className="mt-4 flex justify-end text-lg font-bold text-[var(--color-text-primary)]">
+                    <div className="mt-4 flex justify-end text-lg font-semibold text-[var(--color-text-primary)]">
                         {t("orderTotal")}: <span className="ms-2">{formatPKR(po.total, locale, 2)}</span>
                     </div>
                     {po.notes && <p className="mt-4 text-sm text-[var(--color-text-secondary)]">{po.notes}</p>}
@@ -95,7 +95,7 @@ export default async function PurchaseDetailPage({ params }: { params: Promise<{
 
                 {canReceive && (
                     <Card className="h-fit p-4 sm:p-6 print:hidden">
-                        <CardHeader className="mb-4 p-0"><CardTitle className="text-lg">{t("receiveGoods")}</CardTitle></CardHeader>
+                        <CardHeader className="mb-4 p-0"><CardTitle>{t("receiveGoods")}</CardTitle></CardHeader>
                         <CardContent className="p-0">
                             <ReceiveGoodsForm
                                 // Remount after each receipt so the inputs show the new outstanding quantities

@@ -34,16 +34,16 @@ export default async function LoginPage({ params, searchParams }: PageProps) {
                 </div>
 
                 <div className="flex flex-col items-center text-center mb-8">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-accent-primary)] to-[var(--color-accent-secondary)] flex items-center justify-center mb-4">
+                    <div className="w-14 h-14 rounded-lg bg-[var(--color-accent-primary)] flex items-center justify-center mb-4">
                         <Printer className="w-7 h-7 text-white" aria-hidden="true" />
                     </div>
-                    <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{t("title")}</h1>
+                    <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">{t("title")}</h1>
                     <p className="mt-2 text-[var(--color-text-secondary)]">{t("subtitle")}</p>
                 </div>
 
                 <div className="card p-6 sm:p-8">
                     {errorKey && (
-                        <p role="alert" className="mb-5 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                        <p role="alert" className="mb-5 rounded-lg border border-[#F3C3BE] bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
                             {t(`errors.${errorKey}`)}
                         </p>
                     )}

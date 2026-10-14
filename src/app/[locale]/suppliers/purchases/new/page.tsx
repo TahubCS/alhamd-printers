@@ -19,7 +19,7 @@ export default async function NewPurchasePage({
     const [{ data: suppliers = [] }, { data: materials = [] }] = await Promise.all([getSuppliers(), getRawMaterials()]);
 
     return (
-        <div className="mx-auto max-w-5xl animate-fade-in p-3 rtl:p-4">
+        <div className="mx-auto max-w-5xl animate-fade-in">
             <PageHeader title={t("newPurchase")} subtitle={t("purchaseSubtitle")} />
             <PurchaseForm
                 locale={locale}

@@ -33,29 +33,15 @@ export default async function WagesPage({ params }: PageProps) {
         }).format(amount);
 
     return (
-        <div className="animate-fade-in" style={{ padding: isUrdu ? "16px" : "12px" }}>
+        <div className="animate-fade-in">
             <div
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                style={{ marginBottom: isUrdu ? "48px" : "40px" }}
+                className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
             >
                 <div>
-                    <h1
-                        className="font-bold text-[var(--color-text-primary)]"
-                        style={{
-                            fontSize: isUrdu ? "2.5rem" : "2rem",
-                            marginBottom: isUrdu ? "16px" : "12px",
-                            lineHeight: isUrdu ? "1.4" : "1.2",
-                        }}
-                    >
+                    <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[var(--color-text-primary)] rtl:leading-10">
                         {t("title")}
                     </h1>
-                    <p
-                        className="text-[var(--color-text-secondary)]"
-                        style={{
-                            fontSize: isUrdu ? "1.2rem" : "1.1rem",
-                            lineHeight: isUrdu ? "1.8" : "1.5",
-                        }}
-                    >
+                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
                         {t("subtitle")}
                     </p>
                 </div>
@@ -64,9 +50,9 @@ export default async function WagesPage({ params }: PageProps) {
                 </Link>
             </div>
 
-            <Card className="card" style={{ padding: isUrdu ? "28px" : "24px" }}>
-                <CardHeader className="p-0 mb-6">
-                    <CardTitle className="text-xl text-[var(--color-text-primary)]">
+            <Card className="overflow-hidden">
+                <CardHeader className="border-b border-[var(--color-border)] px-5 py-3.5">
+                    <CardTitle className="text-[var(--color-text-primary)]">
                         {t("workerList")}
                     </CardTitle>
                 </CardHeader>
@@ -91,7 +77,7 @@ export default async function WagesPage({ params }: PageProps) {
                                         <TableCell className="text-[var(--color-text-secondary)]">
                                             {worker.phone || "—"}
                                         </TableCell>
-                                        <TableCell className={`text-right font-bold ${worker.balance < 0 ? "text-red-500" : worker.balance > 0 ? "text-green-500" : "text-[var(--color-text-secondary)]"}`}>
+                                        <TableCell className={`text-right font-semibold ${worker.balance < 0 ? "text-[var(--color-error)]" : worker.balance > 0 ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)]"}`}>
                                             {formatCurrency(Math.abs(worker.balance))}
                                             {worker.balance < 0 && (
                                                 <span className="text-xs ml-1">({t("owes")})</span>

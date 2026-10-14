@@ -19,7 +19,7 @@ export default async function SuppliersPage({ params }: { params: Promise<{ loca
     const totalPayable = suppliers.reduce((sum, s) => sum + Math.max(0, s.balance), 0);
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <PageHeader
                 title={t("title")}
                 subtitle={t("subtitle")}
@@ -43,10 +43,10 @@ export default async function SuppliersPage({ params }: { params: Promise<{ loca
 
             <div className="stat-card mb-6 max-w-sm p-5">
                 <p className="text-sm text-[var(--color-text-secondary)]">{t("totalPayable")}</p>
-                <p className="mt-1 text-2xl font-bold text-[var(--color-text-primary)]">{formatPKR(totalPayable, locale)}</p>
+                <p className="mt-1 text-2xl font-semibold text-[var(--color-text-primary)]">{formatPKR(totalPayable, locale)}</p>
             </div>
 
-            <Card className="p-4 sm:p-6">
+            <Card className="overflow-hidden">
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader>
@@ -70,7 +70,7 @@ export default async function SuppliersPage({ params }: { params: Promise<{ loca
                                         <TableCell>
                                             {supplier.openOrders > 0 ? <Badge variant="warning">{supplier.openOrders}</Badge> : <span className="text-[var(--color-text-muted)]">—</span>}
                                         </TableCell>
-                                        <TableCell className={`text-end font-semibold ${supplier.balance > 0 ? "text-amber-300" : "text-[var(--color-text-secondary)]"}`}>
+                                        <TableCell className={`text-end font-semibold ${supplier.balance > 0 ? "text-[var(--color-warning)]" : "text-[var(--color-text-secondary)]"}`}>
                                             {formatPKR(supplier.balance, locale)}
                                         </TableCell>
                                         <TableCell className="text-end">

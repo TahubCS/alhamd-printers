@@ -34,12 +34,11 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
         notFound();
     }
 
-    const isUrdu = locale === 'ur';
 
     return (
-        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
+        <div className="animate-fade-in">
             {/* Action Bar (Hidden in Print) */}
-            <div className="flex items-center justify-between print:hidden" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
+            <div className="mb-6 flex items-center justify-between print:hidden">
                 <Link href={`/${locale}/invoices`}>
                     <Button variant="outline" size="sm">
                         <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" aria-hidden="true" />
@@ -53,11 +52,11 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                 </div>
             </div>
 
-            <div className="card print:p-0 print:border-0 print:shadow-none print:w-full print:bg-white print:text-black" style={{ padding: isUrdu ? '28px' : '24px' }}>
+            <div className="card p-6 sm:p-8 print:p-0 print:border-0 print:shadow-none print:w-full print:bg-white print:text-black">
                 {/* Header */}
                 <div className="flex justify-between items-start mb-8 border-b border-[var(--color-border)] pb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-[var(--color-text-primary)] print:text-black">{invoice.company.name}</h1>
+                        <h1 className="text-2xl font-semibold text-[var(--color-text-primary)] print:text-black">{invoice.company.name}</h1>
                         <p className="text-sm text-[var(--color-text-secondary)] font-noto-nastaliq mt-1 print:text-gray-600">
                             {invoice.company.nameUrdu}
                         </p>
@@ -66,7 +65,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                         <p className="text-sm text-[var(--color-text-secondary)] print:text-gray-600">{invoice.company.email}</p>
                     </div>
                     <div className="text-right">
-                        <h2 className="text-xl font-bold text-[var(--color-text-primary)] print:text-black">{t("invoiceTitle")}</h2>
+                        <h2 className="text-xl font-semibold text-[var(--color-text-primary)] print:text-black">{t("invoiceTitle")}</h2>
                         <p className="text-lg font-mono mt-2 text-[var(--color-text-primary)] print:text-black">#{invoice.invoiceNo}</p>
 
                         <div className="mt-4 text-sm text-[var(--color-text-secondary)]">
@@ -166,7 +165,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                                 </span>
                             </div>
                         )}
-                        <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2 text-[var(--color-text-primary)]">
+                        <div className="flex justify-between font-semibold text-lg border-t pt-2 mt-2 text-[var(--color-text-primary)]">
                             <span>{t("total")}</span>
                             <span>
                                 {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK', {

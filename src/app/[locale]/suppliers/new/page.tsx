@@ -5,7 +5,7 @@ import SupplierForm from "@/components/suppliers/SupplierForm";
 export default async function NewSupplierPage() {
     const t = await getTranslations("suppliers");
     return (
-        <div className="mx-auto max-w-3xl animate-fade-in p-3 rtl:p-4">
+        <div className="mx-auto max-w-3xl animate-fade-in">
             <PageHeader title={t("newSupplier")} subtitle={t("formSubtitle")} />
             <SupplierForm />
         </div>

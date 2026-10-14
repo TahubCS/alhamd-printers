@@ -10,7 +10,7 @@ export default async function NewPOPage() {
     const { data: customers = [] } = await getCustomers();
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <PageHeader title={t("newTitle")} subtitle={t("newSubtitle")} />
             <POUploadForm
                 customers={customers.map((c) => ({ id: c.id, name: c.name, nameUrdu: c.nameUrdu }))}

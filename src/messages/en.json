@@ -171,7 +171,8 @@
             "gstTotal": "GST total",
             "grandTotal": "Grand total",
             "saving": "Saving…",
-            "failed": "The invoice could not be saved. Please try again."
+            "failed": "The invoice could not be saved. Please try again.",
+            "createSubtitle": "Pick a customer and add items; totals and GST are worked out for you."
         },
         "back": "Invoices",
         "filterAll": "All"

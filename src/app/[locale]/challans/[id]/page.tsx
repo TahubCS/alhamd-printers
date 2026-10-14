@@ -21,7 +21,7 @@ export default async function ChallanDetailPage({ params }: { params: Promise<{ 
     const totalQuantity = challan.items.reduce((sum, item) => sum + item.quantity, 0);
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <div className="mb-8 flex flex-wrap items-center justify-between gap-3 print:hidden">
                 <Link href="/challans">
                     <Button variant="outline" size="sm">
@@ -38,12 +38,12 @@ export default async function ChallanDetailPage({ params }: { params: Promise<{ 
             <article className="card p-6 sm:p-8">
                 <header className="mb-8 flex flex-col gap-6 border-b border-[var(--color-border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{challan.company?.name ?? t("title")}</h1>
+                        <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">{challan.company?.name ?? t("title")}</h1>
                         {challan.company?.address && <p className="text-sm text-[var(--color-text-secondary)]">{challan.company.address}</p>}
                         {challan.company?.phone && <p className="text-sm text-[var(--color-text-secondary)]" dir="ltr">{challan.company.phone}</p>}
                     </div>
                     <div className="sm:text-end">
-                        <p className="text-xl font-bold uppercase tracking-wide text-[var(--color-text-primary)]">{t("documentTitle")}</p>
+                        <p className="text-xl font-semibold uppercase tracking-wide text-[var(--color-text-primary)]">{t("documentTitle")}</p>
                         <p className="text-[var(--color-text-secondary)]"># {challan.challanNo}</p>
                         <p className="text-sm text-[var(--color-text-secondary)]">{formatDisplayDate(challan.date, locale)}</p>
                     </div>
@@ -88,7 +88,7 @@ export default async function ChallanDetailPage({ params }: { params: Promise<{ 
                         <TableRow>
                             <TableCell />
                             <TableCell className="font-semibold text-[var(--color-text-primary)]">{t("totalQuantity")}</TableCell>
-                            <TableCell className="text-end font-bold text-[var(--color-text-primary)]">{number.format(totalQuantity)}</TableCell>
+                            <TableCell className="text-end font-semibold text-[var(--color-text-primary)]">{number.format(totalQuantity)}</TableCell>
                             <TableCell />
                         </TableRow>
                     </TableBody>

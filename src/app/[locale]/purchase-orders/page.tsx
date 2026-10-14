@@ -17,7 +17,7 @@ export default async function PurchaseOrdersPage({ params }: { params: Promise<{
     const { data: purchaseOrders = [] } = await getAllPOs();
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <PageHeader
                 title={t("title")}
                 subtitle={t("subtitle")}
@@ -31,7 +31,7 @@ export default async function PurchaseOrdersPage({ params }: { params: Promise<{
                 }
             />
 
-            <Card className="p-4 sm:p-6">
+            <Card className="overflow-hidden">
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader>

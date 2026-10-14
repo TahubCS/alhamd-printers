@@ -24,7 +24,7 @@ export default async function PurchaseOrderDetailsPage({ params }: { params: Pro
     const hasUndelivered = po.items.some((item) => item.delivered < item.quantity);
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <PageHeader
                 title={`${t("poNumber")} ${po.poNumber ?? ""}`}
                 subtitle={formatDisplayDate(po.date, locale, { dateStyle: "long" })}
@@ -60,7 +60,7 @@ export default async function PurchaseOrderDetailsPage({ params }: { params: Pro
                 <div className="space-y-6 lg:col-span-2">
                     <Card className="p-4 sm:p-6">
                         <CardHeader className="mb-4 flex-row items-center justify-between space-y-0 p-0">
-                            <CardTitle className="text-lg text-[var(--color-text-primary)]">{t("items")}</CardTitle>
+                            <CardTitle className="text-[var(--color-text-primary)]">{t("items")}</CardTitle>
                             <POStatusBadge status={po.status} />
                         </CardHeader>
                         <CardContent className="p-0">
@@ -87,7 +87,7 @@ export default async function PurchaseOrderDetailsPage({ params }: { params: Pro
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-end">{number.format(item.quantity)} <span className="text-xs text-[var(--color-text-muted)]">{item.unit}</span></TableCell>
-                                                <TableCell className={`text-end ${item.delivered >= item.quantity ? "text-green-300" : "text-[var(--color-text-secondary)]"}`}>
+                                                <TableCell className={`text-end ${item.delivered >= item.quantity ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)]"}`}>
                                                     {number.format(item.delivered)}
                                                 </TableCell>
                                                 <TableCell className="text-end">{formatPKR(item.rate, locale, 2)}</TableCell>
@@ -107,15 +107,15 @@ export default async function PurchaseOrderDetailsPage({ params }: { params: Pro
                                         <dd className="text-end">{formatPKR(po.taxTotal, locale, 2)}</dd>
                                     </>
                                 )}
-                                <dt className="border-t border-[var(--color-border)] pt-2 text-base font-bold text-[var(--color-text-primary)]">{tDetail("total")}</dt>
-                                <dd className="border-t border-[var(--color-border)] pt-2 text-end text-base font-bold text-[var(--color-text-primary)]">{formatPKR(po.totalAmount, locale, 2)}</dd>
+                                <dt className="border-t border-[var(--color-border)] pt-2 text-base font-semibold text-[var(--color-text-primary)]">{tDetail("total")}</dt>
+                                <dd className="border-t border-[var(--color-border)] pt-2 text-end text-base font-semibold text-[var(--color-text-primary)]">{formatPKR(po.totalAmount, locale, 2)}</dd>
                             </dl>
                         </CardContent>
                     </Card>
 
                     <Card className="p-4 sm:p-6">
                         <CardHeader className="mb-4 p-0">
-                            <CardTitle className="text-lg text-[var(--color-text-primary)]">{tDetail("linkedInvoices")}</CardTitle>
+                            <CardTitle className="text-[var(--color-text-primary)]">{tDetail("linkedInvoices")}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             {po.invoices.length === 0 ? (
@@ -141,12 +141,12 @@ export default async function PurchaseOrderDetailsPage({ params }: { params: Pro
 
                 <Card className="h-fit p-4 sm:p-6">
                     <CardHeader className="mb-4 p-0">
-                        <CardTitle className="text-lg text-[var(--color-text-primary)]">{tDetail("customerDetails")}</CardTitle>
+                        <CardTitle className="text-[var(--color-text-primary)]">{tDetail("customerDetails")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-5 p-0">
                         {po.customer ? (
                             <div>
-                                <Link href={`/customers/${po.customer.id}`} className="text-lg font-bold text-[var(--color-accent-primary)] hover:underline">
+                                <Link href={`/customers/${po.customer.id}`} className="text-lg font-semibold text-[var(--color-accent-primary)] hover:underline">
                                     {po.customer.name}
                                 </Link>
                                 {po.customer.nameUrdu && <p className="text-[var(--color-text-secondary)]">{po.customer.nameUrdu}</p>}

@@ -24,7 +24,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
     const methodLabel = { CASH: tPayments("cash"), CHEQUE: tPayments("cheque"), BANK_TRANSFER: tPayments("bankTransfer") };
 
     return (
-        <div className="animate-fade-in p-3 rtl:p-4">
+        <div className="animate-fade-in">
             <PageHeader
                 title={supplier.name}
                 subtitle={[supplier.nameUrdu, supplier.phone, supplier.address].filter(Boolean).join(" · ") || undefined}
@@ -55,22 +55,22 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
             <div className="mb-6 grid gap-4 sm:grid-cols-3">
                 <div className="stat-card p-5">
                     <p className="text-sm text-[var(--color-text-secondary)]">{t("balance")}</p>
-                    <p className={`mt-1 text-2xl font-bold ${supplier.balance > 0 ? "text-amber-300" : "text-[var(--color-text-primary)]"}`}>{formatPKR(supplier.balance, locale)}</p>
+                    <p className={`mt-1 text-2xl font-semibold ${supplier.balance > 0 ? "text-[var(--color-warning)]" : "text-[var(--color-text-primary)]"}`}>{formatPKR(supplier.balance, locale)}</p>
                 </div>
                 <div className="stat-card p-5">
                     <p className="text-sm text-[var(--color-text-secondary)]">{t("totalPurchased")}</p>
-                    <p className="mt-1 text-2xl font-bold text-[var(--color-text-primary)]">{formatPKR(supplier.totals.purchased, locale)}</p>
+                    <p className="mt-1 text-2xl font-semibold text-[var(--color-text-primary)]">{formatPKR(supplier.totals.purchased, locale)}</p>
                 </div>
                 <div className="stat-card p-5">
                     <p className="text-sm text-[var(--color-text-secondary)]">{t("totalPaid")}</p>
-                    <p className="mt-1 text-2xl font-bold text-[var(--color-text-primary)]">{formatPKR(supplier.totals.paid, locale)}</p>
+                    <p className="mt-1 text-2xl font-semibold text-[var(--color-text-primary)]">{formatPKR(supplier.totals.paid, locale)}</p>
                 </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="space-y-6 lg:col-span-2">
                     <Card className="p-4 sm:p-6">
-                        <CardHeader className="mb-4 p-0"><CardTitle className="text-lg">{t("purchaseOrders")}</CardTitle></CardHeader>
+                        <CardHeader className="mb-4 p-0"><CardTitle>{t("purchaseOrders")}</CardTitle></CardHeader>
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
@@ -106,7 +106,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
                     </Card>
 
                     <Card className="p-4 sm:p-6">
-                        <CardHeader className="mb-4 p-0"><CardTitle className="text-lg">{t("payments")}</CardTitle></CardHeader>
+                        <CardHeader className="mb-4 p-0"><CardTitle>{t("payments")}</CardTitle></CardHeader>
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
@@ -123,7 +123,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
                                             <TableCell className="text-[var(--color-text-secondary)]">{formatDisplayDate(payment.date, locale)}</TableCell>
                                             <TableCell>{methodLabel[payment.method]}</TableCell>
                                             <TableCell className="text-[var(--color-text-secondary)]" dir="ltr">{payment.reference || "—"}</TableCell>
-                                            <TableCell className="text-end font-medium text-green-300">{formatPKR(payment.amount, locale)}</TableCell>
+                                            <TableCell className="text-end font-medium text-[var(--color-success)]">{formatPKR(payment.amount, locale)}</TableCell>
                                         </TableRow>
                                     )) : (
                                         <TableRow><TableCell colSpan={4} className="h-20 text-center text-[var(--color-text-muted)]">{t("noPayments")}</TableCell></TableRow>
@@ -135,7 +135,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
                 </div>
 
                 <Card className="h-fit p-4 sm:p-6">
-                    <CardHeader className="mb-4 p-0"><CardTitle className="text-lg">{t("recordPayment")}</CardTitle></CardHeader>
+                    <CardHeader className="mb-4 p-0"><CardTitle>{t("recordPayment")}</CardTitle></CardHeader>
                     <CardContent className="p-0">
                         <SupplierPaymentForm supplierId={supplier.id} />
                     </CardContent>

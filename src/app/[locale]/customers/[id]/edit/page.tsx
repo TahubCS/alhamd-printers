@@ -22,7 +22,7 @@ export default async function EditCustomerPage({
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">{t("editCustomer")}</h1>
+                <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[var(--color-text-primary)] rtl:leading-10">{t("editCustomer")}</h1>
                 <p className="text-muted-foreground">{customer.name}</p>
             </div>
             <div className="max-w-2xl">

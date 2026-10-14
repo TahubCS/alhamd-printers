@@ -10,10 +10,10 @@ export default async function NewCustomerPage({
     const t = await getTranslations("customers");
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-6 animate-fade-in">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">{t("newCustomer")}</h1>
-                <p className="text-[var(--color-text-secondary)] mt-2">{t("subtitle")}</p>
+                <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[var(--color-text-primary)] rtl:leading-10">{t("newCustomer")}</h1>
+                <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{t("subtitle")}</p>
             </div>
             <div className="max-w-2xl">
                 <CustomerForm mode="create" locale={locale} />

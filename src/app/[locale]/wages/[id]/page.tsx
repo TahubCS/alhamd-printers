@@ -86,25 +86,24 @@ export default async function WorkerDetailPage({ params }: PageProps) {
 
     const typeColor = (type: string) => {
         switch (type) {
-            case "PAYMENT": return "text-green-500";
-            case "DEDUCTION": return "text-green-500";
-            case "ADVANCE": return "text-red-500";
+            case "PAYMENT": return "text-[var(--color-success)]";
+            case "DEDUCTION": return "text-[var(--color-success)]";
+            case "ADVANCE": return "text-[var(--color-error)]";
             default: return "text-[var(--color-text-primary)]";
         }
     };
 
     return (
-        <div className="animate-fade-in" style={{ padding: isUrdu ? "16px" : "12px" }}>
+        <div className="animate-fade-in">
             {/* Header */}
             <div
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                style={{ marginBottom: "32px" }}
+                className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
             >
                 <div>
                     <Link href={`/${locale}/wages`} className="text-sm text-[var(--color-primary)] hover:underline mb-2 inline-block">
                         ← {t("title")}
                     </Link>
-                    <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
+                    <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
                         {worker.name}
                     </h1>
                     {worker.phone && (
@@ -117,13 +116,13 @@ export default async function WorkerDetailPage({ params }: PageProps) {
             </div>
 
             {/* Balance Card */}
-            <Card className="card mb-6" style={{ padding: "20px 24px" }}>
+            <Card className="mb-6 px-5 py-4">
                 <div className="flex items-center justify-between">
                     <span className="text-lg font-medium text-[var(--color-text-secondary)]">
                         {t("currentBalance")}
                     </span>
                     <div className="text-right">
-                        <span className={`text-2xl font-bold ${worker.balance < 0 ? "text-red-500" : worker.balance > 0 ? "text-green-500" : "text-[var(--color-text-primary)]"}`}>
+                        <span className={`text-2xl font-semibold ${worker.balance < 0 ? "text-[var(--color-error)]" : worker.balance > 0 ? "text-[var(--color-success)]" : "text-[var(--color-text-primary)]"}`}>
                             {formatCurrency(Math.abs(worker.balance))}
                         </span>
                         <p className="text-xs text-[var(--color-text-muted)] mt-1">
@@ -136,17 +135,17 @@ export default async function WorkerDetailPage({ params }: PageProps) {
             {/* T-Account Ledger grouped by month */}
             {sortedGroups.length > 0 ? (
                 sortedGroups.map(([key, group]) => (
-                    <Card key={key} className="card mb-4" style={{ padding: isUrdu ? "28px" : "24px" }}>
+                    <Card key={key} className="mb-4 p-5">
                         <CardHeader className="p-0 mb-4">
                             <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg text-[var(--color-text-primary)]">
+                                <CardTitle className="text-[var(--color-text-primary)]">
                                     {group.label}
                                 </CardTitle>
                                 <div className="flex gap-4 text-sm">
-                                    <span className="text-green-500 font-semibold">
+                                    <span className="text-[var(--color-success)] font-semibold">
                                         +{formatCurrency(group.totalCredit)}
                                     </span>
-                                    <span className="text-red-500 font-semibold">
+                                    <span className="text-[var(--color-error)] font-semibold">
                                         -{formatCurrency(group.totalDebit)}
                                     </span>
                                 </div>
@@ -183,10 +182,10 @@ export default async function WorkerDetailPage({ params }: PageProps) {
                                                 <TableCell className="text-[var(--color-text-secondary)]">
                                                     {entry.notes || "—"}
                                                 </TableCell>
-                                                <TableCell className="text-right font-medium text-green-500">
+                                                <TableCell className="text-right font-medium text-[var(--color-success)]">
                                                     {!isDebit ? formatCurrency(entry.amount) : ""}
                                                 </TableCell>
-                                                <TableCell className="text-right font-medium text-red-500">
+                                                <TableCell className="text-right font-medium text-[var(--color-error)]">
                                                     {isDebit ? formatCurrency(entry.amount) : ""}
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -201,7 +200,7 @@ export default async function WorkerDetailPage({ params }: PageProps) {
                     </Card>
                 ))
             ) : (
-                <Card className="card" style={{ padding: "24px" }}>
+                <Card className="p-5">
                     <div className="text-center py-12 text-[var(--color-text-muted)]">
                         {t("noEntries")}
                     </div>

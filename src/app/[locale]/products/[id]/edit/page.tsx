@@ -13,7 +13,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     if (!product) notFound();
 
     return (
-        <div className="mx-auto max-w-3xl animate-fade-in p-3 rtl:p-4">
+        <div className="mx-auto max-w-3xl animate-fade-in">
             <PageHeader title={t("editProduct")} subtitle={product.code} />
             <ProductForm product={product} />
         </div>

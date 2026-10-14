@@ -5,7 +5,7 @@ import ProductForm from "@/components/products/ProductForm";
 export default async function NewProductPage() {
     const t = await getTranslations("products");
     return (
-        <div className="mx-auto max-w-3xl animate-fade-in p-3 rtl:p-4">
+        <div className="mx-auto max-w-3xl animate-fade-in">
             <PageHeader title={t("newProduct")} subtitle={t("formSubtitle")} />
             <ProductForm />
         </div>
