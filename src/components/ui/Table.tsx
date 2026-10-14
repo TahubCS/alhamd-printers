@@ -1,11 +1,12 @@
 import { HTMLAttributes, forwardRef, TableHTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
 export const Table = forwardRef<HTMLTableElement, TableHTMLAttributes<HTMLTableElement>>(
     ({ className = '', ...props }, ref) => (
         <div className="relative w-full overflow-auto" tabIndex={0} role="region" aria-label="Scrollable data table">
             <table
                 ref={ref}
-                className={`w-full caption-bottom text-sm ${className}`}
+                className={cn('w-full caption-bottom text-sm', className)}
                 {...props}
             />
         </div>
@@ -15,7 +16,7 @@ Table.displayName = 'Table';
 
 export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
     ({ className = '', ...props }, ref) => (
-        <thead ref={ref} className={`[&_tr]:border-b [&_tr]:border-[var(--color-border)] ${className}`} {...props} />
+        <thead ref={ref} className={cn('[&_tr]:border-b [&_tr]:border-[var(--color-border)]', className)} {...props} />
     )
 );
 TableHeader.displayName = 'TableHeader';
@@ -24,7 +25,7 @@ export const TableBody = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTML
     ({ className = '', ...props }, ref) => (
         <tbody
             ref={ref}
-            className={`[&_tr:last-child]:border-0 ${className}`}
+            className={cn('[&_tr:last-child]:border-0', className)}
             {...props}
         />
     )
@@ -35,7 +36,7 @@ export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTable
     ({ className = '', ...props }, ref) => (
         <tr
             ref={ref}
-            className={`border-b border-[var(--color-border)] transition-colors hover:bg-[var(--color-bg-hover)] data-[state=selected]:bg-[var(--color-bg-hover)] ${className}`}
+            className={cn('border-b border-[var(--color-border)] transition-colors hover:bg-[var(--color-bg-hover)] data-[state=selected]:bg-[var(--color-bg-hover)]', className)}
             {...props}
         />
     )
@@ -46,7 +47,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLT
     ({ className = '', ...props }, ref) => (
         <th
             ref={ref}
-            className={`h-12 px-4 text-start align-middle font-medium text-[var(--color-text-secondary)] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${className}`}
+            className={cn('h-12 px-4 text-start align-middle font-medium text-[var(--color-text-secondary)] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', className)}
             {...props}
         />
     )
@@ -57,7 +58,7 @@ export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLT
     ({ className = '', ...props }, ref) => (
         <td
             ref={ref}
-            className={`p-4 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${className}`}
+            className={cn('p-4 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', className)}
             {...props}
         />
     )
