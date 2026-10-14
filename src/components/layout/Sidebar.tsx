@@ -13,13 +13,15 @@ import {
     Printer,
     CreditCard,
     Settings,
-    Boxes
+    Boxes,
+    Truck
 } from 'lucide-react';
 
 const navItems = [
     { key: 'dashboard', href: '/', icon: LayoutDashboard },
     { key: 'customers', href: '/customers', icon: Users },
     { key: 'orders', href: '/purchase-orders', icon: ShoppingCart },
+    { key: 'challans', href: '/challans', icon: Truck },
     { key: 'invoices', href: '/invoices', icon: FileText },
     { key: 'products', href: '/products', icon: Boxes },
     { key: 'cheques', href: '/cheques', icon: CreditCard },

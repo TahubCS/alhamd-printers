@@ -64,6 +64,11 @@ export default async function PurchaseOrderDetailsPage({
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    <Link href={`/${locale}/challans/new?fromPoId=${po.id}`}>
+                        <Button variant="outline">
+                            Create Delivery Challan
+                        </Button>
+                    </Link>
                     {po.status === 'OPEN' ? (
                         <Link href={`/${locale}/invoices/new?fromPoId=${po.id}`}>
                             <Button>

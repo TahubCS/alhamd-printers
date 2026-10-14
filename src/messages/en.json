@@ -17,6 +17,7 @@
         "dashboard": "Dashboard",
         "customers": "Customers",
         "orders": "Orders",
+        "challans": "Challans",
         "invoices": "Invoices",
         "products": "Products",
         "cheques": "Cheques",
@@ -100,7 +101,8 @@
             "inventory": "Materials and stock movements",
             "expenses": "Business expense records",
             "wages": "Worker wages and advances",
-            "products": "Bag specifications and prices"
+            "products": "Bag specifications and prices",
+            "challans": "Dispatch notes for deliveries"
         }
     },
     "actions": {
@@ -355,6 +357,43 @@
         "restore": "Restore",
         "confirmArchive": "Archive this product? It will be hidden from new invoices but kept on past ones.",
         "empty": "No products yet. Add your standard bag sizes to speed up invoicing.",
+        "genericError": "Something went wrong. Please try again."
+    },
+    "challans": {
+        "title": "Delivery Challans",
+        "subtitle": "Dispatch notes for goods sent to customers",
+        "newChallan": "New Challan",
+        "formSubtitle": "Pick a purchase order to fill in what is still left to deliver, or enter items manually.",
+        "documentTitle": "Delivery Challan",
+        "date": "Date",
+        "customer": "Customer",
+        "selectCustomer": "Select customer",
+        "poNumber": "PO #",
+        "poOptional": "Purchase order (optional)",
+        "noPo": "No purchase order",
+        "noOpenPos": "No purchase orders for this customer",
+        "vehicle": "Vehicle no.",
+        "driver": "Driver",
+        "notes": "Notes",
+        "items": "Items",
+        "addLine": "Add line",
+        "removeLine": "Remove line",
+        "description": "Description",
+        "quantity": "Quantity",
+        "unit": "Unit",
+        "remaining": "{count} left to deliver",
+        "totalQuantity": "Total quantity",
+        "lines": "{count, plural, one {# line} other {# lines}}",
+        "actions": "Actions",
+        "save": "Save challan",
+        "print": "Print challan",
+        "delete": "Delete challan",
+        "deliverTo": "Deliver to",
+        "dispatchedBy": "Dispatched by",
+        "receivedBy": "Received by (name & signature)",
+        "confirmDelete": "Delete challan #{number}? This cannot be undone.",
+        "poFullyDelivered": "Everything on this purchase order has already been delivered.",
+        "empty": "No delivery challans yet.",
         "genericError": "Something went wrong. Please try again."
     }
 }

@@ -21,7 +21,7 @@ model Company {
   phone     String?
   email     String?
   website   String?
-  logoUrl   String?   // URL to company logo for PDF
+  logoUrl   String? // URL to company logo for PDF
   isDefault Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -52,6 +52,7 @@ model Customer {
   ledgerEntries          LedgerEntry[]
   cheques                Cheque[]
   payments               Payment[]
+  deliveryChallans       DeliveryChallan[]
 }
 
 // ============================================
@@ -184,7 +185,7 @@ model RawMaterial {
   id                String                 @id @default(cuid())
   name              String                 @unique
   type              RawMaterialType
-  attributes        Json?                  // Flexible attributes: thickness, quality, size
+  attributes        Json? // Flexible attributes: thickness, quality, size
   quantity          Decimal                @default(0) @db.Decimal(15, 2)
   minimumStockLevel Decimal                @default(0) @db.Decimal(15, 2)
   transactions      InventoryTransaction[]
@@ -214,9 +215,9 @@ model InventoryTransaction {
 }
 
 enum TransactionType {
-  IN          // Purchase
-  OUT         // Usage
-  ADJUSTMENT  // Correction
+  IN // Purchase
+  OUT // Usage
+  ADJUSTMENT // Correction
 }
 
 // ============================================
@@ -343,22 +344,23 @@ model PurchaseOrderItem {
 // CUSTOMER PURCHASE ORDER (Incoming POs)
 // ============================================
 model CustomerPurchaseOrder {
-  id              String                      @id @default(cuid())
-  poNumber        String? // The customer's PO number
-  date            DateTime                    @default(now())
-  customerId      String? // Optional because it might be a new customer during extraction
-  customer        Customer?                   @relation(fields: [customerId], references: [id])
-  subtotal        Decimal?                    @default(0) @db.Decimal(15, 2)
-  taxTotal        Decimal?                    @default(0) @db.Decimal(15, 2)
-  totalAmount     Decimal                     @default(0) @db.Decimal(15, 2)
-  status          CustomerPOStatus            @default(DRAFT)
-  originalFileUrl String? // Path/URL to the uploaded file
-  ocrText         String? // Raw text extracted if needed
-  items           CustomerPurchaseOrderItem[]
-  invoices        Invoice[]
-  createdAt       DateTime                    @default(now())
-  updatedAt       DateTime                    @updatedAt
+  id                    String                      @id @default(cuid())
+  poNumber              String? // The customer's PO number
+  date                  DateTime                    @default(now())
+  customerId            String? // Optional because it might be a new customer during extraction
+  customer              Customer?                   @relation(fields: [customerId], references: [id])
+  subtotal              Decimal?                    @default(0) @db.Decimal(15, 2)
+  taxTotal              Decimal?                    @default(0) @db.Decimal(15, 2)
+  totalAmount           Decimal                     @default(0) @db.Decimal(15, 2)
+  status                CustomerPOStatus            @default(DRAFT)
+  originalFileUrl       String? // Path/URL to the uploaded file
+  ocrText               String? // Raw text extracted if needed
+  items                 CustomerPurchaseOrderItem[]
+  invoices              Invoice[]
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
   inventoryTransactions InventoryTransaction[]
+  deliveryChallans      DeliveryChallan[]
 }
 
 enum CustomerPOStatus {
@@ -382,21 +384,37 @@ model CustomerPurchaseOrderItem {
   customAttributes        Json?                 @default("{}")
   productId               String?
   product                 Product?              @relation(fields: [productId], references: [id])
+  deliveredItems          DeliveryChallanItem[]
 }
 
 // ============================================
-// DELIVERY CHALLAN
+// DELIVERY CHALLAN - goods dispatched to a customer
 // ============================================
 model DeliveryChallan {
-  id         String   @id @default(cuid())
-  challanNo  Int      @unique @default(autoincrement())
-  date       DateTime @default(now())
-  customerId String
-  poNumber   String?
-  items      String
-  quantity   Int
-  notes      String?
-  createdAt  DateTime @default(now())
+  id                      String                 @id @default(cuid())
+  challanNo               Int                    @unique @default(autoincrement())
+  date                    DateTime               @default(now())
+  customerId              String
+  customer                Customer               @relation(fields: [customerId], references: [id])
+  customerPurchaseOrderId String?
+  customerPurchaseOrder   CustomerPurchaseOrder? @relation(fields: [customerPurchaseOrderId], references: [id])
+  poNumber                String?
+  vehicleNo               String?
+  driverName              String?
+  items                   DeliveryChallanItem[]
+  notes                   String?
+  createdAt               DateTime               @default(now())
+}
+
+model DeliveryChallanItem {
+  id                          String                     @id @default(cuid())
+  challanId                   String
+  challan                     DeliveryChallan            @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  description                 String
+  quantity                    Int
+  unit                        String                     @default("Pieces")
+  customerPurchaseOrderItemId String?
+  customerPurchaseOrderItem   CustomerPurchaseOrderItem? @relation(fields: [customerPurchaseOrderItemId], references: [id])
 }
 
 // ============================================
@@ -407,11 +425,10 @@ model Expense {
   date        DateTime @default(now())
   description String
   amount      Decimal  @db.Decimal(15, 2)
-  receiptUrl  String?  // Optional: stored receipt image path
+  receiptUrl  String? // Optional: stored receipt image path
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
-
 
 // ============================================
 // BANK ACCOUNT - Secure storage

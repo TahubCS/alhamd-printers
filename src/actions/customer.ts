@@ -258,6 +258,7 @@ export async function deleteCustomer(id: string) {
                         ledgerEntries: true,
                         payments: true,
                         cheques: true,
+                        deliveryChallans: true,
                     }
                 }
             }
@@ -271,7 +272,8 @@ export async function deleteCustomer(id: string) {
             + customer._count.customerPurchaseOrders
             + customer._count.ledgerEntries
             + customer._count.payments
-            + customer._count.cheques;
+            + customer._count.cheques
+            + customer._count.deliveryChallans;
 
         if (relatedCount > 0) {
             const details: string[] = [];
@@ -280,6 +282,7 @@ export async function deleteCustomer(id: string) {
             if (customer._count.ledgerEntries > 0) details.push(`${customer._count.ledgerEntries} ledger entry(ies)`);
             if (customer._count.payments > 0) details.push(`${customer._count.payments} payment(s)`);
             if (customer._count.cheques > 0) details.push(`${customer._count.cheques} cheque(s)`);
+            if (customer._count.deliveryChallans > 0) details.push(`${customer._count.deliveryChallans} delivery challan(s)`);
             return {
                 success: false,
                 error: `Cannot delete "${customer.name}": has ${details.join(", ")}. Remove related records first.`
