@@ -1,117 +1,73 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { adjustStock, SerializedRawMaterial, TransactionType } from "@/actions/inventory";
 import { Button } from "@/components/ui/Button";
+import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import { adjustStock, SerializedRawMaterial } from "@/actions/inventory";
 
 interface Props {
-    isOpen: boolean;
-    type: "IN" | "OUT" | "ADJUSTMENT";
+    type: TransactionType;
     materialId: string;
     materialName: string;
     onClose: () => void;
     onSuccess: (updatedMaterial: SerializedRawMaterial) => void;
 }
 
-export default function StockTransactionDialog({ isOpen, type, materialId, materialName, onClose, onSuccess }: Props) {
+export default function StockTransactionDialog({ type, materialId, materialName, onClose, onSuccess }: Props) {
+    const t = useTranslations("inventory.transaction");
+    const tActions = useTranslations("actions");
     const [isLoading, setIsLoading] = useState(false);
     const [quantity, setQuantity] = useState("");
     const [notes, setNotes] = useState("");
-    const [poNumber, setPoNumber] = useState("");
-
-    if (!isOpen) return null;
+    const [reference, setReference] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
-
         const qty = parseFloat(quantity);
-        if (isNaN(qty) || qty <= 0) {
-            alert("Please enter a valid quantity");
-            setIsLoading(false);
+        // Adjustments carry their own sign; additions and withdrawals must be positive
+        if (isNaN(qty) || qty === 0 || (type !== "ADJUSTMENT" && qty < 0)) {
+            setError(t("invalidQuantity"));
             return;
         }
-
-        const result = await adjustStock(
-            materialId,
-            qty,
-            type,
-            notes + (poNumber ? ` (PO: ${poNumber})` : ""),
-            undefined // relatedPoId - can link later if we have PO selection dropdown
-        );
-
+        setIsLoading(true);
+        setError(null);
+        const noteText = [notes.trim(), reference.trim() && `${t("referenceShort")}: ${reference.trim()}`].filter(Boolean).join(" · ");
+        const result = await adjustStock(materialId, qty, type, noteText || undefined);
         setIsLoading(false);
-
         if (result.success && result.data) {
             onSuccess(result.data);
-            onClose();
         } else {
-            alert(result.error);
+            setError(result.error ?? t("genericError"));
         }
     };
 
-    const isAdd = type === "IN";
-    const title = isAdd ? "Add Stock" : "Use Stock";
-    const actionLabel = isAdd ? "Add to Stock" : "Remove from Stock";
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-lg shadow-lg p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">
-                        {title} - <span className="text-base font-normal text-[var(--color-text-secondary)]">{materialName}</span>
-                    </h2>
-                    <Button variant="ghost" size="sm" onClick={onClose}>X</Button>
+        <Dialog title={t(`title.${type}`)} description={materialName} closeLabel={tActions("cancel")} onClose={onClose}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+                <Input
+                    id="stock-qty"
+                    type="number"
+                    step="0.01"
+                    min={type === "ADJUSTMENT" ? undefined : "0.01"}
+                    label={t(`quantity.${type}`)}
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    placeholder={type === "ADJUSTMENT" ? "-5 / +5" : "0"}
+                    required
+                />
+                {type === "OUT" && (
+                    <Input id="stock-ref" label={t("reference")} value={reference} onChange={(e) => setReference(e.target.value)} placeholder="PO-4101" />
+                )}
+                <Input id="stock-notes" label={t("notes")} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t(`notesPlaceholder.${type}`)} />
+                <div className="flex justify-end gap-2 pt-2">
+                    <Button type="button" variant="outline" onClick={onClose}>{tActions("cancel")}</Button>
+                    <Button type="submit" isLoading={isLoading} variant={type === "OUT" ? "danger" : "primary"}>{t(`submit.${type}`)}</Button>
                 </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <Label>Quantity {isAdd ? "(Active Stock)" : "(To Consume)"}</Label>
-                        <Input
-                            type="number"
-                            step="0.01"
-                            value={quantity}
-                            onChange={(e) => setQuantity(e.target.value)}
-                            placeholder="0.00"
-                            required
-                            autoFocus
-                        />
-                    </div>
-
-                    {!isAdd && (
-                        <div>
-                            <Label>Related PO Number (Optional)</Label>
-                            <Input
-                                value={poNumber}
-                                onChange={(e) => setPoNumber(e.target.value)}
-                                placeholder="e.g. 1835"
-                            />
-                        </div>
-                    )}
-
-                    <div>
-                        <Label>Notes</Label>
-                        <Input
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            placeholder={isAdd ? "e.g. Purchase from Local Market" : "e.g. Used for Urgent Job"}
-                        />
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-4">
-                        <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-                        <Button
-                            type="submit"
-                            isLoading={isLoading}
-                            variant={isAdd ? "primary" : "danger"}
-                        >
-                            {actionLabel}
-                        </Button>
-                    </div>
-                </form>
-            </div>
-        </div>
+            </form>
+        </Dialog>
     );
 }

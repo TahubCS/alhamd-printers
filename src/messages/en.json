@@ -11,7 +11,72 @@
     },
     "inventory": {
         "title": "Inventory Management",
-        "subtitle": "Track raw materials and stock levels"
+        "subtitle": "Track raw materials and stock levels",
+        "summary": "{count, plural, =0 {No materials yet} one {# material} other {# materials}} · {low, plural, =0 {all above alert level} one {# low on stock} other {# low on stock}}",
+        "addMaterial": "Add material",
+        "saveMaterial": "Save material",
+        "name": "Name",
+        "type": "Type",
+        "details": "Details",
+        "currentStock": "Current stock",
+        "actions": "Actions",
+        "openingStock": "Opening stock",
+        "alertLevel": "Alert below",
+        "minimum": "Alert below {value}",
+        "lowStock": "Low stock",
+        "outOfStock": "Out of stock",
+        "addStock": "Add stock",
+        "useStock": "Use stock",
+        "adjustStock": "Correct stock count",
+        "history": "Stock movements",
+        "loading": "Loading…",
+        "noHistory": "No movements recorded yet.",
+        "empty": "No materials yet. Add the rolls, hangers, buttons and tape you keep in stock.",
+        "types": {
+            "ROLL": "PVC roll",
+            "HANGER": "Hanger",
+            "BUTTON": "Button",
+            "TAPE": "Tape",
+            "OTHER": "Other"
+        },
+        "attributes": {
+            "thickness": "Thickness (mm)",
+            "quality": "Quality",
+            "size": "Size",
+            "details": "Details"
+        },
+        "movement": {
+            "IN": "Received",
+            "OUT": "Used",
+            "ADJUSTMENT": "Correction"
+        },
+        "transaction": {
+            "title": {
+                "IN": "Add stock",
+                "OUT": "Use stock",
+                "ADJUSTMENT": "Correct stock count"
+            },
+            "quantity": {
+                "IN": "Quantity received",
+                "OUT": "Quantity used",
+                "ADJUSTMENT": "Change (negative to reduce)"
+            },
+            "submit": {
+                "IN": "Add to stock",
+                "OUT": "Remove from stock",
+                "ADJUSTMENT": "Apply correction"
+            },
+            "notesPlaceholder": {
+                "IN": "e.g. Bought from local market",
+                "OUT": "e.g. Used for urgent order",
+                "ADJUSTMENT": "e.g. Physical count on Friday"
+            },
+            "reference": "Customer PO / job reference (optional)",
+            "referenceShort": "Ref",
+            "notes": "Notes",
+            "invalidQuantity": "Enter a valid quantity.",
+            "genericError": "Something went wrong. Please try again."
+        }
     },
     "nav": {
         "dashboard": "Dashboard",

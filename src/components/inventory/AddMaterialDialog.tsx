@@ -1,26 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { createRawMaterial, RawMaterialType, SerializedRawMaterial } from "@/actions/inventory";
 import { Button } from "@/components/ui/Button";
+import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { createRawMaterial, RawMaterialType, SerializedRawMaterial } from "@/actions/inventory";
 
 interface Props {
     onClose: () => void;
     onSuccess: (newMaterial: SerializedRawMaterial) => void;
 }
 
-const MATERIAL_TYPES = [
-    { value: "ROLL", label: "PVC Roll" },
-    { value: "HANGER", label: "Hanger" },
-    { value: "BUTTON", label: "Button" },
-    { value: "TAPE", label: "Tape" },
-    { value: "OTHER", label: "Other" },
-];
+const MATERIAL_TYPES: RawMaterialType[] = ["ROLL", "HANGER", "BUTTON", "TAPE", "OTHER"];
+const ROLL_QUALITIES = ["Super Clear", "Imported", "Normal", "Matt"] as const;
 
 export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
+    const t = useTranslations("inventory");
+    const tActions = useTranslations("actions");
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [name, setName] = useState("");
     const [type, setType] = useState<RawMaterialType>("ROLL");
     const [initialQuantity, setInitialQuantity] = useState("0");
@@ -28,22 +28,22 @@ export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
 
     // Attributes
     const [thickness, setThickness] = useState("");
-    const [quality, setQuality] = useState("Super Clear"); // Default
+    const [quality, setQuality] = useState<string>(ROLL_QUALITIES[0]);
     const [size, setSize] = useState("");
-    const [genericAttr, setGenericAttr] = useState("");
+    const [details, setDetails] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setError(null);
 
-        // Build attributes based on type
         let attributes: Record<string, string> = {};
         if (type === "ROLL") {
             attributes = { thickness, quality };
         } else if (type === "HANGER" || type === "BUTTON") {
             attributes = { size };
         } else {
-            attributes = { details: genericAttr };
+            attributes = { details };
         }
 
         const result = await createRawMaterial({
@@ -51,128 +51,62 @@ export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
             type,
             quantity: parseFloat(initialQuantity) || 0,
             minimumStockLevel: parseFloat(minStock) || 0,
-            attributes
+            attributes,
         });
 
         setIsLoading(false);
-
         if (result.success && result.data) {
             onSuccess(result.data);
-            onClose();
         } else {
-            alert(result.error);
+            setError(result.error ?? t("transaction.genericError"));
         }
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-[var(--color-bg-primary)] border border-[var(--color-border)] rounded-lg shadow-lg p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Add New Material</h2>
-                    <Button variant="ghost" size="sm" onClick={onClose}>X</Button>
+        <Dialog title={t("addMaterial")} closeLabel={tActions("cancel")} onClose={onClose}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+                <div>
+                    <Label htmlFor="material-type" className="mb-2 block text-[var(--color-text-primary)]">{t("type")}</Label>
+                    <select id="material-type" className="input" value={type} onChange={(e) => setType(e.target.value as RawMaterialType)}>
+                        {MATERIAL_TYPES.map((value) => (
+                            <option key={value} value={value}>{t(`types.${value}`)}</option>
+                        ))}
+                    </select>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <Label>Material Type</Label>
-                        <select
-                            className="w-full p-2 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
-                            value={type}
-                            onChange={(e) => setType(e.target.value as RawMaterialType)}
-                        >
-                            {MATERIAL_TYPES.map(t => (
-                                <option key={t.value} value={t.value}>{t.label}</option>
-                            ))}
-                        </select>
-                    </div>
+                <Input id="material-name" label={t("name")} value={name} onChange={(e) => setName(e.target.value)} placeholder="0.9mm Super Clear" required />
 
-                    <div>
-                        <Label>Name / Description</Label>
-                        <Input
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g. 0.9mm Super Clear"
-                            required
-                        />
-                    </div>
-
-                    {/* Dynamic Attribute Fields */}
-                    {type === "ROLL" && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label>Thickness (mm)</Label>
-                                <Input
-                                    value={thickness}
-                                    onChange={(e) => setThickness(e.target.value)}
-                                    placeholder="0.9"
-                                />
-                            </div>
-                            <div>
-                                <Label>Quality</Label>
-                                <select
-                                    className="w-full p-2 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
-                                    value={quality}
-                                    onChange={(e) => setQuality(e.target.value)}
-                                >
-                                    <option value="Super Clear">Super Clear</option>
-                                    <option value="Imported">Imported</option>
-                                    <option value="Normal">Normal</option>
-                                    <option value="Matt">Matt</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {(type === "HANGER" || type === "BUTTON") && (
-                        <div>
-                            <Label>Size</Label>
-                            <Input
-                                value={size}
-                                onChange={(e) => setSize(e.target.value)}
-                                placeholder="Size/Dimensions"
-                            />
-                        </div>
-                    )}
-
-                    {(type === "TAPE" || type === "OTHER") && (
-                        <div>
-                            <Label>Details</Label>
-                            <Input
-                                value={genericAttr}
-                                onChange={(e) => setGenericAttr(e.target.value)}
-                                placeholder="Width, colour, supplier code…"
-                            />
-                        </div>
-                    )}
-
-                    {/* Stock Levels */}
+                {type === "ROLL" && (
                     <div className="grid grid-cols-2 gap-4">
+                        <Input id="material-thickness" label={t("attributes.thickness")} value={thickness} onChange={(e) => setThickness(e.target.value)} placeholder="0.9" />
                         <div>
-                            <Label>Initial Stock (Count)</Label>
-                            <Input
-                                type="number"
-                                step="1"
-                                value={initialQuantity}
-                                onChange={(e) => setInitialQuantity(e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <Label>Min. Alert Level</Label>
-                            <Input
-                                type="number"
-                                step="1"
-                                value={minStock}
-                                onChange={(e) => setMinStock(e.target.value)}
-                            />
+                            <Label htmlFor="material-quality" className="mb-2 block text-[var(--color-text-primary)]">{t("attributes.quality")}</Label>
+                            <select id="material-quality" className="input" value={quality} onChange={(e) => setQuality(e.target.value)}>
+                                {ROLL_QUALITIES.map((q) => <option key={q} value={q}>{q}</option>)}
+                            </select>
                         </div>
                     </div>
+                )}
 
-                    <div className="flex justify-end gap-2 pt-4">
-                        <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-                        <Button type="submit" isLoading={isLoading}>Save Material</Button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                {(type === "HANGER" || type === "BUTTON") && (
+                    <Input id="material-size" label={t("attributes.size")} value={size} onChange={(e) => setSize(e.target.value)} placeholder="14in" />
+                )}
+
+                {(type === "TAPE" || type === "OTHER") && (
+                    <Input id="material-details" label={t("attributes.details")} value={details} onChange={(e) => setDetails(e.target.value)} />
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                    <Input id="material-qty" type="number" min="0" step="1" label={t("openingStock")} value={initialQuantity} onChange={(e) => setInitialQuantity(e.target.value)} />
+                    <Input id="material-min" type="number" min="0" step="1" label={t("alertLevel")} value={minStock} onChange={(e) => setMinStock(e.target.value)} />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                    <Button type="button" variant="outline" onClick={onClose}>{tActions("cancel")}</Button>
+                    <Button type="submit" isLoading={isLoading}>{t("saveMaterial")}</Button>
+                </div>
+            </form>
+        </Dialog>
     );
 }

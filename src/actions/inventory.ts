@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { RawMaterial, InventoryTransaction } from "@prisma/client";
+import { Prisma, RawMaterial, InventoryTransaction } from "@prisma/client";
 import { stockChange } from "@/lib/finance";
 
 export type RawMaterialType = "ROLL" | "HANGER" | "BUTTON" | "TAPE" | "OTHER";
@@ -43,26 +43,29 @@ function serializeMaterial(material: RawMaterial): SerializedRawMaterial {
 
 export async function createRawMaterial(data: CreateMaterialInput) {
     try {
+        if (!data.name.trim()) return { success: false, error: "Name is required" };
+        if (data.quantity < 0 || data.minimumStockLevel < 0) {
+            return { success: false, error: "Stock levels cannot be negative" };
+        }
         const material = await prisma.rawMaterial.create({
             data: {
-                name: data.name,
+                name: data.name.trim(),
                 type: data.type,
                 attributes: data.attributes || {},
                 quantity: data.quantity,
                 minimumStockLevel: data.minimumStockLevel,
-                // Log initial stock as IN transaction
-                transactions: {
-                    create: {
-                        type: "IN",
-                        quantity: data.quantity,
-                        notes: "Initial Stock",
-                    }
-                }
+                // Log opening stock so the movement history adds up to the current quantity
+                ...(data.quantity > 0 && {
+                    transactions: { create: { type: "IN", quantity: data.quantity, notes: "Opening stock" } },
+                }),
             }
         });
         revalidatePath("/inventory");
         return { success: true, data: serializeMaterial(material) };
     } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            return { success: false, error: `A material named "${data.name.trim()}" already exists` };
+        }
         console.error("Create Material Error:", error);
         return { success: false, error: "Failed to create material" };
     }
