@@ -107,6 +107,8 @@ Copy `.env.example` and use development-only values. Never commit `.env`, databa
 3. If an error-level check fails, the stronger model reads the document once more at higher image detail, and the reading with fewer errors is kept. Most documents only ever use the cheap model.
 4. The customer is matched by NTN, STRN or email first, then by name with legal suffixes removed, then by phone. Ties are left for the reviewer instead of guessed.
 5. Every check result is shown above the review form, and nothing is saved until a person confirms it.
+6. Each line can be linked to one of our products. The app suggests one from what staff confirmed on that customer's earlier POs, then from our product code or name printed on the line.
+7. Confirming an AI-read PO teaches the app (`src/lib/ai/learned-matches.ts`): the customer name as printed, and which product each printed line or customer item code means. A suggestion staff remove or change is forgotten or corrected. Settings → Learned matches lists everything learned, with a way to forget a wrong match. Hand-typed POs teach nothing.
 
 ## Quality checks
 

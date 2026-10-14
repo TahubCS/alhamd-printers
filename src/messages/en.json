@@ -482,6 +482,20 @@
             "empty": "No bank accounts added yet.",
             "paymentCount": "{count, plural, =0 {No payments} one {# payment} other {# payments}}",
             "genericError": "Something went wrong. Please try again."
+        },
+        "learned": {
+            "title": "Learned matches",
+            "description": "When you confirm an AI-read PO, the app remembers how each customer writes their name and items, and links them automatically next time. Forget any match that is wrong.",
+            "empty": "Nothing learned yet. Matches appear here after you confirm AI-read purchase orders.",
+            "customersTitle": "Customer names",
+            "productsTitle": "Customer items",
+            "printedName": "Name on their documents",
+            "printedText": "Item as they write it",
+            "customer": "Customer",
+            "product": "Our product",
+            "times": "Confirmed",
+            "forget": "Forget",
+            "error": "Could not forget this match."
         }
     },
     "products": {
@@ -709,7 +723,14 @@
             "cancel": "Cancel",
             "save": "Confirm & save PO",
             "close": "Close",
-            "preview": "Uploaded purchase order"
+            "preview": "Uploaded purchase order",
+            "product": "Our product",
+            "noProduct": "— Not linked to a product —",
+            "productMatch": {
+                "learned": "Remembered",
+                "code": "Matched by code",
+                "name": "Matched by name"
+            }
         }
     },
     "aiChecks": {
@@ -717,7 +738,7 @@
         "needsReview": "{count, plural, one {# thing} other {# things}} to check before saving",
         "readBy": "read by {model}",
         "rereadBy": "read again by {model} after the first reading failed its checks",
-        "matched": "Matched to an existing customer by {reason, select, ntn {NTN} gstNumber {STRN} email {email} name {name} phone {phone} other {a similar name}}. Change it below if this is wrong.",
+        "matched": "Matched to an existing customer by {reason, select, learned {a name confirmed on an earlier PO} ntn {NTN} gstNumber {STRN} email {email} name {name} phone {phone} other {a similar name}}. Change it below if this is wrong.",
         "codes": {
             "noItems": "No item lines were found.",
             "noCustomerName": "The customer's name could not be read.",

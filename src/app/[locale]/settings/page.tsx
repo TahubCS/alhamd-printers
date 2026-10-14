@@ -3,12 +3,18 @@ import { getAllBankAccounts, getCompanies } from "@/actions/settings";
 import PageHeader from "@/components/layout/PageHeader";
 import CompanySettings from "@/components/settings/CompanySettings";
 import BankAccountSettings from "@/components/settings/BankAccountSettings";
+import LearnedMatchesSettings from "@/components/settings/LearnedMatchesSettings";
+import { getLearnedMatches } from "@/actions/learned-matches";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
     const t = await getTranslations("settings");
-    const [{ data: companies }, { data: accounts }] = await Promise.all([getCompanies(), getAllBankAccounts()]);
+    const [{ data: companies }, { data: accounts }, { data: learned }] = await Promise.all([
+        getCompanies(),
+        getAllBankAccounts(),
+        getLearnedMatches(),
+    ]);
 
     return (
         <div className="animate-fade-in">
@@ -36,6 +42,22 @@ export default async function SettingsPage() {
                         accountNumberMasked: a.accountNumberMasked,
                         isActive: a.isActive,
                         paymentCount: a._count.payments,
+                    }))}
+                />
+                <LearnedMatchesSettings
+                    customers={(learned?.customerAliases ?? []).map((a) => ({
+                        id: a.id,
+                        printedName: a.name,
+                        customerName: a.customer.name,
+                        timesConfirmed: a.timesConfirmed,
+                    }))}
+                    products={(learned?.productAliases ?? []).map((a) => ({
+                        id: a.id,
+                        customerName: a.customer.name,
+                        printedText: a.text,
+                        productCode: a.product.code,
+                        productName: a.product.name,
+                        timesConfirmed: a.timesConfirmed,
                     }))}
                 />
             </div>

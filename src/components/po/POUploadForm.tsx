@@ -15,6 +15,7 @@ import { calculateDocumentTotals } from "@/lib/finance";
 import { formatPKR } from "@/lib/utils";
 import ExtractionChecks from "@/components/ai/ExtractionChecks";
 import type { MatchReason } from "@/lib/ai/customer-match";
+import type { ProductMatchReason } from "@/lib/ai/product-match";
 
 interface POItem {
     description: string;
@@ -24,6 +25,18 @@ interface POItem {
     gstRate?: number | string;
     unit?: string;
     customAttributes?: Record<string, string | null>;
+    productId?: string;
+    // Set for AI-read lines so the confirmation can be learned
+    suggestedProductId?: string | null;
+    productMatch?: ProductMatchReason | null;
+    sourceDescription?: string | null;
+    sourceProductCode?: string | null;
+}
+
+interface ProductOption {
+    id: string;
+    code: string;
+    name: string;
 }
 
 interface POFormData {
@@ -49,7 +62,7 @@ interface CustomerOption {
     nameUrdu: string | null;
 }
 
-export default function POUploadForm({ customers, aiEnabled }: { customers: CustomerOption[]; aiEnabled: boolean }) {
+export default function POUploadForm({ customers, products, aiEnabled }: { customers: CustomerOption[]; products: ProductOption[]; aiEnabled: boolean }) {
     const t = useTranslations("orders.upload");
     const locale = useLocale();
     const [step, setStep] = useState<"upload" | "review">("upload");
@@ -147,7 +160,12 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                     amount: item.amount || 0,
                     gstRate: item.gstRate || 0,
                     unit: item.unit || "Pieces",
-                    customAttributes: item.customAttributes || {}
+                    customAttributes: item.customAttributes || {},
+                    productId: item.productId ?? "",
+                    suggestedProductId: item.productId ?? null,
+                    productMatch: item.productMatch ?? null,
+                    sourceDescription: item.description,
+                    sourceProductCode: item.productCode ?? null,
                 })) || []
             });
 
@@ -186,8 +204,11 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                 amount: Number(item.amount) || 0,
                 gstRate: Number(item.gstRate) || 0,
                 customAttributes: item.customAttributes || {},
+                productId: item.productId || null,
             })),
             totalAmount: totals.total,
+            // Only AI-read POs teach the app; a hand-typed PO has nothing printed to learn from
+            printedCustomerName: extractedData ? extractedData.customer?.name ?? null : undefined,
         };
 
         const result = await confirmCustomerPO(submissionData);
@@ -546,7 +567,7 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                                 </div>
 
                                 {fields.map((field, index) => (
-                                    <div key={field.id} className="flex gap-2 items-center">
+                                    <div key={field.id} className="flex gap-2 items-start">
                                         <div className="flex-[3] min-w-0">
                                             <Controller
                                                 control={form.control}
@@ -562,6 +583,41 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                                                     />
                                                 )}
                                             />
+                                            {products.length > 0 && (
+                                                <Controller
+                                                    control={form.control}
+                                                    name={`items.${index}.productId`}
+                                                    render={({ field }) => {
+                                                        const reason = form.watch(`items.${index}.productMatch`);
+                                                        return (
+                                                            <div className="mt-1 flex items-center gap-2">
+                                                                <select
+                                                                    {...field}
+                                                                    value={field.value ?? ""}
+                                                                    onChange={(e) => {
+                                                                        field.onChange(e.target.value);
+                                                                        form.setValue(`items.${index}.productMatch`, null);
+                                                                    }}
+                                                                    aria-label={t("product")}
+                                                                    className="input input-compact h-8 min-w-0 flex-1 text-xs"
+                                                                >
+                                                                    <option value="">{t("noProduct")}</option>
+                                                                    {products.map((p) => (
+                                                                        <option key={p.id} value={p.id}>{p.code} · {p.name}</option>
+                                                                    ))}
+                                                                </select>
+                                                                {reason && field.value && (
+                                                                    <span className={`shrink-0 rounded px-1.5 text-[11px] font-medium leading-5 ${reason === "learned"
+                                                                        ? "bg-[var(--color-success-soft)] text-[var(--color-success)]"
+                                                                        : "bg-[var(--color-info-soft)] text-[var(--color-info)]"}`}>
+                                                                        {t(`productMatch.${reason}`)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                         <div className="w-16 shrink-0">
                                             <Controller
@@ -647,7 +703,7 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                                                 )}
                                             />
                                         </div>
-                                        <div className="flex-[2] min-w-0 text-center text-sm font-medium text-[var(--color-text-primary)]" aria-label={t("amount")}>
+                                        <div className="flex-[2] min-w-0 text-center text-sm font-medium leading-9 text-[var(--color-text-primary)]" aria-label={t("amount")}>
                                             {formatPKR(totals.lines[index]?.amount ?? 0, locale, 2)}
                                         </div>
                                         <div className="w-9 shrink-0 flex justify-center">
