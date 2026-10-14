@@ -8,10 +8,9 @@ import { Trash2 } from 'lucide-react';
 
 interface DeleteExpenseButtonProps {
     expenseId: string;
-    label?: string;
 }
 
-export default function DeleteExpenseButton({ expenseId, label }: DeleteExpenseButtonProps) {
+export default function DeleteExpenseButton({ expenseId }: DeleteExpenseButtonProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
 

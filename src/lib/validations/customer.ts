@@ -11,4 +11,5 @@ export const CustomerSchema = z.object({
     isBadDebt: z.boolean().default(false),
 });
 
-export type CustomerFormValues = z.infer<typeof CustomerSchema>;
+export type CustomerFormInput = z.input<typeof CustomerSchema>;
+export type CustomerFormValues = z.output<typeof CustomerSchema>;

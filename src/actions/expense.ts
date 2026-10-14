@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { extractDataFromReceipt } from "@/lib/ai/receipt-extractor";
 
@@ -47,7 +48,7 @@ export async function getExpenses(filters?: {
     year?: number;
 }) {
     try {
-        const where: any = {};
+        const where: Prisma.ExpenseWhereInput = {};
 
         if (filters?.month && filters?.year) {
             const startDate = new Date(filters.year, filters.month - 1, 1);

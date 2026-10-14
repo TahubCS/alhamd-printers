@@ -1,9 +1,9 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/renderer';
-import { formatCurrency } from '@/lib/utils'; // You might need to duplicate this or move to a shared non-DOM utility file if it uses DOM
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
+import { formatCurrency } from '@/lib/utils';
+import type { getInvoiceDetailsForPDF } from '@/actions/invoice';
 
-// Register font (optional, using standard fonts for now)
-// Font.register({ family: 'Roboto', src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf' });
+export type InvoiceDetails = NonNullable<Awaited<ReturnType<typeof getInvoiceDetailsForPDF>>['data']>;
 
 const styles = StyleSheet.create({
     page: {
@@ -108,13 +108,13 @@ const styles = StyleSheet.create({
 });
 
 interface InvoicePDFProps {
-    invoice: any; // Using any for minimal setup, robust types should be used later
-    company: any;
+    invoice: InvoiceDetails;
+    company: InvoiceDetails['company'];
 }
 
 const InvoicePDF = ({ invoice, company }: InvoicePDFProps) => {
-    const customer = invoice.customer || {};
-    const items = invoice.items || [];
+    const customer = invoice.customer;
+    const items = invoice.items;
 
     return (
         <Document>
@@ -136,7 +136,7 @@ const InvoicePDF = ({ invoice, company }: InvoicePDFProps) => {
                         </View>
                         <View style={[styles.column, { alignItems: 'flex-end' }]}>
                             <Text style={styles.invoiceTitle}>INVOICE</Text>
-                            <Text style={styles.value}>#{invoice.invoiceNumber}</Text>
+                            <Text style={styles.value}>#{invoice.invoiceNo}</Text>
 
                             <Text style={styles.label}>Date</Text>
                             <Text style={styles.value}>{new Date(invoice.date).toLocaleDateString()}</Text>
@@ -169,7 +169,7 @@ const InvoicePDF = ({ invoice, company }: InvoicePDFProps) => {
                     </View>
 
                     {/* Rows */}
-                    {items.map((item: any, index: number) => (
+                    {items.map((item, index) => (
                         <View key={index} style={styles.tableRow}>
                             <Text style={styles.colDesc}>{item.description}</Text>
                             <Text style={styles.colSize}>

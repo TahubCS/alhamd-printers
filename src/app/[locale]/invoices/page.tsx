@@ -25,7 +25,6 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
     const { companyId, status } = await searchParams;
     const t = await getTranslations("invoices");
     const tActions = await getTranslations("actions");
-    const tCommon = await getTranslations("common");
 
     const { success, data: invoices, error } = await getInvoices({
         companyId,

@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/Table";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import DeleteCustomerButton from "@/components/customers/DeleteCustomerButton";
 
 export const dynamic = "force-dynamic";
@@ -100,7 +99,7 @@ export default async function CustomersPage({ params, searchParams }: PageProps)
                         </TableHeader>
                         <TableBody>
                             {customers && customers.length > 0 ? (
-                                customers.map((customer: any) => (
+                                customers.map((customer) => (
                                     <TableRow key={customer.id}>
                                         <TableCell className="font-medium text-[var(--color-text-primary)]">{customer.name}</TableCell>
                                         <TableCell className="font-noto-nastaliq text-lg text-[var(--color-text-secondary)]">

@@ -1,4 +1,3 @@
-import { useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import ChequeStats from '@/components/cheques/ChequeStats';
 import ChequeList from '@/components/cheques/ChequeList';

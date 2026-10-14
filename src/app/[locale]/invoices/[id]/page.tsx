@@ -1,7 +1,5 @@
 import { getInvoiceDetailsForPDF } from "@/actions/invoice";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import {
     Table,
     TableBody,
@@ -13,7 +11,7 @@ import {
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Printer, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import PrintButton from "@/components/invoices/PrintButton";
 import DownloadInvoiceButton from "@/components/invoices/DownloadInvoiceButton";
 import DeleteInvoiceButton from "@/components/invoices/DeleteInvoiceButton";
@@ -30,7 +28,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
     const tCommon = await getTranslations("common");
     const tActions = await getTranslations("actions");
 
-    const { success, data: invoice, error } = await getInvoiceDetailsForPDF(id);
+    const { success, data: invoice } = await getInvoiceDetailsForPDF(id);
 
     if (!success || !invoice) {
         notFound();

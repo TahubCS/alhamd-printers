@@ -4,9 +4,8 @@ import { createCustomer, updateCustomer } from "@/actions/customer";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { CustomerFormValues, CustomerSchema } from "@/lib/validations/customer";
+import { CustomerFormInput, CustomerFormValues, CustomerSchema } from "@/lib/validations/customer";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Customer } from "@prisma/client";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -20,9 +19,9 @@ interface CustomerFormProps {
         phone: string | null;
         address: string | null;
         email: string | null;
-        creditLimit: number | any | null;
+        creditLimit: number | null;
         isBadDebt: boolean;
-        balance: number | any;
+        balance: number;
     };
     mode: "create" | "edit";
     locale: string;
@@ -35,8 +34,8 @@ export function CustomerForm({ customer, mode, locale }: CustomerFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const form = useForm<CustomerFormValues>({
-        resolver: zodResolver(CustomerSchema) as any,
+    const form = useForm<CustomerFormInput, unknown, CustomerFormValues>({
+        resolver: zodResolver(CustomerSchema),
         defaultValues: {
             name: customer?.name || "",
             nameUrdu: customer?.nameUrdu || "",

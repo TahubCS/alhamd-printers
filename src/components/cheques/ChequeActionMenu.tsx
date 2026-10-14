@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { updateChequeStatus } from '@/actions/payment';
-import { MoreHorizontal, ArrowUpRight, Check, X } from 'lucide-react';
+import { ArrowUpRight, Check, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface ChequeActionMenuProps {
@@ -15,7 +15,6 @@ interface ChequeActionMenuProps {
 export default function ChequeActionMenu({ chequeId, currentStatus }: ChequeActionMenuProps) {
     const t = useTranslations('cheques.actions');
     const [isLoading, setIsLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
 
     const handleUpdate = async (status: 'DEPOSITED' | 'CLEARED' | 'BOUNCED') => {
@@ -24,7 +23,6 @@ export default function ChequeActionMenu({ chequeId, currentStatus }: ChequeActi
         setIsLoading(true);
         try {
             await updateChequeStatus(chequeId, status);
-            setIsOpen(false);
             // Router refresh is handled in server action but we can do it here too just in case
             router.refresh();
         } catch (error) {

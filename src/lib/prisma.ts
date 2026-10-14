@@ -5,10 +5,7 @@ const globalForPrisma = globalThis as unknown as {
     prisma: PrismaClient | undefined;
 };
 
-// Create a singleton connection pool
-// This prevents creating too many connections during hot reload
-const connectionString = process.env.DATABASE_URL;
-
+// Reuse a single client during hot reload so dev doesn't exhaust connections
 function createPrismaClient() {
     return new PrismaClient({
         log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],

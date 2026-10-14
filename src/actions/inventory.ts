@@ -21,7 +21,7 @@ export type SerializedTransaction = Omit<InventoryTransaction, 'quantity'> & {
 export interface CreateMaterialInput {
     name: string;
     type: RawMaterialType;
-    attributes?: any;
+    attributes?: Record<string, string | number | null>;
     quantity: number;
     minimumStockLevel: number;
 }

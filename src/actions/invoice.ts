@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { InvoiceStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function getInvoices(filters?: {
@@ -10,20 +11,21 @@ export async function getInvoices(filters?: {
     status?: string;
 }) {
     try {
-        const where: any = {};
+        const where: Prisma.InvoiceWhereInput = {};
 
         if (filters?.companyId) {
             where.companyId = filters.companyId;
         }
 
         if (filters?.startDate || filters?.endDate) {
-            where.date = {};
-            if (filters.startDate) where.date.gte = filters.startDate;
-            if (filters.endDate) where.date.lte = filters.endDate;
+            where.date = {
+                ...(filters.startDate && { gte: filters.startDate }),
+                ...(filters.endDate && { lte: filters.endDate }),
+            };
         }
 
-        if (filters?.status) {
-            where.status = filters.status;
+        if (filters?.status && filters.status in InvoiceStatus) {
+            where.status = filters.status as InvoiceStatus;
         }
 
         const invoices = await prisma.invoice.findMany({
@@ -62,7 +64,6 @@ export async function getInvoices(filters?: {
 
 export async function getInvoiceDetailsForPDF(id: string) {
     try {
-        console.log("--- DEBUG: Fetching Invoice For PDF (v2) ---", id);
         const invoice = await prisma.invoice.findUnique({
             where: { id },
             include: {
@@ -218,7 +219,7 @@ export async function createInvoice(data: {
 
                 if (po) {
                     // Calculate total invoiced amount for this PO (including past invoices)
-                    const pastTotal = po.invoices.reduce((sum: number, inv: { total: any }) => sum + Number(inv.total), 0);
+                    const pastTotal = po.invoices.reduce((sum: number, inv: { total: Prisma.Decimal }) => sum + Number(inv.total), 0);
                     const newTotalInvoiced = pastTotal + total; // current invoice total
 
                     // Check if fully invoiced
@@ -335,7 +336,7 @@ export async function deleteInvoice(id: string) {
 
                 if (po) {
                     const remainingTotal = po.invoices.reduce(
-                        (sum: number, inv: { total: any }) => sum + Number(inv.total), 0
+                        (sum: number, inv: { total: Prisma.Decimal }) => sum + Number(inv.total), 0
                     );
                     const status = remainingTotal >= Number(po.totalAmount) ? 'CLOSED' :
                         remainingTotal > 0 ? 'PARTIAL' : 'OPEN';

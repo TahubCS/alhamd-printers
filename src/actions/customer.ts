@@ -192,7 +192,6 @@ export async function getCustomerById(id: string) {
             notes: customer.notes,
             createdAt: customer.createdAt,
             updatedAt: customer.updatedAt,
-            // @ts-ignore - _count is added by include
             _count: customer._count
         };
 

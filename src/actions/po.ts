@@ -1,38 +1,29 @@
-
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
-// Helper to serialize PO objects (convert Decimal to Number, Date to string)
-function serializePO(po: any) {
+type DecimalLike = Prisma.Decimal | number | null | undefined;
+
+const toNumber = (value: DecimalLike) => (value == null ? 0 : Number(value));
+
+// Shared PO fields: Decimal -> number, Date -> ISO string so client components can receive them
+function serializePOBase<T extends {
+    totalAmount: DecimalLike;
+    subtotal: DecimalLike;
+    taxTotal: DecimalLike;
+    date: Date;
+    createdAt: Date;
+    updatedAt: Date;
+}>(po: T) {
     return {
         ...po,
-        totalAmount: Number(po.totalAmount),
-        subtotal: po.subtotal ? Number(po.subtotal) : 0,
-        taxTotal: po.taxTotal ? Number(po.taxTotal) : 0,
-        date: po.date instanceof Date ? po.date.toISOString() : po.date,
-        createdAt: po.createdAt instanceof Date ? po.createdAt.toISOString() : po.createdAt,
-        updatedAt: po.updatedAt instanceof Date ? po.updatedAt.toISOString() : po.updatedAt,
-        // Handle nested customer if present
-        customer: po.customer ? {
-            ...po.customer,
-            balance: po.customer.balance ? Number(po.customer.balance) : 0,
-            creditLimit: po.customer.creditLimit ? Number(po.customer.creditLimit) : null
-        } : undefined,
-        // Handle nested items if present
-        items: po.items?.map((item: any) => ({
-            ...item,
-            rate: Number(item.rate),
-            amount: Number(item.amount),
-            gstRate: Number(item.gstRate || 0),
-            customAttributes: item.customAttributes || {}
-        })),
-        // Handle nested invoices if present
-        invoices: po.invoices?.map((inv: any) => ({
-            ...inv,
-            total: inv.total ? Number(inv.total) : 0,
-            date: inv.date instanceof Date ? inv.date.toISOString() : inv.date
-        }))
+        totalAmount: toNumber(po.totalAmount),
+        subtotal: toNumber(po.subtotal),
+        taxTotal: toNumber(po.taxTotal),
+        date: po.date.toISOString(),
+        createdAt: po.createdAt.toISOString(),
+        updatedAt: po.updatedAt.toISOString(),
     };
 }
 
@@ -47,7 +38,7 @@ export async function getCustomerPOs(customerId: string) {
                 }
             }
         });
-        return { success: true, data: pos.map(serializePO) };
+        return { success: true, data: pos.map(serializePOBase) };
     } catch (error) {
         console.error("Get POs Error:", error);
         return { success: false, error: "Failed to fetch purchase orders" };
@@ -67,8 +58,32 @@ export async function getCustomerPOById(id: string) {
             }
         });
         if (!po) return { success: false, error: "PO not found" };
-        return { success: true, data: serializePO(po) };
+
+        return {
+            success: true,
+            data: {
+                ...serializePOBase(po),
+                customer: po.customer ? {
+                    ...po.customer,
+                    balance: toNumber(po.customer.balance),
+                    creditLimit: po.customer.creditLimit ? Number(po.customer.creditLimit) : null,
+                } : null,
+                items: po.items.map(item => ({
+                    ...item,
+                    rate: toNumber(item.rate),
+                    amount: toNumber(item.amount),
+                    gstRate: toNumber(item.gstRate),
+                    customAttributes: (item.customAttributes ?? {}) as Record<string, string | null>,
+                })),
+                invoices: po.invoices.map(inv => ({
+                    ...inv,
+                    total: toNumber(inv.total),
+                    date: inv.date.toISOString(),
+                })),
+            }
+        };
     } catch (error) {
+        console.error("Get PO Error:", error);
         return { success: false, error: "PO not found" };
     }
 }
@@ -86,7 +101,7 @@ export async function getAllPOs() {
                 }
             }
         });
-        return { success: true, data: pos.map(serializePO) };
+        return { success: true, data: pos.map(serializePOBase) };
     } catch (error) {
         console.error("Get All POs Error:", error);
         return { success: false, error: "Failed to fetch purchase orders" };

@@ -4,11 +4,12 @@
 import { useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { processPOUpload, confirmCustomerPO } from "@/actions/po-automation";
+import type { ExtractedPOData } from "@/lib/ai/po-extractor";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Upload, FileText, Loader2, Plus, Trash, Check, Building2, Phone, Mail, MapPin, Globe, Calendar, CreditCard, X, Settings2, Eye } from "lucide-react";
+import { Upload, FileText, Loader2, Plus, Trash, Check, Building2, Phone, Mail, MapPin, CreditCard, X, Settings2, Eye } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 
 interface POItem {
@@ -38,12 +39,18 @@ interface POFormData {
     notes: string;
 }
 
-export default function POUploadForm({ customers }: { customers: any[] }) {
+interface CustomerOption {
+    id: string;
+    name: string;
+    nameUrdu: string | null;
+}
+
+export default function POUploadForm({ customers }: { customers: CustomerOption[] }) {
     const [step, setStep] = useState<"upload" | "review">("upload");
     const [isLoading, setIsLoading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [uploadedFileType, setUploadedFileType] = useState<string>("");
-    const [extractedData, setExtractedData] = useState<any>(null);
+    const [extractedData, setExtractedData] = useState<Partial<ExtractedPOData> | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [globalGst, setGlobalGst] = useState<number>(0);
     const [customColumns, setCustomColumns] = useState<string[]>([]);
@@ -125,7 +132,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                 totalAmount: extracted.totalAmount || 0,
                 paymentTerms: extracted.paymentTerms || "",
                 notes: extracted.notes || "",
-                items: extracted.items?.map((item: any) => ({
+                items: extracted.items?.map((item) => ({
                     description: item.description || "",
                     quantity: item.quantity || 1,
                     rate: item.rate || 0,
@@ -138,7 +145,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
 
             // Auto-detect custom columns from AI extraction
             const detectedColumns = new Set<string>();
-            extracted.items?.forEach((item: any) => {
+            extracted.items?.forEach((item) => {
                 if (item.customAttributes) {
                     Object.keys(item.customAttributes).forEach((key: string) => detectedColumns.add(key));
                 }
@@ -168,8 +175,6 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                 customAttributes: item.customAttributes || {},
             })),
             totalAmount: Number(data.totalAmount) || 0,
-            originalFileUrl: extractedData?.originalFileUrl || null,
-            ocrText: extractedData?.ocrText || null
         };
 
         const result = await confirmCustomerPO(submissionData);
@@ -642,7 +647,7 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
 
                                 {fields.length === 0 && (
                                     <div className="text-center py-4 text-[var(--color-text-tertiary)]">
-                                        No items extracted. Click "Add Item" to add manually.
+                                        No items extracted. Click &ldquo;Add Item&rdquo; to add manually.
                                     </div>
                                 )}
                             </div>
@@ -717,7 +722,8 @@ export default function POUploadForm({ customers }: { customers: any[] }) {
                                                                 const items = form.getValues('items');
                                                                 items.forEach((__item, i) => {
                                                                     const current = form.getValues(`items.${i}.customAttributes`) || {};
-                                                                    const { [col]: _removed, ...rest } = current;
+                                                                    const rest = { ...current };
+                                                                    delete rest[col];
                                                                     form.setValue(`items.${i}.customAttributes`, rest);
                                                                 });
                                                             }}

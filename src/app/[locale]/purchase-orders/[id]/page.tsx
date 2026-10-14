@@ -11,10 +11,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/Table";
-import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FileText, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +23,6 @@ export default async function PurchaseOrderDetailsPage({
     params: Promise<{ locale: string; id: string }>;
 }) {
     const { locale, id } = await params;
-    const tCommon = await getTranslations("common");
-    const tActions = await getTranslations("actions");
-    const t = await getTranslations("nav");
 
     const { success, data: po } = await getCustomerPOById(id);
 
@@ -103,7 +99,7 @@ export default async function PurchaseOrderDetailsPage({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {po.items.map((item: any) => (
+                                    {po.items.map((item) => (
                                         <TableRow key={item.id}>
                                             <TableCell className="font-medium">{item.description}</TableCell>
                                             <TableCell className="text-right">{item.quantity}</TableCell>
@@ -152,7 +148,7 @@ export default async function PurchaseOrderDetailsPage({
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {po.invoices.map((inv: any) => (
+                                        {po.invoices.map((inv) => (
                                             <TableRow key={inv.id}>
                                                 <TableCell className="font-medium">#{inv.invoiceNo}</TableCell>
                                                 <TableCell>{formatDate(inv.date)}</TableCell>

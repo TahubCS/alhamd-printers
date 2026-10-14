@@ -4,8 +4,7 @@ import InventoryDashboard from "@/components/inventory/InventoryDashboard";
 
 export const dynamic = "force-dynamic";
 
-export default async function InventoryPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params;
+export default async function InventoryPage() {
     const t = await getTranslations("inventory");
 
     const { success, data: materials } = await getRawMaterials();
@@ -30,7 +29,6 @@ export default async function InventoryPage({ params }: { params: Promise<{ loca
 
             <InventoryDashboard
                 initialMaterials={materials || []}
-                locale={locale}
             />
         </div>
     );

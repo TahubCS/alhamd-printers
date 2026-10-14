@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/Label";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { Plus, Trash, Search } from "lucide-react";
+import { Plus, Trash } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 // Types
@@ -92,13 +92,13 @@ export default function InvoiceForm() {
                     if (po.customerId) setCustomerId(po.customerId);
                     // Pre-fill items from PO
                     if (po.items && po.items.length > 0) {
-                        setItems(po.items.map((item: any) => ({
-                            productId: item.productId,
+                        setItems(po.items.map((item) => ({
+                            productId: item.productId ?? undefined,
                             description: item.description,
                             quantity: item.quantity,
-                            rate: Number(item.rate),
-                            amount: Number(item.amount),
-                            gstRate: 0 // Default GST for PO items
+                            rate: item.rate,
+                            amount: item.amount,
+                            gstRate: item.gstRate // Carry the PO's GST onto the invoice
                         })));
                     }
                     if (po.poNumber) {
@@ -153,7 +153,7 @@ export default function InvoiceForm() {
         return item.quantity * item.rate;
     };
 
-    const updateItem = (index: number, field: keyof InvoiceItem, value: any) => {
+    const updateItem = <K extends keyof InvoiceItem>(index: number, field: K, value: InvoiceItem[K]) => {
         const newItems = [...items];
         newItems[index] = { ...newItems[index], [field]: value };
 

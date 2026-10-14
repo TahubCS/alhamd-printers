@@ -1,11 +1,9 @@
 
 import { getCustomers } from "@/actions/customer";
 import POUploadForm from "@/components/po/POUploadForm";
-import { getTranslations } from "next-intl/server";
 
 export default async function NewPOPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
-    const t = await getTranslations("po");
 
     // Fetch customers for the dropdown matching logic
     const { data: customers } = await getCustomers();

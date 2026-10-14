@@ -1,6 +1,6 @@
 
-const { PrismaClient } = require('@prisma/client');
-const readline = require('readline');
+import { PrismaClient } from '@prisma/client';
+import readline from 'readline';
 
 const prisma = new PrismaClient();
 const rl = readline.createInterface({

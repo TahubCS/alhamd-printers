@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { createRawMaterial } from "@/actions/inventory";
+import { createRawMaterial, RawMaterialType, SerializedRawMaterial } from "@/actions/inventory";
 
 interface Props {
     onClose: () => void;
-    onSuccess: (newMaterial: any) => void;
+    onSuccess: (newMaterial: SerializedRawMaterial) => void;
 }
 
 const MATERIAL_TYPES = [
@@ -22,7 +22,7 @@ const MATERIAL_TYPES = [
 export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const [name, setName] = useState("");
-    const [type, setType] = useState("ROLL");
+    const [type, setType] = useState<RawMaterialType>("ROLL");
     const [initialQuantity, setInitialQuantity] = useState("0");
     const [minStock, setMinStock] = useState("10");
 
@@ -37,7 +37,7 @@ export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
         setIsLoading(true);
 
         // Build attributes based on type
-        let attributes = {};
+        let attributes: Record<string, string> = {};
         if (type === "ROLL") {
             attributes = { thickness, quality };
         } else if (type === "HANGER" || type === "BUTTON") {
@@ -48,7 +48,7 @@ export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
 
         const result = await createRawMaterial({
             name,
-            type: type as any,
+            type,
             quantity: parseFloat(initialQuantity) || 0,
             minimumStockLevel: parseFloat(minStock) || 0,
             attributes
@@ -56,7 +56,7 @@ export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
 
         setIsLoading(false);
 
-        if (result.success) {
+        if (result.success && result.data) {
             onSuccess(result.data);
             onClose();
         } else {
@@ -78,7 +78,7 @@ export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
                         <select
                             className="w-full p-2 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
                             value={type}
-                            onChange={(e) => setType(e.target.value)}
+                            onChange={(e) => setType(e.target.value as RawMaterialType)}
                         >
                             {MATERIAL_TYPES.map(t => (
                                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -130,6 +130,17 @@ export default function AddMaterialDialog({ onClose, onSuccess }: Props) {
                                 value={size}
                                 onChange={(e) => setSize(e.target.value)}
                                 placeholder="Size/Dimensions"
+                            />
+                        </div>
+                    )}
+
+                    {(type === "TAPE" || type === "OTHER") && (
+                        <div>
+                            <Label>Details</Label>
+                            <Input
+                                value={genericAttr}
+                                onChange={(e) => setGenericAttr(e.target.value)}
+                                placeholder="Width, colour, supplier code…"
                             />
                         </div>
                     )}

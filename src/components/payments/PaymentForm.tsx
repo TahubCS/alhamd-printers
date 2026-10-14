@@ -28,7 +28,6 @@ export default function PaymentForm({
     onClose,
     onSuccess
 }: PaymentFormProps) {
-    const t = useTranslations('payments');
     const tActions = useTranslations('actions');
     const locale = useLocale();
     const isUrdu = locale === 'ur';

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { adjustStock } from "@/actions/inventory";
+import { adjustStock, SerializedRawMaterial } from "@/actions/inventory";
 
 interface Props {
     isOpen: boolean;
@@ -12,7 +12,7 @@ interface Props {
     materialId: string;
     materialName: string;
     onClose: () => void;
-    onSuccess: (updatedMaterial: any) => void;
+    onSuccess: (updatedMaterial: SerializedRawMaterial) => void;
 }
 
 export default function StockTransactionDialog({ isOpen, type, materialId, materialName, onClose, onSuccess }: Props) {
@@ -44,7 +44,7 @@ export default function StockTransactionDialog({ isOpen, type, materialId, mater
 
         setIsLoading(false);
 
-        if (result.success) {
+        if (result.success && result.data) {
             onSuccess(result.data);
             onClose();
         } else {
@@ -55,7 +55,6 @@ export default function StockTransactionDialog({ isOpen, type, materialId, mater
     const isAdd = type === "IN";
     const title = isAdd ? "Add Stock" : "Use Stock";
     const actionLabel = isAdd ? "Add to Stock" : "Remove from Stock";
-    const colorClass = isAdd ? "text-green-600" : "text-red-600";
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">

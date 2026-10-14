@@ -168,7 +168,6 @@ export default async function CustomerDetailsPage({
                         ledger={ledger}
                         purchaseOrders={purchaseOrders}
                         locale={locale}
-                        customerId={id}
                     />
                 </div>
             </div>

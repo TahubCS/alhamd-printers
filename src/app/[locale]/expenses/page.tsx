@@ -25,7 +25,6 @@ export default async function ExpensesPage({ params, searchParams }: PageProps) 
     const { locale } = await params;
     const { month, year } = await searchParams;
     const t = await getTranslations("expenses");
-    const tActions = await getTranslations("actions");
 
     const filters: { month?: number; year?: number } = {};
     if (month) filters.month = parseInt(month);
@@ -79,13 +78,6 @@ export default async function ExpensesPage({ params, searchParams }: PageProps) 
     const sortedGroups = Object.entries(groupedExpenses).sort(
         ([a], [b]) => b.localeCompare(a)
     );
-
-    // Generate month options for filter
-    const currentYear = new Date().getFullYear();
-    const months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December",
-    ];
 
     return (
         <div className="animate-fade-in" style={{ padding: isUrdu ? "16px" : "12px" }}>

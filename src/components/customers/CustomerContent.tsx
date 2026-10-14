@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -8,18 +7,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/Button";
 import { Plus, FileText, CreditCard } from "lucide-react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import type { getCustomerLedger } from "@/actions/customer";
+import type { getCustomerPOs } from "@/actions/po";
+
+type LedgerRow = NonNullable<Awaited<ReturnType<typeof getCustomerLedger>>["data"]>[number];
+type CustomerPORow = NonNullable<Awaited<ReturnType<typeof getCustomerPOs>>["data"]>[number];
 
 interface CustomerContentProps {
-    ledger: any[];
-    purchaseOrders: any[];
+    ledger: LedgerRow[];
+    purchaseOrders: CustomerPORow[];
     locale: string;
-    customerId: string;
 }
 
-export default function CustomerContent({ ledger, purchaseOrders, locale, customerId }: CustomerContentProps) {
+export default function CustomerContent({ ledger, purchaseOrders, locale }: CustomerContentProps) {
     const [activeTab, setActiveTab] = useState("ledger");
-    const t = useTranslations("customers");
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
@@ -74,14 +75,13 @@ export default function CustomerContent({ ledger, purchaseOrders, locale, custom
                                 </TableHeader>
                                 <TableBody>
                                     {ledger.length > 0 ? (
-                                        ledger.map((entry: any) => (
+                                        ledger.map((entry) => (
                                             <TableRow key={entry.id} className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-bg-tertiary)]">
                                                 <TableCell className="text-[var(--color-text-tertiary)]">
                                                     {formatDate(entry.date)}
                                                 </TableCell>
                                                 <TableCell className="text-[var(--color-text-primary)]">
                                                     {entry.particulars}
-                                                    {entry.invoice?.invoiceNo && ` #${entry.invoice.invoiceNo}`}
                                                     {entry.payment?.method && ` (${entry.payment.method})`}
                                                 </TableCell>
                                                 <TableCell className="text-right text-red-400">
@@ -139,7 +139,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale, custom
                                 </TableHeader>
                                 <TableBody>
                                     {purchaseOrders.length > 0 ? (
-                                        purchaseOrders.map((po: any) => (
+                                        purchaseOrders.map((po) => (
                                             <TableRow key={po.id} className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-bg-tertiary)]">
                                                 <TableCell className="text-[var(--color-text-tertiary)]">
                                                     {formatDate(po.date)}

@@ -1,7 +1,7 @@
 
 import { getAllPOs } from "@/actions/po";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import {
     Table,
     TableBody,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/Table";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Plus, Eye, FileText } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +23,9 @@ export default async function PurchaseOrdersPage({
 }) {
     const { locale } = await params;
     const t = await getTranslations("nav"); // Using nav translations for title for now, or add specific PO translations
-    const tCommon = await getTranslations("common");
     const tActions = await getTranslations("actions");
 
-    const { success, data: purchaseOrders } = await getAllPOs();
+    const { data: purchaseOrders } = await getAllPOs();
 
     const isUrdu = locale === 'ur';
 
@@ -89,7 +88,7 @@ export default async function PurchaseOrdersPage({
                         </TableHeader>
                         <TableBody>
                             {purchaseOrders && purchaseOrders.length > 0 ? (
-                                purchaseOrders.map((po: any) => (
+                                purchaseOrders.map((po) => (
                                     <TableRow key={po.id}>
                                         <TableCell className="text-[var(--color-text-secondary)]">
                                             {formatDate(po.date)}

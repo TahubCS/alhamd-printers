@@ -18,10 +18,9 @@ import StockTransactionDialog from "./StockTransactionDialog";
 
 interface Props {
     initialMaterials: SerializedRawMaterial[];
-    locale: string;
 }
 
-export default function InventoryDashboard({ initialMaterials, locale }: Props) {
+export default function InventoryDashboard({ initialMaterials }: Props) {
     const [materials, setMaterials] = useState<SerializedRawMaterial[]>(initialMaterials);
     const [showAddMaterial, setShowAddMaterial] = useState(false);
     const [transactionState, setTransactionState] = useState<{
@@ -36,7 +35,7 @@ export default function InventoryDashboard({ initialMaterials, locale }: Props) 
         materialName: null,
     });
 
-    const formatAttributes = (attrs: any) => {
+    const formatAttributes = (attrs: unknown) => {
         if (!attrs || typeof attrs !== 'object') return '-';
         return Object.entries(attrs)
             .map(([key, value]) => `${key}: ${value}`)

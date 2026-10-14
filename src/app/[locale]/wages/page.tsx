@@ -22,7 +22,7 @@ export default async function WagesPage({ params }: PageProps) {
     const { locale } = await params;
     const t = await getTranslations("wages");
 
-    const { success, data: workers } = await getWorkers();
+    const { data: workers } = await getWorkers();
     const isUrdu = locale === "ur";
 
     const formatCurrency = (amount: number) =>

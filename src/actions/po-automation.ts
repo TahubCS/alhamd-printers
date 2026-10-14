@@ -1,9 +1,9 @@
-
 "use server";
 
 import { prisma } from "@/lib/prisma";
 import { extractDataFromPO, ExtractedPOData } from "@/lib/ai/po-extractor";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 
 export async function processPOUpload(formData: FormData) {
     const file = formData.get("file") as File;
@@ -28,17 +28,17 @@ export async function processPOUpload(formData: FormData) {
         const customerEmail = extractedData.customer?.email;
         const customerNTN = extractedData.customer?.ntn;
 
-        const whereClause: any = { OR: [] };
+        const conditions: Prisma.CustomerWhereInput[] = [];
         if (customerName) {
-            whereClause.OR.push({ name: { contains: customerName, mode: 'insensitive' } });
-            whereClause.OR.push({ nameUrdu: { contains: customerName } });
+            conditions.push({ name: { contains: customerName, mode: 'insensitive' } });
+            conditions.push({ nameUrdu: { contains: customerName } });
         }
-        if (customerEmail) whereClause.OR.push({ email: customerEmail });
-        if (customerNTN) whereClause.OR.push({ ntn: customerNTN });
+        if (customerEmail) conditions.push({ email: customerEmail });
+        if (customerNTN) conditions.push({ ntn: customerNTN });
 
-        if (whereClause.OR.length > 0) {
+        if (conditions.length > 0) {
             matchedCustomer = await prisma.customer.findFirst({
-                where: whereClause,
+                where: { OR: conditions },
                 select: {
                     id: true,
                     name: true,
@@ -65,7 +65,7 @@ export async function processPOUpload(formData: FormData) {
     }
 }
 
-export type ConfirmPOData = ExtractedPOData & {
+export type ConfirmPOData = Omit<Partial<ExtractedPOData>, "items"> & {
     customerId?: string;
     // Customer fields for new customer creation
     newCustomerName?: string;
@@ -128,13 +128,16 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
         }
 
         // 2. Create Purchase Order
-        const safeNumber = (val: any) => isNaN(parseFloat(val)) ? 0 : parseFloat(val);
+        const safeNumber = (val: unknown) => {
+            const parsed = parseFloat(String(val));
+            return isNaN(parsed) ? 0 : parsed;
+        };
 
         // Calculate totals
         let subtotal = 0;
         let taxTotal = 0;
 
-        const itemsData = data.items.map((item: any) => {
+        const itemsData = data.items.map((item) => {
             const quantity = Math.max(1, Math.round(safeNumber(item.quantity)));
             const rate = safeNumber(item.rate);
             const amount = safeNumber(item.amount); // Usually qty * rate, but trusting UI/Extraction
