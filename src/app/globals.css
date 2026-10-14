@@ -533,3 +533,51 @@ input[type="number"] {
     gap: var(--spacing-lg);
   }
 }
+
+/* Printing: only the document itself, on white paper */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .sidebar,
+  .navbar,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .main-content,
+  [dir="rtl"] .main-content {
+    margin: 0 !important;
+  }
+
+  .page-content {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .card {
+    background: #fff !important;
+    border-color: #ccc !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .card * {
+    color: #000 !important;
+    border-color: #ccc !important;
+    background-color: transparent !important;
+  }
+
+  .animate-fade-in {
+    animation: none !important;
+  }
+}
