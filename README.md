@@ -74,10 +74,12 @@ cp .env.example .env
 Fill in the local values described below, then prepare the database and start the app:
 
 ```bash
-npx prisma migrate deploy
-npx prisma db seed   # fictional demo data; skipped if the database already has customers
+npm run db:migrate   # apply database migrations
+npm run db:seed      # fictional demo data; skipped if the database already has customers
 npm run dev
 ```
+
+On Windows, prefer these `npm run` scripts over `npx prisma ...`: `npx` can fail with "'prisma' is not recognized" when the project path contains spaces.
 
 Open `http://localhost:3000` and sign in with `AUTH_USERNAME` / `AUTH_PASSWORD`. Use the language control in the header to switch between English and Urdu without losing the current section.
 
@@ -119,7 +121,7 @@ Visitors can explore the Vercel deployment to review the application's interface
 
 The client’s operational installation runs locally and uses a privately managed PostgreSQL database that is separate from the public demo. Do not upload real client documents or enter real customer, payment, employee, or operational information into the Vercel deployment. Screenshots and other portfolio materials must likewise use demonstration data and must not expose private client records.
 
-To set up the demo deployment: point `DATABASE_URL` at an empty demo database, run `npx prisma migrate deploy && npx prisma db seed`, and set `DEMO_MODE=true` with a throwaway `AUTH_USERNAME`/`AUTH_PASSWORD` so visitors can sign in. Never enable `DEMO_MODE` on the business installation.
+To set up the demo deployment: point `DATABASE_URL` at an empty demo database, run `npm run db:migrate` and then `npm run db:seed`, and set `DEMO_MODE=true` with a throwaway `AUTH_USERNAME`/`AUTH_PASSWORD` so visitors can sign in. Never enable `DEMO_MODE` on the business installation.
 
 ## Production readiness notes
 
