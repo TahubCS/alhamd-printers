@@ -66,6 +66,24 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                 </Link>
             </div>
 
+            <nav aria-label={t("statusLabel")} className="mb-6 flex flex-wrap gap-2">
+                {[undefined, "PENDING", "PARTIAL", "OVERDUE", "PAID", "BAD_DEBT"].map((value) => {
+                    const active = (status ?? undefined) === value;
+                    return (
+                        <Link
+                            key={value ?? "all"}
+                            href={value ? `/${locale}/invoices?status=${value}` : `/${locale}/invoices`}
+                            aria-current={active ? "page" : undefined}
+                            className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${active
+                                ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-primary)]/15 text-[var(--color-text-primary)]"
+                                : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-light)]"}`}
+                        >
+                            {value ? t(`status.${value}`) : t("filterAll")}
+                        </Link>
+                    );
+                })}
+            </nav>
+
             <Card className="card" style={{ padding: isUrdu ? '28px' : '24px' }}>
                 <CardHeader className="p-0 mb-6">
                     <CardTitle className="text-xl text-[var(--color-text-primary)]">{t("recentInvoices")}</CardTitle>
@@ -78,9 +96,9 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                                 <TableHead>{t("date")}</TableHead>
                                 <TableHead>{t("customer")}</TableHead>
                                 <TableHead>{t("company")}</TableHead>
-                                <TableHead className="text-right">{t("amount")}</TableHead>
+                                <TableHead className="text-end">{t("amount")}</TableHead>
                                 <TableHead>{t("statusLabel")}</TableHead>
-                                <TableHead className="text-right">{t("actions")}</TableHead>
+                                <TableHead className="text-end">{t("actions")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -104,7 +122,7 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                                         <TableCell className="text-sm text-[var(--color-text-secondary)]">
                                             {invoice.company?.name || "—"}
                                         </TableCell>
-                                        <TableCell className="text-right font-medium text-[var(--color-text-primary)]">
+                                        <TableCell className="text-end font-medium text-[var(--color-text-primary)]">
                                             {new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
                                                 style: "currency",
                                                 currency: "PKR",
@@ -119,7 +137,7 @@ export default async function InvoicesPage({ params, searchParams }: PageProps) 
                                                 {t(`status.${invoice.status}`)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-end">
                                             <Link href={`/${locale}/invoices/${invoice.id}`}>
                                                 <Button size="sm" variant="secondary">
                                                     {tActions("view")}
