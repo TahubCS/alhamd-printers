@@ -78,16 +78,16 @@ export default async function CustomerDetailsPage({
                             <svg className="w-5 h-5 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
-                            Contact Info
+                            {t("contactInfo")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
                         {/* Balance Highlight */}
                         <div className="p-5 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
                             <div className="text-xs uppercase tracking-widest text-[var(--color-text-tertiary)] mb-2">
-                                Outstanding Balance
+                                {t("outstanding")}
                             </div>
-                            <div className={`text-3xl font-bold tracking-tight ${Number(customer.balance) > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                            <div className={`text-2xl font-bold tracking-tight break-words xl:text-3xl ${Number(customer.balance) > 0 ? 'text-red-400' : 'text-green-400'}`}>
                                 {new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
                                     style: "currency",
                                     currency: "PKR",
@@ -106,7 +106,7 @@ export default async function CustomerDetailsPage({
                                 <div className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-widest" style={{ marginBottom: '8px' }}>
                                     {t("phone")}
                                 </div>
-                                <div className="text-base text-[var(--color-text-primary)] font-medium" style={{ lineHeight: '2.2' }}>
+                                <div className="text-base text-[var(--color-text-primary)] font-medium whitespace-nowrap" dir="ltr" style={{ lineHeight: '2.2' }}>
                                     {customer.phone || "—"}
                                 </div>
                             </div>
@@ -123,7 +123,7 @@ export default async function CustomerDetailsPage({
                                 <div className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-widest" style={{ marginBottom: '8px' }}>
                                     {t("email")}
                                 </div>
-                                <div className="text-base text-[var(--color-text-primary)] font-medium break-all" style={{ lineHeight: '2.2' }}>
+                                <div className="text-base text-[var(--color-text-primary)] font-medium break-all" dir="ltr" style={{ lineHeight: '2.2' }}>
                                     {customer.email || "—"}
                                 </div>
                             </div>

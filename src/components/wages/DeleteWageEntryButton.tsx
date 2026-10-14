@@ -5,17 +5,19 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { deleteWageEntry } from '@/actions/wage';
 import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface DeleteWageEntryButtonProps {
     entryId: string;
 }
 
 export default function DeleteWageEntryButton({ entryId }: DeleteWageEntryButtonProps) {
+    const t = useTranslations('wages');
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
 
     const handleDelete = async () => {
-        const confirmed = window.confirm('Are you sure? This will reverse the balance change.');
+        const confirmed = window.confirm(t('confirmDelete'));
         if (!confirmed) return;
 
         setIsDeleting(true);

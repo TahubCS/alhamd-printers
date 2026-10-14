@@ -50,7 +50,7 @@ export default function WageEntryForm({ workerId, workerName }: WageEntryFormPro
             }
         } catch (error) {
             console.error(error);
-            alert("Failed to record entry");
+            alert(t("saveFailed"));
         } finally {
             setIsSubmitting(false);
         }

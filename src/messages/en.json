@@ -7,7 +7,8 @@
         "amount": "Amount",
         "billTo": "Bill To",
         "openMenu": "Open navigation menu",
-        "switchLanguage": "Switch to Urdu"
+        "switchLanguage": "Switch to Urdu",
+        "loading": "Loading…"
     },
     "inventory": {
         "title": "Inventory Management",
@@ -126,7 +127,19 @@
             "quantity": "Qty",
             "rate": "Rate",
             "size": "Size (WxL / D)",
-            "print": "Print Status"
+            "print": "Print invoice",
+            "invoiceTitle": "INVOICE",
+            "gst": "GST %",
+            "gstTotal": "GST total",
+            "notes": "Notes",
+            "preparedBy": "Prepared by",
+            "authorizedSignature": "Authorized signature",
+            "downloadPdf": "Download PDF",
+            "preparingPdf": "Preparing PDF…",
+            "generatingPdf": "Generating…",
+            "delete": "Delete",
+            "deleting": "Deleting…",
+            "confirmDelete": "Delete invoice #{number}?\n\nThe invoice is removed, the customer's balance is reduced and a reversing entry is added to their ledger.\n\nThis cannot be undone."
         },
         "form": {
             "createTitle": "Create New Invoice",
@@ -143,8 +156,19 @@
             "depth": "Depth (Gage)",
             "notes": "Notes / Terms",
             "quantity": "Quantity",
-            "rate": "Rate"
-        }
+            "rate": "Rate",
+            "select": "— Select —",
+            "globalGst": "GST % for all lines",
+            "tax": "GST %",
+            "description": "Description",
+            "subtotal": "Subtotal",
+            "gstTotal": "GST total",
+            "grandTotal": "Grand total",
+            "saving": "Saving…",
+            "failed": "The invoice could not be saved. Please try again."
+        },
+        "back": "Invoices",
+        "filterAll": "All"
     },
     "dashboard": {
         "title": "Dashboard",
@@ -231,7 +255,23 @@
         "financialInfo": "Financial Information",
         "email": "Email",
         "creditLimit": "Credit Limit",
-        "openingBalance": "Opening Balance"
+        "openingBalance": "Opening Balance",
+        "ledgerTab": "Ledger",
+        "ordersTab": "Purchase orders",
+        "history": "Transaction history",
+        "date": "Date",
+        "particulars": "Particulars",
+        "debit": "Debit",
+        "credit": "Credit",
+        "noTransactions": "No transactions yet",
+        "poNumber": "PO number",
+        "amount": "Amount",
+        "items": "Items",
+        "convert": "Convert to invoice",
+        "noOrders": "No purchase orders yet",
+        "contactInfo": "Contact info",
+        "outstanding": "Outstanding balance",
+        "confirmDelete": "Delete \"{name}\"? This cannot be undone."
     },
     "payments": {
         "title": "Record Payment",
@@ -281,7 +321,11 @@
             "markBounced": "Mark as Bounced",
             "depositDate": "Deposit Date",
             "clearDate": "Clearance Date"
-        }
+        },
+        "empty": "No cheques found",
+        "emptyHint": "Try another filter or record a cheque payment.",
+        "confirmStatus": "Update this cheque's status?",
+        "failed": "The status could not be updated."
     },
     "expenses": {
         "title": "Expenses",
@@ -313,8 +357,12 @@
             "uploadReceipt": "Upload Receipt",
             "scanning": "Scanning...",
             "dropHere": "Drop your receipt here!",
-            "dragDrop": "or drag & drop a receipt image here"
-        }
+            "dragDrop": "or drag & drop a receipt image here",
+            "imageOnly": "Please upload an image file.",
+            "scanFailed": "The receipt could not be read.",
+            "saveFailed": "The expense could not be saved."
+        },
+        "confirmDelete": "Delete this expense?"
     },
     "wages": {
         "title": "Wages Tracking",
@@ -364,8 +412,10 @@
             "date": "Date",
             "description": "Notes",
             "descriptionPlaceholder": "Optional details about this entry",
-            "notes": "Notes"
-        }
+            "notes": "Notes",
+            "saveFailed": "The entry could not be saved."
+        },
+        "confirmDelete": "Delete this entry? The worker's balance change will be reversed."
     },
     "errors": {
         "title": "Something went wrong",

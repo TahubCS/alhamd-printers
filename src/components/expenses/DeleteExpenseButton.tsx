@@ -5,17 +5,19 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { deleteExpense } from '@/actions/expense';
 import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface DeleteExpenseButtonProps {
     expenseId: string;
 }
 
 export default function DeleteExpenseButton({ expenseId }: DeleteExpenseButtonProps) {
+    const t = useTranslations('expenses');
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
 
     const handleDelete = async () => {
-        const confirmed = window.confirm('Are you sure you want to delete this expense?');
+        const confirmed = window.confirm(t('confirmDelete'));
         if (!confirmed) return;
 
         setIsDeleting(true);

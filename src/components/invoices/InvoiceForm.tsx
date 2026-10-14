@@ -224,7 +224,7 @@ export default function InvoiceForm() {
             }
         } catch (error) {
             console.error(error);
-            alert("Failed to create invoice");
+            alert(t("failed"));
         } finally {
             setIsSubmitting(false);
         }
@@ -271,7 +271,7 @@ export default function InvoiceForm() {
                                 value={customerId}
                                 onChange={e => setCustomerId(e.target.value)}
                             >
-                                <option value="">-- Select --</option>
+                                <option value="">{t("select")}</option>
                                 {customers.map(c => (
                                     <option key={c.id} value={c.id}>{c.name} {c.nameUrdu ? `(${c.nameUrdu})` : ''}</option>
                                 ))}
@@ -306,7 +306,7 @@ export default function InvoiceForm() {
                             />
                         </div>
                         <div className="flex-1">
-                            <Label>Global GST %</Label>
+                            <Label>{t("globalGst")}</Label>
                             <div className="flex items-center gap-2">
                                 <Input
                                     type="number"
@@ -328,7 +328,7 @@ export default function InvoiceForm() {
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-semibold">{tCommon("items", { defaultMessage: "Items" })}</h3>
                             <Button type="button" onClick={addItem} size="sm" variant="outline">
-                                <Plus className="w-4 h-4 mr-2" />
+                                <Plus className="w-4 h-4" aria-hidden="true" />
                                 {t("addItem")}
                             </Button>
                         </div>
@@ -336,12 +336,12 @@ export default function InvoiceForm() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="text-left border-b border-[var(--color-border)]">
+                                    <tr className="text-start border-b border-[var(--color-border)]">
                                         <th className="p-4 w-[200px] text-[var(--color-text-secondary)]">{t("selectProduct")} / {t("manualDescription")}</th>
                                         <th className="p-4 w-[80px] text-[var(--color-text-secondary)]">{t("quantity")}</th>
                                         <th className="p-4 w-[100px] text-[var(--color-text-secondary)]">{t("rate")}</th>
-                                        <th className="p-4 w-[80px] text-[var(--color-text-secondary)]">Tax %</th>
-                                        <th className="p-4 w-[100px] text-right text-[var(--color-text-secondary)]">{tCommon("amount", { defaultMessage: "Amount" })}</th>
+                                        <th className="p-4 w-[80px] text-[var(--color-text-secondary)]">{t("tax")}</th>
+                                        <th className="p-4 w-[100px] text-end text-[var(--color-text-secondary)]">{tCommon("amount", { defaultMessage: "Amount" })}</th>
                                         <th className="p-4 w-[50px]"></th>
                                     </tr>
                                 </thead>
@@ -362,7 +362,8 @@ export default function InvoiceForm() {
                                                 <Input
                                                     value={item.description}
                                                     onChange={e => updateItem(index, 'description', e.target.value)}
-                                                    placeholder="Description"
+                                                    placeholder={t("description")}
+                                                    aria-label={t("description")}
                                                     className="h-8 text-xs"
                                                 />
                                             </td>
@@ -390,10 +391,10 @@ export default function InvoiceForm() {
                                                     className="h-8 w-16"
                                                 />
                                             </td>
-                                            <td className="p-4 text-right font-mono">
+                                            <td className="p-4 text-end font-mono">
                                                 {item.amount.toLocaleString()}
                                             </td>
-                                            <td className="p-4 text-right">
+                                            <td className="p-4 text-end">
                                                 {items.length > 1 && (
                                                     <Button
                                                         type="button"
@@ -411,22 +412,22 @@ export default function InvoiceForm() {
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colSpan={4} className="p-4 text-right text-[var(--color-text-secondary)]">Subtotal:</td>
-                                        <td className="p-4 text-right font-mono text-[var(--color-text-secondary)]">
+                                        <td colSpan={4} className="p-4 text-end text-[var(--color-text-secondary)]">{t("subtotal")}</td>
+                                        <td className="p-4 text-end font-mono text-[var(--color-text-secondary)]">
                                             {subtotal.toLocaleString()}
                                         </td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td colSpan={4} className="p-4 text-right text-[var(--color-text-secondary)]">GST Total:</td>
-                                        <td className="p-4 text-right font-mono text-[var(--color-text-secondary)]">
+                                        <td colSpan={4} className="p-4 text-end text-[var(--color-text-secondary)]">{t("gstTotal")}</td>
+                                        <td className="p-4 text-end font-mono text-[var(--color-text-secondary)]">
                                             {totalTax.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                                         </td>
                                         <td></td>
                                     </tr>
                                     <tr className="border-t-2 border-[var(--color-border)]">
-                                        <td colSpan={4} className="p-4 text-right font-bold text-lg">Grand Total:</td>
-                                        <td className="p-4 text-right font-bold text-lg text-[var(--color-primary)]">
+                                        <td colSpan={4} className="p-4 text-end font-bold text-lg">{t("grandTotal")}</td>
+                                        <td className="p-4 text-end font-bold text-lg text-[var(--color-primary)]">
                                             {total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                                         </td>
                                         <td></td>
@@ -443,7 +444,7 @@ export default function InvoiceForm() {
                     {tActions("cancel")}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Saving..." : tActions("save")}
+                    {isSubmitting ? t("saving") : tActions("save")}
                 </Button>
             </div>
         </form>

@@ -14,11 +14,12 @@ interface ChequeActionMenuProps {
 
 export default function ChequeActionMenu({ chequeId, currentStatus }: ChequeActionMenuProps) {
     const t = useTranslations('cheques.actions');
+    const tCheques = useTranslations('cheques');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     const handleUpdate = async (status: 'DEPOSITED' | 'CLEARED' | 'BOUNCED') => {
-        if (!confirm('Are you sure you want to update the status?')) return;
+        if (!confirm(tCheques('confirmStatus'))) return;
 
         setIsLoading(true);
         try {
@@ -29,7 +30,7 @@ export default function ChequeActionMenu({ chequeId, currentStatus }: ChequeActi
             router.refresh();
         } catch (error) {
             console.error(error);
-            alert('Failed to update status');
+            alert(tCheques('failed'));
         } finally {
             setIsLoading(false);
         }

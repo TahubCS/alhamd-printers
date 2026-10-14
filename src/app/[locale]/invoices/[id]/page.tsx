@@ -26,7 +26,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
     const { id, locale } = await params;
     const t = await getTranslations("invoices.details");
     const tCommon = await getTranslations("common");
-    const tActions = await getTranslations("actions");
+    const tInvoices = await getTranslations("invoices");
 
     const { success, data: invoice } = await getInvoiceDetailsForPDF(id);
 
@@ -42,13 +42,13 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
             <div className="flex items-center justify-between print:hidden" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
                 <Link href={`/${locale}/invoices`}>
                     <Button variant="outline" size="sm">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        {tActions("view")}
+                        <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" aria-hidden="true" />
+                        {tInvoices("back")}
                     </Button>
                 </Link>
                 <div className="flex gap-2">
                     <DownloadInvoiceButton invoice={invoice} company={invoice.company} />
-                    <PrintButton />
+                    <PrintButton label={t("print")} />
                     <DeleteInvoiceButton invoiceId={invoice.id} invoiceNo={invoice.invoiceNo} />
                 </div>
             </div>
@@ -66,18 +66,18 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                         <p className="text-sm text-[var(--color-text-secondary)] print:text-gray-600">{invoice.company.email}</p>
                     </div>
                     <div className="text-right">
-                        <h2 className="text-xl font-bold text-[var(--color-text-primary)] print:text-black">INVOICE</h2>
+                        <h2 className="text-xl font-bold text-[var(--color-text-primary)] print:text-black">{t("invoiceTitle")}</h2>
                         <p className="text-lg font-mono mt-2 text-[var(--color-text-primary)] print:text-black">#{invoice.invoiceNo}</p>
 
                         <div className="mt-4 text-sm text-[var(--color-text-secondary)]">
                             <div className="flex justify-end gap-4">
-                                <span className="text-muted-foreground">{t("date")}:</span>
+                                <span className="text-[var(--color-text-secondary)]">{t("date")}:</span>
                                 <span className="font-medium text-[var(--color-text-primary)]">
                                     {new Date(invoice.date).toLocaleDateString(locale === 'ur' ? 'ur-PK' : 'en-PK')}
                                 </span>
                             </div>
                             <div className="flex justify-end gap-4">
-                                <span className="text-muted-foreground">{t("dueDate")}:</span>
+                                <span className="text-[var(--color-text-secondary)]">{t("dueDate")}:</span>
                                 <span className="font-medium text-[var(--color-text-primary)]">
                                     {new Date(invoice.dueDate).toLocaleDateString(locale === 'ur' ? 'ur-PK' : 'en-PK')}
                                 </span>
@@ -88,15 +88,15 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
 
                 {/* Customer Info */}
                 <div className="mb-8">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase mb-2">
+                    <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] uppercase mb-2">
                         {tCommon("billTo", { defaultMessage: "Bill To" })}
                     </h3>
                     <div className="font-medium text-lg text-[var(--color-text-primary)]">{invoice.customer.name}</div>
                     <div className="text-md font-noto-nastaliq text-[var(--color-text-secondary)]">{invoice.customer.nameUrdu}</div>
-                    <div className="text-sm text-muted-foreground mt-1">
+                    <div className="text-sm text-[var(--color-text-secondary)] mt-1">
                         {invoice.customer.address}
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-[var(--color-text-secondary)]">
                         {invoice.customer.phone}
                     </div>
                 </div>
@@ -108,7 +108,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                             <TableHead className="w-[40%]">{t("description")}</TableHead>
                             <TableHead className="text-right">{t("rate")}</TableHead>
                             <TableHead className="text-right">{t("quantity")}</TableHead>
-                            <TableHead className="text-right text-[var(--color-text-secondary)]">GST %</TableHead>
+                            <TableHead className="text-right text-[var(--color-text-secondary)]">{t("gst")}</TableHead>
                             <TableHead className="text-right">{t("total")}</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -119,7 +119,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                                     <span className="font-medium text-[var(--color-text-primary)]">{item.description}</span>
                                     {/* Display sizes if PVC bag */}
                                     {(item.sizeWidth || item.product) && (
-                                        <div className="text-xs text-muted-foreground mt-1">
+                                        <div className="text-xs text-[var(--color-text-secondary)] mt-1">
                                             {item.product?.code}
                                             {item.sizeWidth ? ` (${item.sizeWidth}" x ${item.sizeLength}" / ${item.sizeDepth})` : ''}
                                         </div>
@@ -147,7 +147,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                 <div className="flex justify-end border-t pt-8">
                     <div className="w-[300px] space-y-2">
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">{t("subtotal")}</span>
+                            <span className="text-[var(--color-text-secondary)]">{t("subtotal")}</span>
                             <span className="text-[var(--color-text-primary)]">
                                 {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK', {
                                     style: "currency",
@@ -157,7 +157,7 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                         </div>
                         {Number(invoice.taxTotal) > 0 && (
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">GST Total</span>
+                                <span className="text-[var(--color-text-secondary)]">{t("gstTotal")}</span>
                                 <span className="text-[var(--color-text-primary)]">
                                     {new Intl.NumberFormat(locale === 'ur' ? 'ur-PK' : 'en-PK', {
                                         style: "currency",
@@ -181,18 +181,18 @@ export default async function InvoiceDetailsPage({ params }: PageProps) {
                 {/* Notes */}
                 {invoice.notes && (
                     <div className="mt-8 border-t pt-4">
-                        <h4 className="text-sm font-semibold mb-1 text-[var(--color-text-primary)]">Notes:</h4>
-                        <p className="text-sm text-muted-foreground">{invoice.notes}</p>
+                        <h4 className="text-sm font-semibold mb-1 text-[var(--color-text-primary)]">{t("notes")}</h4>
+                        <p className="text-sm text-[var(--color-text-secondary)]">{invoice.notes}</p>
                     </div>
                 )}
 
                 {/* Footer Signature */}
                 <div className="mt-16 flex justify-between text-sm pt-8 print:flex hidden">
                     <div className="border-t w-[200px] text-center pt-2">
-                        Prepared By
+                        {t("preparedBy")}
                     </div>
                     <div className="border-t w-[200px] text-center pt-2">
-                        Authorized Signature
+                        {t("authorizedSignature")}
                     </div>
                 </div>
             </div>

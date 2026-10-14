@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import POStatusBadge from "@/components/po/POStatusBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
@@ -21,6 +23,7 @@ interface CustomerContentProps {
 
 export default function CustomerContent({ ledger, purchaseOrders, locale }: CustomerContentProps) {
     const [activeTab, setActiveTab] = useState("ledger");
+    const t = useTranslations("customers");
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
@@ -42,7 +45,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                     setActiveValue={setActiveTab}
                 >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Ledger
+                    {t("ledgerTab")}
                 </TabsTrigger>
                 <TabsTrigger
                     value="po"
@@ -50,7 +53,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                     setActiveValue={setActiveTab}
                 >
                     <FileText className="w-4 h-4 mr-2" />
-                    Purchase Orders
+                    {t("ordersTab")}
                 </TabsTrigger>
             </TabsList>
 
@@ -58,7 +61,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                 <Card className="bg-[var(--color-bg-secondary)] border-[var(--color-border)]">
                     <CardHeader className="pb-4 flex flex-row items-center justify-between">
                         <CardTitle className="text-lg text-[var(--color-text-primary)]">
-                            Transaction History
+                            {t("history")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -66,11 +69,11 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                             <Table>
                                 <TableHeader>
                                     <TableRow className="border-b border-[var(--color-border)] hover:bg-transparent">
-                                        <TableHead className="text-[var(--color-text-secondary)]">Date</TableHead>
-                                        <TableHead className="text-[var(--color-text-secondary)]">Particulars</TableHead>
-                                        <TableHead className="text-right text-[var(--color-text-secondary)]">Debit</TableHead>
-                                        <TableHead className="text-right text-[var(--color-text-secondary)]">Credit</TableHead>
-                                        <TableHead className="text-right text-[var(--color-text-secondary)]">Balance</TableHead>
+                                        <TableHead className="text-[var(--color-text-secondary)]">{t("date")}</TableHead>
+                                        <TableHead className="text-[var(--color-text-secondary)]">{t("particulars")}</TableHead>
+                                        <TableHead className="text-end text-[var(--color-text-secondary)]">{t("debit")}</TableHead>
+                                        <TableHead className="text-end text-[var(--color-text-secondary)]">{t("credit")}</TableHead>
+                                        <TableHead className="text-end text-[var(--color-text-secondary)]">{t("balance")}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -84,13 +87,13 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                                                     {entry.particulars}
                                                     {entry.payment?.method && ` (${entry.payment.method})`}
                                                 </TableCell>
-                                                <TableCell className="text-right text-red-400">
+                                                <TableCell className="text-end text-red-400">
                                                     {Number(entry.debit) > 0 ? formatCurrency(Number(entry.debit)) : "-"}
                                                 </TableCell>
-                                                <TableCell className="text-right text-green-400">
+                                                <TableCell className="text-end text-green-400">
                                                     {Number(entry.credit) > 0 ? formatCurrency(Number(entry.credit)) : "-"}
                                                 </TableCell>
-                                                <TableCell className="text-right font-semibold text-[var(--color-text-primary)]">
+                                                <TableCell className="text-end font-semibold text-[var(--color-text-primary)]">
                                                     {formatCurrency(Number(entry.balance))}
                                                 </TableCell>
                                             </TableRow>
@@ -100,7 +103,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                                             <TableCell colSpan={5} className="h-32 text-center text-[var(--color-text-tertiary)]">
                                                 <div className="flex flex-col items-center gap-2">
                                                     <CreditCard className="w-8 h-8 opacity-50" />
-                                                    <span>No transactions found</span>
+                                                    <span>{t("noTransactions")}</span>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -116,7 +119,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                 <Card className="bg-[var(--color-bg-secondary)] border-[var(--color-border)]">
                     <CardHeader className="pb-4 flex flex-row items-center justify-between">
                         <CardTitle className="text-lg text-[var(--color-text-primary)]">
-                            Purchase Orders
+                            {t("ordersTab")}
                         </CardTitle>
                         <Link href={`/${locale}/purchase-orders/new`}>
                             <Button size="sm">
@@ -129,11 +132,11 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                             <Table>
                                 <TableHeader>
                                     <TableRow className="border-b border-[var(--color-border)] hover:bg-transparent">
-                                        <TableHead className="text-[var(--color-text-secondary)]">Date</TableHead>
-                                        <TableHead className="text-[var(--color-text-secondary)]">PO Number</TableHead>
-                                        <TableHead className="text-right text-[var(--color-text-secondary)]">Amount</TableHead>
-                                        <TableHead className="text-center text-[var(--color-text-secondary)]">Items</TableHead>
-                                        <TableHead className="text-[var(--color-text-secondary)]">Status</TableHead>
+                                        <TableHead className="text-[var(--color-text-secondary)]">{t("date")}</TableHead>
+                                        <TableHead className="text-[var(--color-text-secondary)]">{t("poNumber")}</TableHead>
+                                        <TableHead className="text-end text-[var(--color-text-secondary)]">{t("amount")}</TableHead>
+                                        <TableHead className="text-center text-[var(--color-text-secondary)]">{t("items")}</TableHead>
+                                        <TableHead className="text-[var(--color-text-secondary)]">{t("status")}</TableHead>
                                         <TableHead></TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -147,29 +150,20 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                                                 <TableCell className="font-medium text-[var(--color-text-primary)]">
                                                     {po.poNumber || "-"}
                                                 </TableCell>
-                                                <TableCell className="text-right text-[var(--color-text-primary)]">
+                                                <TableCell className="text-end text-[var(--color-text-primary)]">
                                                     {formatCurrency(Number(po.totalAmount))}
                                                 </TableCell>
                                                 <TableCell className="text-center text-[var(--color-text-secondary)]">
                                                     {po._count?.items || 0}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${po.status === 'OPEN'
-                                                            ? 'bg-blue-500/20 text-blue-400'
-                                                            : po.status === 'CLOSED'
-                                                                ? 'bg-green-500/20 text-green-400'
-                                                                : po.status === 'PARTIAL'
-                                                                    ? 'bg-yellow-500/20 text-yellow-400'
-                                                                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'
-                                                        }`}>
-                                                        {po.status}
-                                                    </span>
+                                                    <POStatusBadge status={po.status} />
                                                 </TableCell>
-                                                <TableCell className="text-right">
-                                                    {po.status === 'OPEN' && (
+                                                <TableCell className="text-end">
+                                                    {(po.status === 'OPEN' || po.status === 'PARTIAL') && (
                                                         <Link href={`/${locale}/invoices/new?fromPoId=${po.id}`}>
                                                             <Button size="sm" variant="outline" className="h-8 text-xs">
-                                                                Convert to Invoice
+                                                                {t("convert")}
                                                             </Button>
                                                         </Link>
                                                     )}
@@ -181,7 +175,7 @@ export default function CustomerContent({ ledger, purchaseOrders, locale }: Cust
                                             <TableCell colSpan={6} className="h-32 text-center text-[var(--color-text-tertiary)]">
                                                 <div className="flex flex-col items-center gap-2">
                                                     <FileText className="w-8 h-8 opacity-50" />
-                                                    <span>No purchase orders found</span>
+                                                    <span>{t("noOrders")}</span>
                                                     <Link href={`/${locale}/purchase-orders/new`}>
                                                         <Button size="sm" variant="outline" className="mt-2">
                                                             <Plus className="w-4 h-4 mr-2" /> Upload First PO

@@ -30,7 +30,7 @@ export default function ExpenseForm() {
     // Shared scan logic for both file input and drag-drop
     const processFile = useCallback(async (file: File) => {
         if (!file.type.startsWith("image/")) {
-            alert("Please upload an image file");
+            alert(t("imageOnly"));
             return;
         }
 
@@ -55,15 +55,15 @@ export default function ExpenseForm() {
                     amount: result.data.amount,
                 });
             } else {
-                alert(result.error || "Failed to scan receipt");
+                alert(result.error || t("scanFailed"));
             }
         } catch (error) {
             console.error(error);
-            alert("Failed to scan receipt");
+            alert(t("scanFailed"));
         } finally {
             setIsScanning(false);
         }
-    }, []);
+    }, [t]);
 
     const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -119,7 +119,7 @@ export default function ExpenseForm() {
             }
         } catch (error) {
             console.error(error);
-            alert("Failed to create expense");
+            alert(t("saveFailed"));
         } finally {
             setIsSubmitting(false);
         }

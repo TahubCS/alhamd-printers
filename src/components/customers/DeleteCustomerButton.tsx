@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { deleteCustomer } from '@/actions/customer';
+import { useTranslations } from 'next-intl';
 
 interface DeleteCustomerButtonProps {
     customerId: string;
@@ -12,13 +13,12 @@ interface DeleteCustomerButtonProps {
 }
 
 export default function DeleteCustomerButton({ customerId, customerName, label }: DeleteCustomerButtonProps) {
+    const t = useTranslations('customers');
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
 
     const handleDelete = async () => {
-        const confirmed = window.confirm(
-            `Are you sure you want to delete "${customerName}"? This action cannot be undone.`
-        );
+        const confirmed = window.confirm(t('confirmDelete', { name: customerName }));
         if (!confirmed) return;
 
         setIsDeleting(true);
