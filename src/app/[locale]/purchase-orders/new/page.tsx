@@ -2,6 +2,8 @@
 import { getCustomers } from "@/actions/customer";
 import POUploadForm from "@/components/po/POUploadForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewPOPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
 

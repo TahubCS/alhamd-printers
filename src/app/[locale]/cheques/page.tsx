@@ -3,6 +3,8 @@ import ChequeStats from '@/components/cheques/ChequeStats';
 import ChequeList from '@/components/cheques/ChequeList';
 import { getCheques } from '@/actions/payment';
 
+export const dynamic = "force-dynamic";
+
 export default async function ChequesPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
     const t = await getTranslations('cheques');
