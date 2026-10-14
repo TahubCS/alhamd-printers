@@ -2,8 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { extractDataFromPO, ExtractedPOData } from "@/lib/ai/po-extractor";
+import { matchCustomer } from "@/lib/ai/customer-match";
+import { MAX_UPLOAD_BYTES, SUPPORTED_MIME_TYPES } from "@/lib/ai/gemini";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
 import { calculateDocumentTotals } from "@/lib/finance";
 
 class POValidationError extends Error {}
@@ -13,53 +14,43 @@ export async function processPOUpload(formData: FormData) {
     if (!file) {
         return { success: false, error: "No file uploaded" };
     }
+    if (!SUPPORTED_MIME_TYPES.has(file.type)) {
+        return { success: false, error: "Upload a PDF or a JPEG, PNG, WebP or HEIC image" };
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+        return { success: false, error: "The file is larger than 14 MB" };
+    }
 
     try {
         const buffer = Buffer.from(await file.arrayBuffer());
-        const base64 = buffer.toString("base64");
+        const [companies, customers] = await Promise.all([
+            prisma.company.findMany({ select: { name: true, nameUrdu: true } }),
+            prisma.customer.findMany({
+                select: { id: true, name: true, nameUrdu: true, phone: true, email: true, ntn: true, gstNumber: true },
+            }),
+        ]);
+        // Our own invoicing names, so the model never mistakes us for the customer
+        const vendorNames = companies.flatMap((c) => [c.name, c.nameUrdu]).filter((n): n is string => Boolean(n));
 
-        // Extract data using Gemini
-        const extractedData = await extractDataFromPO(base64, file.type);
-
+        const extractedData = await extractDataFromPO(buffer.toString("base64"), file.type, vendorNames);
         if (!extractedData) {
             return { success: false, error: "AI Extraction Failed. Please try a clearer image." };
         }
 
-        // Fuzzy Match Customer by name or exact match by NTN/Email
-        let matchedCustomer = null;
-        const customerName = extractedData.customer?.name;
-        const customerEmail = extractedData.customer?.email;
-        const customerNTN = extractedData.customer?.ntn;
-
-        const conditions: Prisma.CustomerWhereInput[] = [];
-        if (customerName) {
-            conditions.push({ name: { contains: customerName, mode: 'insensitive' } });
-            conditions.push({ nameUrdu: { contains: customerName } });
-        }
-        if (customerEmail) conditions.push({ email: customerEmail });
-        if (customerNTN) conditions.push({ ntn: customerNTN });
-
-        if (conditions.length > 0) {
-            matchedCustomer = await prisma.customer.findFirst({
-                where: { OR: conditions },
-                select: {
-                    id: true,
-                    name: true,
-                    nameUrdu: true,
-                    phone: true,
-                    address: true,
-                    email: true,
-                    ntn: true,
-                    gstNumber: true
-                }
-            });
-        }
+        const match = matchCustomer(extractedData.customer, customers);
+        const matchedCustomer = match
+            ? await prisma.customer.findUnique({
+                where: { id: match.id },
+                select: { id: true, name: true, nameUrdu: true, phone: true, address: true, email: true, ntn: true, gstNumber: true },
+            })
+            : null;
 
         return {
             success: true,
             data: {
                 extracted: extractedData,
-                matchedCustomer
+                matchedCustomer,
+                matchReason: match?.reason ?? null,
             }
         };
     } catch (error) {
@@ -68,7 +59,7 @@ export async function processPOUpload(formData: FormData) {
     }
 }
 
-export type ConfirmPOData = Omit<Partial<ExtractedPOData>, "items" | "paymentTerms" | "notes"> & {
+export type ConfirmPOData = Omit<Partial<ExtractedPOData>, "items" | "paymentTerms" | "notes" | "checks" | "model" | "escalated"> & {
     customerId?: string;
     paymentTerms?: string | null;
     notes?: string | null;

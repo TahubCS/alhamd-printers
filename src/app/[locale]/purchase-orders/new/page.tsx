@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getCustomers } from "@/actions/customer";
 import PageHeader from "@/components/layout/PageHeader";
 import POUploadForm from "@/components/po/POUploadForm";
+import { isAiConfigured } from "@/lib/ai/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function NewPOPage() {
             <PageHeader title={t("newTitle")} subtitle={t("newSubtitle")} />
             <POUploadForm
                 customers={customers.map((c) => ({ id: c.id, name: c.name, nameUrdu: c.nameUrdu }))}
-                aiEnabled={Boolean(process.env.GOOGLE_GEMINI_API_KEY)}
+                aiEnabled={isAiConfigured()}
             />
         </div>
     );

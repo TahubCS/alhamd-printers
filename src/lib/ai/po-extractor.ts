@@ -1,172 +1,147 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { countErrors, reviewPO, type ExtractedPOData, type RawPO } from "./extraction-checks";
+import { escalationPass, firstPass, nullable, readDocument, type ReadPass } from "./gemini";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "");
+export type { ExtractedPOData, ExtractedPOItem } from "./extraction-checks";
 
-export interface ExtractedPOItem {
-    description: string;
-    quantity: number;
-    rate: number;
-    amount: number;
-    gstRate?: number;
-    unit?: string;
-    productCode?: string;
-    customAttributes?: Record<string, string | null>;
+const text = { type: "string" };
+const number = { type: "number" };
+
+const PO_SCHEMA = {
+    type: "object",
+    properties: {
+        documentType: {
+            type: "string",
+            enum: ["purchase_order", "quotation", "invoice", "delivery_note", "other"],
+            description: "What kind of document this is.",
+        },
+        poNumber: nullable({ ...text, description: "PO / order number exactly as printed." }),
+        date: nullable({ ...text, description: "PO date as YYYY-MM-DD." }),
+        customer: {
+            type: "object",
+            description: "The business that issued this PO (the buyer), never the supplier.",
+            properties: {
+                name: nullable(text),
+                nameUrdu: nullable({ ...text, description: "Only if the name is printed in Urdu script." }),
+                phone: nullable(text),
+                email: nullable(text),
+                address: nullable(text),
+                ntn: nullable({ ...text, description: "National Tax Number of the buyer." }),
+                gstNumber: nullable({ ...text, description: "STRN / sales tax registration number of the buyer." }),
+            },
+            required: ["name", "nameUrdu", "phone", "email", "address", "ntn", "gstNumber"],
+        },
+        extraColumns: {
+            type: "array",
+            items: text,
+            description: "Headers of item-table columns other than serial, description/item, code, quantity, unit, rate, GST/tax and amount, exactly as printed.",
+        },
+        items: {
+            type: "array",
+            description: "One entry per printed item row, top to bottom.",
+            items: {
+                type: "object",
+                properties: {
+                    description: text,
+                    productCode: nullable({ ...text, description: "Item/article code if the table has one." }),
+                    quantity: number,
+                    unit: nullable(text),
+                    rate: { ...number, description: "Unit price. 0 when printed as 0." },
+                    gstRate: nullable({ ...number, description: "GST / sales tax percent for this line, e.g. 18." }),
+                    amount: nullable({ ...number, description: "Line amount as printed; null if the cell is empty." }),
+                    extraValues: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            properties: { column: text, value: nullable(text) },
+                            required: ["column", "value"],
+                        },
+                    },
+                },
+                required: ["description", "productCode", "quantity", "unit", "rate", "gstRate", "amount", "extraValues"],
+            },
+        },
+        lastSerialNumber: nullable({ ...number, description: "Highest Sr. No / item number printed in the table." }),
+        printedTaxTotal: nullable({ ...number, description: "Total GST / sales tax as printed." }),
+        printedGrandTotal: nullable({ ...number, description: "Grand total / net payable as printed." }),
+        paymentTerms: nullable(text),
+        deliveryDate: nullable({ ...text, description: "YYYY-MM-DD" }),
+        notes: nullable({ ...text, description: "Special instructions printed on the PO." }),
+        unreadable: {
+            type: "array",
+            items: text,
+            description: "Fields or cells you could not read with certainty, e.g. \"line 3 quantity\".",
+        },
+    },
+    required: [
+        "documentType", "poNumber", "date", "customer", "extraColumns", "items", "lastSerialNumber",
+        "printedTaxTotal", "printedGrandTotal", "paymentTerms", "deliveryDate", "notes", "unreadable",
+    ],
+};
+
+function systemInstruction(vendorNames: string[]) {
+    const us = vendorNames.length > 0 ? vendorNames.map((n) => `"${n}"`).join(", ") : "the supplier";
+    return `You transcribe customer purchase orders for a PVC packaging manufacturer in Pakistan.
+The supplier receiving these orders is us: ${us}. The customer is the business that issued the document.
+
+Transcribe; do not interpret. Accuracy matters more than completeness.
+
+Customer
+- The customer is the issuer: usually the letterhead, logo or header at the top. Fields labelled "To", "Vendor" or "Supplier" that name us are not the customer.
+- Copy names, numbers and codes exactly as printed. NTN and STRN/GST numbers matter most; copy every digit and dash.
+
+Items
+- Return one item per printed row of the item table, in order. Do not merge, split, reorder or skip rows, and never invent rows.
+- A description that wraps onto several lines belongs to one row.
+- Subtotal, tax, discount, freight and total rows are not items.
+- Copy numbers as printed: remove thousands separators and currency symbols, convert Urdu/Arabic digits to 0-9. A printed rate or amount of 0 is 0.
+- If a cell is empty or cut off, return null for amount/gstRate/unit/code. Never calculate a missing value from other cells.
+- gstRate is the percent for that line (18 for "18%"). Use the column, or a single rate printed for the whole order. null if no GST appears anywhere.
+- Columns such as Size, Brand, Colour, Gauge, Micron, Remarks go in extraColumns (header text exactly as printed) and each row's extraValues, one entry per extra column, value null when the cell is empty.
+
+Dates
+- Pakistani documents write day before month: 05/02/2026 is 5 February 2026. Return YYYY-MM-DD.
+
+Totals
+- printedGrandTotal and printedTaxTotal are what the document prints, not your own sums. null if not printed.
+- lastSerialNumber is the last serial number in the table, so missing rows can be detected.
+
+When something is unclear (handwriting, blur, stamps over text), give your best reading and list it in unreadable.`;
 }
 
-export interface ExtractedCustomerData {
-    name: string | null;
-    nameUrdu?: string | null;
-    phone?: string | null;
-    fax?: string | null;
-    email?: string | null;
-    address?: string | null;
-    website?: string | null;
-    ntn?: string | null;
-    gstNumber?: string | null;
+async function read(pass: ReadPass, file: { base64: string; mimeType: string }, vendorNames: string[]) {
+    const raw = await readDocument<RawPO>({
+        task: "purchase-order",
+        pass,
+        systemInstruction: systemInstruction(vendorNames),
+        instruction: "Transcribe this purchase order.",
+        file,
+        schema: PO_SCHEMA,
+    });
+    return reviewPO(raw, pass.model, pass.strong);
 }
 
-export interface ExtractedPOData {
-    poNumber: string | null;
-    date: string | null;
-    customer: ExtractedCustomerData;
-    totalAmount: number;
-    items: ExtractedPOItem[];
-    paymentTerms?: string | null;
-    deliveryDate?: string | null;
-    notes?: string | null;
-    confidence: number;
-}
-
-export async function extractDataFromPO(fileBase64: string, mimeType: string): Promise<ExtractedPOData | null> {
-    if (!process.env.GOOGLE_GEMINI_API_KEY) {
-        console.error("GOOGLE_GEMINI_API_KEY is missing");
-        return null;
+/**
+ * Reads a PO with the cheap model; if the arithmetic or row-count checks fail,
+ * reads it once more with the stronger model and keeps whichever reading has
+ * fewer errors. Returns null when no reading could be produced.
+ */
+export async function extractDataFromPO(fileBase64: string, mimeType: string, vendorNames: string[] = []): Promise<ExtractedPOData | null> {
+    const file = { base64: fileBase64, mimeType };
+    let first: ExtractedPOData | null = null;
+    try {
+        first = await read(firstPass(), file, vendorNames);
+        if (countErrors(first.checks) === 0) return first;
+    } catch (error) {
+        console.error("PO extraction (first pass) failed:", error);
     }
 
+    const strong = escalationPass();
+    if (!strong) return first;
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        const prompt = `
-            You are an AI assistant for **Al-Hamd Printers** (also known as **ATS**, **M.A Enterprises**, **Muhammad Tanveer**).
-            We manufacture PVC bags in **Pakistan**.
-            
-            **CRITICAL CONTEXT:**
-            - **VENDOR/SUPPLIER**: "Al-Hamd Printers", "ATS", "M.A Enterprises", "Muhammad Tanveer", "Tanveer Polybag". This is US.
-            - **CUSTOMER**: The entity SENDING this Purchase Order. Their name is usually at the **TOP HEADER** or **Logo**.
-            - **DO NOT** confuse the Customer with the Vendor.
-            
-            **YOUR TASK:**
-            Perform a deep scan of the document. Extract structured data into the JSON format below.
-            
-            **JSON STRUCTURE:**
-            {
-                "poNumber": string | null,
-                "date": "YYYY-MM-DD" | null,
-                "customer": {
-                    "name": string | null,
-                    "nameUrdu": string | null,
-                    "phone": string | null,
-                    "fax": string | null,
-                    "email": string | null,
-                    "address": string | null,
-                    "website": string | null,
-                    "ntn": string | null,
-                    "gstNumber": string | null
-                },
-                "totalAmount": number,
-                "items": [
-                    {
-                        "description": string,
-                        "quantity": number,
-                        "rate": number,
-                        "amount": number,
-                        "gstRate": number,
-                        "unit": string | null,
-                        "productCode": string | null,
-                        "customAttributes": { "column_name": "value" | null } 
-                    }
-                ],
-                "paymentTerms": string | null,
-                "deliveryDate": "YYYY-MM-DD" | null,
-                "notes": string | null,
-                "confidence": number
-            }
-
-            **EXTRACTION RULES:**
-            
-            1. **CUSTOMER IDENTIFICATION:** 
-               - The Customer Name is almost always the **LETTERHEAD TITLE** (e.g., "Tex World Bath Fashion", "FashionMart").
-               - Ignore "Vendor", "Supplier", or "To" fields pointing to Al-Hamd/ATS.
-               - Extract contact details (Phone, Email, Address).
-               - **IMPORTANT**: Look for **"NTN"** and **"STRN" / "GST"** numbers. These are critical. Extract them into 'ntn' and 'gstNumber'.
-
-            2. **DATE PARSING:**
-               - Parse formats like **"05-Feb-2026"**, "05/02/2026", "2026-02-05".
-               - Return strictly in **"YYYY-MM-DD"** format.
-
-            3. **ITEM TABLE EXTRACTION:**
-               - **Item Count Check**: Look for a "Sr. No" or "Item No" column. If it goes up to 3, ENSURE you return 3 items. Do not miss any rows.
-               - **Rates**: A rate of **0.00** is VALID (e.g., for samples or client-supplied material). Do not treat it as null.
-               - **GST %**: Look for columns like "GST %", "Sales Tax", "ST". Extract the percentage number (e.g., 18). If no GST column exists, set gstRate to 0.
-               - **Units**: Extract units like "Pieces", "KG", "Pcs".
-               - **Description**: Put only the item name/description in the description field. Do NOT merge other column values into description.
-
-            4. **CUSTOM ATTRIBUTES (CRITICAL):**
-               - The STANDARD columns are: Sr.No, Item Name/Description, Qty/Quantity, Unit, Rate, Amount/Total.
-               - ANY column in the item table that is NOT one of the standard columns above is a CUSTOM ATTRIBUTE.
-               - Common custom columns include: Brand, Size, Remarks, Material, Color, Quality, Weight, Specifications, etc.
-               - Extract these into the "customAttributes" object using the EXACT column header name as the key.
-               - If a cell is empty for a row, set that key value to null.
-               - Example: If the table has columns [Item Name, Size, Brand, Remarks, Unit, Qty, Rate, GST%, Amount], then Size, Brand, and Remarks are custom attributes.
-               - The "customAttributes" keys should be consistent across ALL items in the same PO (same keys, null for empty cells).
-
-            5. **PAYMENT TERMS**:
-               - Look for "Payment Terms:", "Terms:", or phrases like "90 days".
-            
-            6. **TOTALS**:
-               - Use the "Grand Total" or "Total" field.
-               - If missing, calculate: sum(amount).
-               
-            7. **CONFIDENCE**:
-               - Return a score (0.0 - 1.0) based on how well you could read the table and header.
-
-            Scan HANDWRITTEN and PRINTED text. Pakistan-specific context: "NTN" (National Tax Number), "GST" (General Sales Tax).
-            
-            OUTPUT ONLY VALID JSON.
-        `;
-
-        const result = await model.generateContent([
-            prompt,
-            {
-                inlineData: {
-                    data: fileBase64,
-                    mimeType: mimeType
-                }
-            }
-        ]);
-
-        const response = await result.response;
-        let text = response.text();
-
-        // Cleanup JSON
-        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        const firstOpen = text.indexOf('{');
-        const lastClose = text.lastIndexOf('}');
-        if (firstOpen !== -1 && lastClose !== -1) {
-            text = text.substring(firstOpen, lastClose + 1);
-        }
-
-        const parsed = JSON.parse(text);
-
-        // Backwards compatibility: flatten customer name if needed
-        if (!parsed.customer && parsed.customerName) {
-            parsed.customer = { name: parsed.customerName };
-        }
-
-        return parsed as ExtractedPOData;
-
+        const second = await read(strong, file, vendorNames);
+        return !first || countErrors(second.checks) <= countErrors(first.checks) ? second : first;
     } catch (error) {
-        console.error("Gemini Extraction Error:", error);
-        return null;
+        console.error("PO extraction (escalation) failed:", error);
+        return first;
     }
 }

@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Upload, Sparkles, Loader2, ImageIcon } from "lucide-react";
+import ExtractionChecks from "@/components/ai/ExtractionChecks";
+import type { ExtractedReceiptData } from "@/lib/ai/extraction-checks";
 
 export default function ExpenseForm() {
     const t = useTranslations("expenses.form");
@@ -21,15 +23,11 @@ export default function ExpenseForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const [scanResult, setScanResult] = useState<{
-        confidence: number;
-        description: string;
-        amount: number;
-    } | null>(null);
+    const [scanResult, setScanResult] = useState<Pick<ExtractedReceiptData, "checks" | "model" | "escalated"> | null>(null);
 
     // Shared scan logic for both file input and drag-drop
     const processFile = useCallback(async (file: File) => {
-        if (!file.type.startsWith("image/")) {
+        if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
             alert(t("imageOnly"));
             return;
         }
@@ -50,9 +48,9 @@ export default function ExpenseForm() {
                     setDate(result.data.date);
                 }
                 setScanResult({
-                    confidence: result.data.confidence,
-                    description: result.data.description,
-                    amount: result.data.amount,
+                    checks: result.data.checks,
+                    model: result.data.model,
+                    escalated: result.data.escalated,
                 });
             } else {
                 alert(result.error || t("scanFailed"));
@@ -125,12 +123,6 @@ export default function ExpenseForm() {
         }
     };
 
-    const confidenceColor =
-        scanResult && scanResult.confidence >= 0.8
-            ? "text-[var(--color-success)]"
-            : scanResult && scanResult.confidence >= 0.5
-                ? "text-[var(--color-warning)]"
-                : "text-[var(--color-error)]";
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -176,7 +168,7 @@ export default function ExpenseForm() {
                                     {t("uploadReceipt")}
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/*,application/pdf"
                                         onChange={handleFileInput}
                                         disabled={isScanning}
                                         className="hidden"
@@ -190,13 +182,8 @@ export default function ExpenseForm() {
                         )}
 
                         {scanResult && (
-                            <div className="mt-4 p-3 rounded-lg bg-[var(--color-bg-secondary)] text-left text-sm">
-                                <p className="text-[var(--color-text-secondary)]">
-                                    AI Confidence:{" "}
-                                    <span className={`font-semibold ${confidenceColor}`}>
-                                        {Math.round(scanResult.confidence * 100)}%
-                                    </span>
-                                </p>
+                            <div className="mt-4 text-start">
+                                <ExtractionChecks checks={scanResult.checks} model={scanResult.model} escalated={scanResult.escalated} />
                             </div>
                         )}
                     </div>

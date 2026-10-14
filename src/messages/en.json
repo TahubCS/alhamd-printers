@@ -365,7 +365,7 @@
             "scanning": "Scanning...",
             "dropHere": "Drop your receipt here!",
             "dragDrop": "or drag & drop a receipt image here",
-            "imageOnly": "Please upload an image file.",
+            "imageOnly": "Upload a PDF or an image of the receipt.",
             "scanFailed": "The receipt could not be read.",
             "saveFailed": "The expense could not be saved."
         },
@@ -710,6 +710,32 @@
             "save": "Confirm & save PO",
             "close": "Close",
             "preview": "Uploaded purchase order"
+        }
+    },
+    "aiChecks": {
+        "allPassed": "All checks passed",
+        "needsReview": "{count, plural, one {# thing} other {# things}} to check before saving",
+        "readBy": "read by {model}",
+        "rereadBy": "read again by {model} after the first reading failed its checks",
+        "matched": "Matched to an existing customer by {reason, select, ntn {NTN} gstNumber {STRN} email {email} name {name} phone {phone} other {a similar name}}. Change it below if this is wrong.",
+        "codes": {
+            "noItems": "No item lines were found.",
+            "noCustomerName": "The customer's name could not be read.",
+            "zeroQuantity": "Line {line}: quantity is missing or zero.",
+            "lineMath": "Line {line}: printed amount {printed, number} is not quantity × rate ({expected, number}).",
+            "rowCount": "The document numbers {printed} rows but {found} were read.",
+            "totalMismatch": "Printed total {printed, number} does not match the lines ({calculated, number}).",
+            "invalidDate": "The date \"{value}\" could not be understood.",
+            "unusualGst": "Line {line}: GST of {rate}% looks unusual.",
+            "taxIdFormat": "{field} \"{value}\" does not look like a valid number.",
+            "unreadable": "Not clearly readable: {fields}.",
+            "notPurchaseOrder": "This looks like {type, select, quotation {a quotation} invoice {an invoice} delivery_note {a delivery note} other {a different document}}, not a purchase order.",
+            "noAmount": "No total amount could be read.",
+            "receiptTotalMismatch": "The items add up to {calculated, number}, but the total reads {printed, number}.",
+            "futureDate": "The date {value} is in the future.",
+            "oldDate": "The date {value} is more than a year old.",
+            "foreignCurrency": "The amount is in {currency}, not rupees.",
+            "notReceipt": "This does not look like a receipt."
         }
     }
 }

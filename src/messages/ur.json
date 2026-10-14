@@ -365,7 +365,7 @@
             "scanning": "اسکین ہو رہا ہے...",
             "dropHere": "رسید یہاں چھوڑیں!",
             "dragDrop": "یا رسید کی تصویر یہاں گھسیٹ کر چھوڑیں",
-            "imageOnly": "براہ کرم تصویر اپ لوڈ کریں۔",
+            "imageOnly": "رسید کی تصویر یا پی ڈی ایف اپ لوڈ کریں۔",
             "scanFailed": "رسید پڑھی نہیں جا سکی۔",
             "saveFailed": "خرچ محفوظ نہیں ہو سکا۔"
         },
@@ -710,6 +710,32 @@
             "save": "تصدیق کریں اور محفوظ کریں",
             "close": "بند کریں",
             "preview": "اپ لوڈ شدہ پرچیز آرڈر"
+        }
+    },
+    "aiChecks": {
+        "allPassed": "تمام جانچ درست ہے",
+        "needsReview": "محفوظ کرنے سے پہلے {count} چیزیں دیکھیں",
+        "readBy": "{model} نے پڑھا",
+        "rereadBy": "پہلی بار جانچ میں غلطی کے بعد {model} نے دوبارہ پڑھا",
+        "matched": "موجودہ گاہک سے {reason, select, ntn {این ٹی این} gstNumber {ایس ٹی آر این} email {ای میل} name {نام} phone {فون} other {ملتے جلتے نام}} کے ذریعے ملایا گیا۔ غلط ہو تو نیچے تبدیل کریں۔",
+        "codes": {
+            "noItems": "کوئی آئٹم نہیں ملا۔",
+            "noCustomerName": "گاہک کا نام نہیں پڑھا جا سکا۔",
+            "zeroQuantity": "لائن {line}: مقدار موجود نہیں یا صفر ہے۔",
+            "lineMath": "لائن {line}: درج رقم {printed, number} مقدار × ریٹ ({expected, number}) کے برابر نہیں۔",
+            "rowCount": "دستاویز میں {printed} لائنیں ہیں لیکن {found} پڑھی گئیں۔",
+            "totalMismatch": "درج کل رقم {printed, number} لائنوں کے مجموعے ({calculated, number}) سے نہیں ملتی۔",
+            "invalidDate": "تاریخ \"{value}\" سمجھ نہیں آئی۔",
+            "unusualGst": "لائن {line}: {rate}% جی ایس ٹی غیر معمولی لگتا ہے۔",
+            "taxIdFormat": "{field} \"{value}\" درست نمبر نہیں لگتا۔",
+            "unreadable": "واضح طور پر نہیں پڑھا جا سکا: {fields}۔",
+            "notPurchaseOrder": "یہ پرچیز آرڈر کے بجائے {type, select, quotation {کوٹیشن} invoice {بل} delivery_note {ڈلیوری نوٹ} other {کوئی اور دستاویز}} لگتا ہے۔",
+            "noAmount": "کل رقم نہیں پڑھی جا سکی۔",
+            "receiptTotalMismatch": "آئٹمز کا مجموعہ {calculated, number} ہے لیکن کل رقم {printed, number} درج ہے۔",
+            "futureDate": "تاریخ {value} مستقبل کی ہے۔",
+            "oldDate": "تاریخ {value} ایک سال سے پرانی ہے۔",
+            "foreignCurrency": "رقم روپے کے بجائے {currency} میں ہے۔",
+            "notReceipt": "یہ رسید نہیں لگتی۔"
         }
     }
 }

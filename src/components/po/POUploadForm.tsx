@@ -13,6 +13,8 @@ import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { calculateDocumentTotals } from "@/lib/finance";
 import { formatPKR } from "@/lib/utils";
+import ExtractionChecks from "@/components/ai/ExtractionChecks";
+import type { MatchReason } from "@/lib/ai/customer-match";
 
 interface POItem {
     description: string;
@@ -54,7 +56,8 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
     const [isLoading, setIsLoading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [uploadedFileType, setUploadedFileType] = useState<string>("");
-    const [extractedData, setExtractedData] = useState<Partial<ExtractedPOData> | null>(null);
+    const [extractedData, setExtractedData] = useState<ExtractedPOData | null>(null);
+    const [matchReason, setMatchReason] = useState<MatchReason | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [globalGst, setGlobalGst] = useState<number>(0);
     const [customColumns, setCustomColumns] = useState<string[]>([]);
@@ -118,8 +121,9 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
         setIsLoading(false);
 
         if (result.success && result.data) {
-            const { extracted, matchedCustomer } = result.data;
+            const { extracted, matchedCustomer, matchReason } = result.data;
             setExtractedData(extracted);
+            setMatchReason(matchReason);
 
             // Populate form with ALL extracted data
             form.reset({
@@ -167,8 +171,13 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
     const onSubmit = async (data: POFormData) => {
         setIsLoading(true);
 
+        // Review metadata stays in the browser; only the document fields are saved
+        const extractedFields: Partial<ExtractedPOData> = { ...extractedData };
+        delete extractedFields.checks;
+        delete extractedFields.model;
+        delete extractedFields.escalated;
         const submissionData = {
-            ...extractedData,
+            ...extractedFields,
             ...data,
             items: data.items.map(item => ({
                 ...item,
@@ -267,7 +276,8 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                                 variant="outline"
                                 size="lg"
                                 onClick={() => {
-                                    setExtractedData({}); // Set empty object to bypass check
+                                    setExtractedData(null);
+                                    setMatchReason(null);
                                     setStep("review");
                                     form.reset({
                                         date: new Date().toISOString().split('T')[0],
@@ -306,16 +316,11 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
                                 <button
                                     type="button"
                                     onClick={() => setShowPreview(true)}
-                                    className="flex items-center gap-1.5 text-xs font-medium bg-[var(--color-success-soft)] text-[var(--color-success)] hover:bg-[var(--color-success-soft)] px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                                    className="btn btn-secondary min-h-8 px-3 text-[13px]"
                                 >
                                     <Eye className="w-3.5 h-3.5" />
                                     {t("viewOriginal")}
                                 </button>
-                            )}
-                            {previewUrl && (
-                                <div className="text-xs font-mono bg-[var(--color-success-soft)] text-[var(--color-success)] px-3 py-1 rounded-full">
-                                    {t("confidence", { value: Math.round((extractedData?.confidence || 0) * 100) })}
-                                </div>
                             )}
                         </div>
                     </div>
@@ -323,6 +328,14 @@ export default function POUploadForm({ customers, aiEnabled }: { customers: Cust
 
                 <CardContent className="p-4 sm:p-6">
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        {extractedData && (
+                            <ExtractionChecks
+                                checks={extractedData.checks}
+                                model={extractedData.model}
+                                escalated={extractedData.escalated}
+                                matchReason={matchReason}
+                            />
+                        )}
 
                         {/* Customer Section */}
                         <div className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-[var(--color-border)] space-y-4">

@@ -93,10 +93,20 @@ The seed only fills an **empty** database, so it can never mix demo records into
 | `AUTH_SECRET` | Yes | At least 32 random characters used to sign session cookies (`openssl rand -base64 48`) |
 | `AUTH_USERNAME` / `AUTH_PASSWORD` | Yes | The sign-in account |
 | `DEMO_MODE` | No | `true` shows the demo account on the login page. Only for the public portfolio deployment |
-| `GOOGLE_GEMINI_API_KEY` | No | Enables purchase-order and receipt image extraction |
+| `GOOGLE_GEMINI_API_KEY` | No | Enables purchase-order and receipt extraction from PDFs and photos |
+| `GEMINI_MODEL` | No | Model for the first reading. Default `gemini-3.5-flash-lite` |
+| `GEMINI_ESCALATION_MODEL` | No | Model for a second reading when the first fails its checks. Default `gemini-3.8-flash`; `none` disables it |
 | `TEST_DATABASE_URL` | No | Disposable database for integration tests. It is wiped on every test run |
 
 Copy `.env.example` and use development-only values. Never commit `.env`, database exports, client documents, API keys, or production connection strings. Core manual entry workflows remain available without the optional AI key.
+
+### How document extraction works
+
+1. The cheap model transcribes the PO or receipt into a fixed JSON schema enforced by the API. The prompt tells it to copy what is printed and leave empty cells empty, never to calculate missing values.
+2. Plain code (`src/lib/ai/extraction-checks.ts`) checks the reading: each line's amount against quantity × rate (with or without GST), the lines against the printed grand total, the row count against the last serial number, dates, tax-number formats and anything the model marked unreadable.
+3. If an error-level check fails, the stronger model reads the document once more at higher image detail, and the reading with fewer errors is kept. Most documents only ever use the cheap model.
+4. The customer is matched by NTN, STRN or email first, then by name with legal suffixes removed, then by phone. Ties are left for the reviewer instead of guessed.
+5. Every check result is shown above the review form, and nothing is saved until a person confirms it.
 
 ## Quality checks
 

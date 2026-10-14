@@ -1,100 +1,65 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { countErrors, reviewReceipt, type ExtractedReceiptData, type RawReceipt } from "./extraction-checks";
+import { escalationPass, firstPass, nullable, readDocument, type ReadPass } from "./gemini";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "");
+export type { ExtractedReceiptData } from "./extraction-checks";
 
-export interface ExtractedReceiptData {
-    description: string;
-    amount: number;
-    date: string | null; // YYYY-MM-DD or null
-    confidence: number;  // 0.0 - 1.0
+const RECEIPT_SCHEMA = {
+    type: "object",
+    properties: {
+        isReceipt: { type: "boolean", description: "False if this is not a receipt, bill or cash memo." },
+        description: {
+            type: "string",
+            description: "What was paid for, in plain English, under 100 characters, e.g. \"Diesel - 50 litres\" or \"Electricity bill - September\".",
+        },
+        vendor: nullable({ type: "string", description: "Shop, company or person who was paid." }),
+        amount: nullable({ type: "number", description: "Final amount paid (grand total / net payable) as printed." }),
+        lineItemsTotal: nullable({ type: "number", description: "Sum of the printed item amounts, only if items with amounts are listed." }),
+        currency: nullable({ type: "string", description: "Currency as printed; PKR for Rs or روپے." }),
+        date: nullable({ type: "string", description: "Receipt date as YYYY-MM-DD." }),
+        unreadable: { type: "array", items: { type: "string" }, description: "Fields you could not read with certainty." },
+    },
+    required: ["isReceipt", "description", "vendor", "amount", "lineItemsTotal", "currency", "date", "unreadable"],
+};
+
+const SYSTEM_INSTRUCTION = `You read expense receipts for a business in Pakistan. Receipts may be printed, handwritten, or in English, Urdu or both.
+
+- amount is the final total paid as printed (Grand Total, Net, Total Payable). Do not use a subtotal, a tax line or the cash tendered/change.
+- Copy numbers as printed: remove thousands separators and currency symbols, convert Urdu/Arabic digits to 0-9. Do not round.
+- If no total is printed, return null for amount; do not add the items up yourself.
+- Pakistani dates put the day first: 05/02/2026 is 5 February 2026. Return YYYY-MM-DD, or null if no date is visible.
+- Write the description in English, translating Urdu, and include quantity or billing period when printed.
+- When something is unclear, give your best reading and list it in unreadable.`;
+
+async function read(pass: ReadPass, file: { base64: string; mimeType: string }) {
+    const raw = await readDocument<RawReceipt>({
+        task: "receipt",
+        pass,
+        systemInstruction: SYSTEM_INSTRUCTION,
+        instruction: "Read this receipt.",
+        file,
+        schema: RECEIPT_SCHEMA,
+    });
+    return reviewReceipt(raw, pass.model, pass.strong);
 }
 
+/** Cheap model first; the stronger model only when no total could be read. */
 export async function extractDataFromReceipt(fileBase64: string, mimeType: string): Promise<ExtractedReceiptData | null> {
-    if (!process.env.GOOGLE_GEMINI_API_KEY) {
-        console.error("GOOGLE_GEMINI_API_KEY is missing");
-        return null;
+    const file = { base64: fileBase64, mimeType };
+    let first: ExtractedReceiptData | null = null;
+    try {
+        first = await read(firstPass(), file);
+        if (countErrors(first.checks) === 0) return first;
+    } catch (error) {
+        console.error("Receipt extraction (first pass) failed:", error);
     }
 
+    const strong = escalationPass();
+    if (!strong) return first;
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        const prompt = `
-            You are an AI assistant for a business in **Pakistan**. 
-            You are analyzing a **receipt or bill** image to extract expense information.
-
-            **CONTEXT:**
-            - Receipts may be informal, handwritten, or printed.
-            - Text may be in **English, Urdu, or a mix of both**.
-            - Common expense types: fuel (petrol/diesel), utilities (bijli/gas/pani), office supplies, 
-              repair/maintenance, food/chai, transport/rickshaw, courier/delivery, raw materials, 
-              phone recharge, rent, labor charges.
-            - Pakistani currency is PKR (Rs. / روپے).
-
-            **YOUR TASK:**
-            Extract the following from the receipt image:
-
-            {
-                "description": string,  // A clear, concise description of what was purchased/paid for (in English)
-                "amount": number,       // The TOTAL amount paid (just the number, no currency symbol)
-                "date": "YYYY-MM-DD" | null,  // Date on the receipt, if visible
-                "confidence": number    // 0.0 to 1.0, how confident you are in the extraction
-            }
-
-            **EXTRACTION RULES:**
-
-            1. **DESCRIPTION**: 
-               - Summarize what the expense is for in plain English (e.g., "Diesel fuel - 50 liters", "Electricity bill - February", "Office stationery supplies").
-               - If the receipt is in Urdu, translate the description to English.
-               - Include key details like quantity or period if visible.
-               - Keep it under 100 characters.
-
-            2. **AMOUNT**: 
-               - Find the TOTAL / Grand Total / final amount.
-               - If multiple amounts exist, use the largest one (usually the total).
-               - Return just the number (e.g., 5400, not "Rs. 5,400").
-               - If handwritten, be careful with digit recognition (Pakistani handwriting style).
-
-            3. **DATE**: 
-               - Parse any date format found on the receipt.
-               - Return in YYYY-MM-DD format.
-               - If no date visible, return null.
-
-            4. **CONFIDENCE**: 
-               - 0.9+ : Clear, printed receipt with obvious total
-               - 0.7-0.9 : Mostly readable, some guessing
-               - 0.5-0.7 : Handwritten, blurry, or partially visible
-               - <0.5 : Very unclear, low reliability
-
-            OUTPUT ONLY VALID JSON. No markdown, no explanation.
-        `;
-
-        const result = await model.generateContent([
-            prompt,
-            {
-                inlineData: {
-                    data: fileBase64,
-                    mimeType: mimeType
-                }
-            }
-        ]);
-
-        const response = await result.response;
-        let text = response.text();
-
-        // Cleanup JSON
-        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        const firstOpen = text.indexOf('{');
-        const lastClose = text.lastIndexOf('}');
-        if (firstOpen !== -1 && lastClose !== -1) {
-            text = text.substring(firstOpen, lastClose + 1);
-        }
-
-        const parsed = JSON.parse(text);
-
-        return parsed as ExtractedReceiptData;
-
+        const second = await read(strong, file);
+        return !first || countErrors(second.checks) <= countErrors(first.checks) ? second : first;
     } catch (error) {
-        console.error("Gemini Receipt Extraction Error:", error);
-        return null;
+        console.error("Receipt extraction (escalation) failed:", error);
+        return first;
     }
 }

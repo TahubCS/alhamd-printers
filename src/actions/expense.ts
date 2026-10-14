@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { extractDataFromReceipt } from "@/lib/ai/receipt-extractor";
+import { MAX_UPLOAD_BYTES, SUPPORTED_MIME_TYPES } from "@/lib/ai/gemini";
 
 // ============================================
 // CREATE EXPENSE
@@ -104,6 +105,12 @@ export async function scanReceipt(formData: FormData) {
     const file = formData.get("file") as File;
     if (!file) {
         return { success: false, error: "No file uploaded" };
+    }
+    if (!SUPPORTED_MIME_TYPES.has(file.type)) {
+        return { success: false, error: "Upload a PDF or a JPEG, PNG, WebP or HEIC image" };
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+        return { success: false, error: "The file is larger than 14 MB" };
     }
 
     try {
