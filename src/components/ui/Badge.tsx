@@ -7,18 +7,18 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     ({ className = '', variant = 'default', ...props }, ref) => {
         const variants = {
-            default: 'border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/80',
-            secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
-            outline: 'text-foreground',
-            success: 'border-transparent bg-green-100 text-green-800 hover:bg-green-200',
-            danger: 'border-transparent bg-red-100 text-red-800 hover:bg-red-200',
-            warning: 'border-transparent bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+            default: 'border-indigo-400/30 bg-indigo-500/15 text-indigo-200',
+            secondary: 'border-[var(--color-border)] bg-[var(--color-bg-hover)] text-[var(--color-text-secondary)]',
+            outline: 'border-[var(--color-border-light)] text-[var(--color-text-primary)]',
+            success: 'border-green-500/30 bg-green-500/15 text-green-300',
+            danger: 'border-red-500/30 bg-red-500/15 text-red-300',
+            warning: 'border-amber-500/30 bg-amber-500/15 text-amber-300',
         };
 
         return (
             <span
                 ref={ref}
-                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 ${variants[variant]} ${className}`}
+                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${variants[variant]} ${className}`}
                 {...props}
             />
         );
