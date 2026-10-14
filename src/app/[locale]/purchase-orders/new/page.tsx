@@ -1,42 +1,21 @@
-
+import { getTranslations } from "next-intl/server";
 import { getCustomers } from "@/actions/customer";
+import PageHeader from "@/components/layout/PageHeader";
 import POUploadForm from "@/components/po/POUploadForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewPOPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params;
-
-    // Fetch customers for the dropdown matching logic
-    const { data: customers } = await getCustomers();
-
-    const isUrdu = locale === 'ur';
+export default async function NewPOPage() {
+    const t = await getTranslations("orders.upload");
+    const { data: customers = [] } = await getCustomers();
 
     return (
-        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
-            <div className="mb-8" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
-                <h1
-                    className="font-bold text-[var(--color-text-primary)]"
-                    style={{
-                        fontSize: isUrdu ? '2.5rem' : '2rem',
-                        marginBottom: isUrdu ? '16px' : '12px',
-                        lineHeight: isUrdu ? '1.4' : '1.2'
-                    }}
-                >
-                    New Purchase Order
-                </h1>
-                <p
-                    className="text-[var(--color-text-secondary)]"
-                    style={{
-                        fontSize: isUrdu ? '1.2rem' : '1.1rem',
-                        lineHeight: isUrdu ? '1.8' : '1.5'
-                    }}
-                >
-                    Upload a PO to automatically extract details and create a record.
-                </p>
-            </div>
-
-            <POUploadForm customers={customers || []} />
+        <div className="animate-fade-in p-3 rtl:p-4">
+            <PageHeader title={t("newTitle")} subtitle={t("newSubtitle")} />
+            <POUploadForm
+                customers={customers.map((c) => ({ id: c.id, name: c.name, nameUrdu: c.nameUrdu }))}
+                aiEnabled={Boolean(process.env.GOOGLE_GEMINI_API_KEY)}
+            />
         </div>
     );
 }

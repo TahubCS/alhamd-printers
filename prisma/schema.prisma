@@ -378,6 +378,7 @@ model CustomerPurchaseOrder {
   status                CustomerPOStatus            @default(DRAFT)
   originalFileUrl       String? // Path/URL to the uploaded file
   ocrText               String? // Raw text extracted if needed
+  notes                 String? // Payment terms and special instructions from the PO
   items                 CustomerPurchaseOrderItem[]
   invoices              Invoice[]
   createdAt             DateTime                    @default(now())

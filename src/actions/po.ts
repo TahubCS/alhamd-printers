@@ -51,7 +51,7 @@ export async function getCustomerPOById(id: string) {
             where: { id },
             include: {
                 customer: true,
-                items: true,
+                items: { include: { deliveredItems: { select: { quantity: true } } } },
                 invoices: {
                     select: { id: true, invoiceNo: true, total: true, date: true }
                 }
@@ -68,8 +68,9 @@ export async function getCustomerPOById(id: string) {
                     balance: toNumber(po.customer.balance),
                     creditLimit: po.customer.creditLimit ? Number(po.customer.creditLimit) : null,
                 } : null,
-                items: po.items.map(item => ({
+                items: po.items.map(({ deliveredItems, ...item }) => ({
                     ...item,
+                    delivered: deliveredItems.reduce((sum, d) => sum + d.quantity, 0),
                     rate: toNumber(item.rate),
                     amount: toNumber(item.amount),
                     gstRate: toNumber(item.gstRate),

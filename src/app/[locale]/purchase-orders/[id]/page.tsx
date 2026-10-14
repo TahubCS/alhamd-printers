@@ -1,214 +1,166 @@
-
+import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { ArrowLeft, FileText, Truck } from "lucide-react";
 import { getCustomerPOById } from "@/actions/po";
-import { Badge } from "@/components/ui/Badge";
+import PageHeader from "@/components/layout/PageHeader";
+import POStatusBadge from "@/components/po/POStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/Table";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
+import { Link } from "@/i18n/navigation";
+import { formatDisplayDate, formatPKR } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function PurchaseOrderDetailsPage({
-    params,
-}: {
-    params: Promise<{ locale: string; id: string }>;
-}) {
+export default async function PurchaseOrderDetailsPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
     const { locale, id } = await params;
+    const t = await getTranslations("orders");
+    const tDetail = await getTranslations("orders.detail");
+    const { data: po } = await getCustomerPOById(id);
+    if (!po) notFound();
 
-    const { success, data: po } = await getCustomerPOById(id);
-
-    if (!success || !po) {
-        notFound();
-    }
-
-    const isUrdu = locale === 'ur';
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK", {
-            style: "currency",
-            currency: "PKR",
-        }).format(amount);
-    };
-
-    const formatDate = (date: string | Date) => {
-        return new Date(date).toLocaleDateString(locale === "ur" ? "ur-PK" : "en-PK");
-    };
+    const number = new Intl.NumberFormat(locale === "ur" ? "ur-PK" : "en-PK");
+    const canInvoice = po.status === "OPEN" || po.status === "PARTIAL";
+    const hasUndelivered = po.items.some((item) => item.delivered < item.quantity);
 
     return (
-        <div className="animate-fade-in" style={{ padding: isUrdu ? '16px' : '12px' }}>
-            {/* Header Actions */}
-            <div className="flex items-center justify-between gap-4" style={{ marginBottom: isUrdu ? '48px' : '40px' }}>
-                <div className="flex items-center gap-4">
-                    <Link href={`/${locale}/purchase-orders`}>
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back
-                        </Button>
+        <div className="animate-fade-in p-3 rtl:p-4">
+            <PageHeader
+                title={`${t("poNumber")} ${po.poNumber ?? ""}`}
+                subtitle={formatDisplayDate(po.date, locale, { dateStyle: "long" })}
+                backLink={
+                    <Link href="/purchase-orders" className="mb-3 inline-flex items-center gap-1 text-sm text-[var(--color-accent-primary)] hover:underline">
+                        <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
+                        {t("back")}
                     </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-                            PO # {po.poNumber}
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            {formatDate(po.date)}
-                        </p>
-                    </div>
-                </div>
-                <div className="flex gap-2">
-                    <Link href={`/${locale}/challans/new?fromPoId=${po.id}`}>
-                        <Button variant="outline">
-                            Create Delivery Challan
-                        </Button>
-                    </Link>
-                    {po.status === 'OPEN' ? (
-                        <Link href={`/${locale}/invoices/new?fromPoId=${po.id}`}>
-                            <Button>
-                                Convert to Invoice
-                            </Button>
-                        </Link>
-                    ) : (
-                        <Badge variant="success" className="text-lg px-4 py-2">
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            {po.status}
-                        </Badge>
-                    )}
-                </div>
-            </div>
+                }
+                actions={
+                    <>
+                        {hasUndelivered && po.customerId && (
+                            <Link href={`/challans/new?fromPoId=${po.id}`}>
+                                <Button variant="outline">
+                                    <Truck className="h-4 w-4" aria-hidden="true" />
+                                    {tDetail("challan")}
+                                </Button>
+                            </Link>
+                        )}
+                        {canInvoice && (
+                            <Link href={`/invoices/new?fromPoId=${po.id}`}>
+                                <Button>
+                                    <FileText className="h-4 w-4" aria-hidden="true" />
+                                    {tDetail("convert")}
+                                </Button>
+                            </Link>
+                        )}
+                    </>
+                }
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left Column: Details */}
-                <div className="md:col-span-2 space-y-6">
-                    {/* Items */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Items</CardTitle>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div className="space-y-6 lg:col-span-2">
+                    <Card className="p-4 sm:p-6">
+                        <CardHeader className="mb-4 flex-row items-center justify-between space-y-0 p-0">
+                            <CardTitle className="text-lg text-[var(--color-text-primary)]">{t("items")}</CardTitle>
+                            <POStatusBadge status={po.status} />
                         </CardHeader>
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead className="text-right">Qty</TableHead>
-                                        <TableHead className="text-right">Rate</TableHead>
-                                        <TableHead className="text-right text-[var(--color-text-secondary)]">GST %</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
+                                        <TableHead>{tDetail("description")}</TableHead>
+                                        <TableHead className="text-end">{tDetail("qty")}</TableHead>
+                                        <TableHead className="text-end">{tDetail("delivered")}</TableHead>
+                                        <TableHead className="text-end">{tDetail("rate")}</TableHead>
+                                        <TableHead className="text-end">{tDetail("gst")}</TableHead>
+                                        <TableHead className="text-end">{t("amount")}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {po.items.map((item) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell className="font-medium">{item.description}</TableCell>
-                                            <TableCell className="text-right">{item.quantity}</TableCell>
-                                            <TableCell className="text-right">{formatCurrency(Number(item.rate))}</TableCell>
-                                            <TableCell className="text-right text-[var(--color-text-secondary)]">
-                                                {Number(item.gstRate) > 0 ? `${Number(item.gstRate)}%` : '-'}
-                                            </TableCell>
-                                            <TableCell className="text-right">{formatCurrency(Number(item.amount))}</TableCell>
-                                        </TableRow>
-                                    ))}
+                                    {po.items.map((item) => {
+                                        const attrs = Object.entries(item.customAttributes).filter(([, value]) => value);
+                                        return (
+                                            <TableRow key={item.id}>
+                                                <TableCell>
+                                                    <div className="font-medium text-[var(--color-text-primary)]">{item.description}</div>
+                                                    {attrs.length > 0 && (
+                                                        <div className="text-xs text-[var(--color-text-muted)]">{attrs.map(([k, v]) => `${k}: ${v}`).join(" · ")}</div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-end">{number.format(item.quantity)} <span className="text-xs text-[var(--color-text-muted)]">{item.unit}</span></TableCell>
+                                                <TableCell className={`text-end ${item.delivered >= item.quantity ? "text-green-300" : "text-[var(--color-text-secondary)]"}`}>
+                                                    {number.format(item.delivered)}
+                                                </TableCell>
+                                                <TableCell className="text-end">{formatPKR(item.rate, locale, 2)}</TableCell>
+                                                <TableCell className="text-end text-[var(--color-text-secondary)]">{item.gstRate > 0 ? `${item.gstRate}%` : "—"}</TableCell>
+                                                <TableCell className="text-end font-medium">{formatPKR(item.amount, locale, 2)}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
-                        </CardContent>
-                        <div className="p-4 border-t flex flex-col items-end gap-2">
-                            <div className="flex justify-between w-[200px] text-sm">
-                                <span className="text-muted-foreground">Subtotal:</span>
-                                <span>{formatCurrency(Number(po.subtotal || po.totalAmount))}</span>
-                            </div>
-                            {Number(po.taxTotal) > 0 && (
-                                <div className="flex justify-between w-[200px] text-sm">
-                                    <span className="text-muted-foreground">GST Total:</span>
-                                    <span>{formatCurrency(Number(po.taxTotal))}</span>
-                                </div>
-                            )}
-                            <div className="flex justify-between w-[200px] text-lg font-bold border-t pt-2 mt-1 ring-offset-background">
-                                <span>Total:</span>
-                                <span>{formatCurrency(Number(po.totalAmount))}</span>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Linked Invoices */}
-                    {po.invoices && po.invoices.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Linked Invoices</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Invoice #</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead className="text-right">Total</TableHead>
-                                            <TableHead></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {po.invoices.map((inv) => (
-                                            <TableRow key={inv.id}>
-                                                <TableCell className="font-medium">#{inv.invoiceNo}</TableCell>
-                                                <TableCell>{formatDate(inv.date)}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(Number(inv.total))}</TableCell>
-                                                <TableCell className="text-right">
-                                                    <Link href={`/${locale}/invoices/${inv.id}`}>
-                                                        <Button size="sm" variant="ghost">View</Button>
-                                                    </Link>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-
-                {/* Right Column: Customer Info */}
-                <div className="md:col-span-1">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Customer Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground">Name</div>
-                                <div className="text-lg font-bold text-[var(--color-primary)]">
-                                    <Link href={`/${locale}/customers/${po.customerId}`} className="hover:underline">
-                                        {po.customer?.name}
-                                    </Link>
-                                </div>
-                                <div className="text-md text-muted-foreground">{po.customer?.nameUrdu}</div>
-                            </div>
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground">Original PO File</div>
-                                {po.originalFileUrl ? (
-                                    <div className="mt-2 text-sm text-blue-600 underline cursor-pointer">
-                                        View File (Not implemented yet)
-                                    </div>
-                                ) : (
-                                    <div className="mt-1 text-sm text-muted-foreground italic">No file attached</div>
+                            <dl className="ms-auto mt-4 grid max-w-xs grid-cols-2 gap-y-1 text-sm">
+                                <dt className="text-[var(--color-text-secondary)]">{tDetail("subtotal")}</dt>
+                                <dd className="text-end">{formatPKR(po.subtotal || po.totalAmount, locale, 2)}</dd>
+                                {po.taxTotal > 0 && (
+                                    <>
+                                        <dt className="text-[var(--color-text-secondary)]">{tDetail("gstTotal")}</dt>
+                                        <dd className="text-end">{formatPKR(po.taxTotal, locale, 2)}</dd>
+                                    </>
                                 )}
-                            </div>
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground">Status</div>
-                                <div className="mt-1">
-                                    <Badge variant={po.status === 'CLOSED' ? 'success' : 'default'}>
-                                        {po.status}
-                                    </Badge>
-                                </div>
-                            </div>
+                                <dt className="border-t border-[var(--color-border)] pt-2 text-base font-bold text-[var(--color-text-primary)]">{tDetail("total")}</dt>
+                                <dd className="border-t border-[var(--color-border)] pt-2 text-end text-base font-bold text-[var(--color-text-primary)]">{formatPKR(po.totalAmount, locale, 2)}</dd>
+                            </dl>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="p-4 sm:p-6">
+                        <CardHeader className="mb-4 p-0">
+                            <CardTitle className="text-lg text-[var(--color-text-primary)]">{tDetail("linkedInvoices")}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            {po.invoices.length === 0 ? (
+                                <p className="text-sm text-[var(--color-text-muted)]">{tDetail("noInvoices")}</p>
+                            ) : (
+                                <ul className="divide-y divide-[var(--color-border)]">
+                                    {po.invoices.map((inv) => (
+                                        <li key={inv.id}>
+                                            <Link href={`/invoices/${inv.id}`} className="flex items-center justify-between gap-4 py-3 hover:bg-[var(--color-bg-hover)] sm:px-2">
+                                                <span className="text-[var(--color-text-primary)]">
+                                                    {tDetail("invoiceNo")} {inv.invoiceNo}
+                                                    <span className="ms-2 text-sm text-[var(--color-text-muted)]">{formatDisplayDate(inv.date, locale)}</span>
+                                                </span>
+                                                <span className="font-medium">{formatPKR(inv.total, locale)}</span>
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
+
+                <Card className="h-fit p-4 sm:p-6">
+                    <CardHeader className="mb-4 p-0">
+                        <CardTitle className="text-lg text-[var(--color-text-primary)]">{tDetail("customerDetails")}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-5 p-0">
+                        {po.customer ? (
+                            <div>
+                                <Link href={`/customers/${po.customer.id}`} className="text-lg font-bold text-[var(--color-accent-primary)] hover:underline">
+                                    {po.customer.name}
+                                </Link>
+                                {po.customer.nameUrdu && <p className="text-[var(--color-text-secondary)]">{po.customer.nameUrdu}</p>}
+                                {po.customer.phone && <p className="text-sm text-[var(--color-text-secondary)]" dir="ltr">{po.customer.phone}</p>}
+                            </div>
+                        ) : (
+                            <p className="text-[var(--color-text-muted)]">—</p>
+                        )}
+                        <div>
+                            <p className="text-sm font-medium text-[var(--color-text-secondary)]">{tDetail("notes")}</p>
+                            <p className="mt-1 whitespace-pre-line text-sm text-[var(--color-text-primary)]">{po.notes || tDetail("noNotes")}</p>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
