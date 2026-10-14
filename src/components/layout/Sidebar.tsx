@@ -12,7 +12,8 @@ import {
     Banknote,
     Printer,
     CreditCard,
-    Settings
+    Settings,
+    Boxes
 } from 'lucide-react';
 
 const navItems = [
@@ -20,6 +21,7 @@ const navItems = [
     { key: 'customers', href: '/customers', icon: Users },
     { key: 'orders', href: '/purchase-orders', icon: ShoppingCart },
     { key: 'invoices', href: '/invoices', icon: FileText },
+    { key: 'products', href: '/products', icon: Boxes },
     { key: 'cheques', href: '/cheques', icon: CreditCard },
     { key: 'inventory', href: '/inventory', icon: Package },
     { key: 'expenses', href: '/expenses', icon: Wallet },
