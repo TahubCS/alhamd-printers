@@ -93,7 +93,13 @@
         "wages": "Wages",
         "reports": "Reports",
         "settings": "Settings",
-        "primaryNavigation": "Primary navigation"
+        "primaryNavigation": "Primary navigation",
+        "groups": {
+            "sales": "Sales",
+            "operations": "Operations",
+            "finance": "Finance"
+        },
+        "workspace": "Business management"
     },
     "invoices": {
         "title": "Invoices",

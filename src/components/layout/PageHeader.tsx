@@ -7,22 +7,22 @@ interface PageHeaderProps {
     backLink?: ReactNode;
 }
 
-/** Page title block matching the existing module pages, with RTL-friendly sizing. */
+/** Page title row: title and one-line description on the start side, actions on the end side. */
 export default function PageHeader({ title, subtitle, actions, backLink }: PageHeaderProps) {
     return (
-        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rtl:mb-12">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
                 {backLink}
-                <h1 className="text-3xl font-bold leading-tight text-[var(--color-text-primary)] sm:text-[2rem] rtl:text-[2.25rem] rtl:leading-snug">
+                <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[var(--color-text-primary)] rtl:leading-10">
                     {title}
                 </h1>
                 {subtitle && (
-                    <p className="mt-3 text-[1.05rem] text-[var(--color-text-secondary)] rtl:text-[1.15rem] rtl:leading-loose">
+                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
                         {subtitle}
                     </p>
                 )}
             </div>
-            {actions && <div className="flex flex-wrap gap-3">{actions}</div>}
+            {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
         </div>
     );
 }

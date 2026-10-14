@@ -26,7 +26,7 @@ export default function LanguageToggle() {
             className="lang-toggle"
             aria-label={t('switchLanguage')}
         >
-            <Globe className="w-4 h-4" />
+            <Globe className="h-4 w-4" aria-hidden="true" />
             <span>{t('toggleLanguage')}</span>
         </button>
     );

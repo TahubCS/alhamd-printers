@@ -20,7 +20,7 @@ export default function Navbar({ onMenuClick, sidebarOpen = false }: NavbarProps
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMenuClick}
-                    className="p-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors md:hidden"
+                    className="rounded-md p-2 hover:bg-[var(--color-bg-hover)] md:hidden"
                     aria-label={t('openMenu')}
                     aria-expanded={sidebarOpen}
                 >
@@ -29,7 +29,7 @@ export default function Navbar({ onMenuClick, sidebarOpen = false }: NavbarProps
             </div>
 
             {/* Right side */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
                 <LanguageToggle />
 
                 <form method="post" action="/api/auth/logout">

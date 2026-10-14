@@ -93,7 +93,13 @@
         "wages": "تنخواہیں",
         "reports": "رپورٹس",
         "settings": "ترتیبات",
-        "primaryNavigation": "مرکزی نیویگیشن"
+        "primaryNavigation": "مرکزی نیویگیشن",
+        "groups": {
+            "sales": "فروخت",
+            "operations": "آپریشنز",
+            "finance": "مالیات"
+        },
+        "workspace": "بزنس مینجمنٹ"
     },
     "invoices": {
         "title": "انوائسز",

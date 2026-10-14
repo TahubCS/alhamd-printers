@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { usePathname, Link } from '@/i18n/navigation';
 import {
     LayoutDashboard,
@@ -10,81 +10,99 @@ import {
     Package,
     Wallet,
     Banknote,
-    Printer,
     CreditCard,
     Settings,
     Boxes,
     Truck,
-    Factory
+    Factory,
+    type LucideIcon,
 } from 'lucide-react';
 
-const navItems = [
-    { key: 'dashboard', href: '/', icon: LayoutDashboard },
-    { key: 'customers', href: '/customers', icon: Users },
-    { key: 'orders', href: '/purchase-orders', icon: ShoppingCart },
-    { key: 'challans', href: '/challans', icon: Truck },
-    { key: 'invoices', href: '/invoices', icon: FileText },
-    { key: 'products', href: '/products', icon: Boxes },
-    { key: 'cheques', href: '/cheques', icon: CreditCard },
-    { key: 'inventory', href: '/inventory', icon: Package },
-    { key: 'suppliers', href: '/suppliers', icon: Factory },
-    { key: 'expenses', href: '/expenses', icon: Wallet },
-    { key: 'wages', href: '/wages', icon: Banknote },
-    { key: 'settings', href: '/settings', icon: Settings },
+interface NavItem {
+    key: string;
+    href: string;
+    icon: LucideIcon;
+}
+
+const navGroups: { key: string | null; items: NavItem[] }[] = [
+    { key: null, items: [{ key: 'dashboard', href: '/', icon: LayoutDashboard }] },
+    {
+        key: 'sales',
+        items: [
+            { key: 'customers', href: '/customers', icon: Users },
+            { key: 'orders', href: '/purchase-orders', icon: ShoppingCart },
+            { key: 'challans', href: '/challans', icon: Truck },
+            { key: 'invoices', href: '/invoices', icon: FileText },
+            { key: 'cheques', href: '/cheques', icon: CreditCard },
+        ],
+    },
+    {
+        key: 'operations',
+        items: [
+            { key: 'products', href: '/products', icon: Boxes },
+            { key: 'inventory', href: '/inventory', icon: Package },
+            { key: 'suppliers', href: '/suppliers', icon: Factory },
+        ],
+    },
+    {
+        key: 'finance',
+        items: [
+            { key: 'expenses', href: '/expenses', icon: Wallet },
+            { key: 'wages', href: '/wages', icon: Banknote },
+        ],
+    },
 ];
 
 export default function Sidebar({ open = false, onNavigate }: { open?: boolean; onNavigate?: () => void }) {
     const t = useTranslations('nav');
     const tCommon = useTranslations('common');
     const pathname = usePathname();
-    const locale = useLocale();
-    const isUrdu = locale === 'ur';
+
+    const isActive = (href: string) =>
+        href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+
+    const renderItem = ({ key, href, icon: Icon }: NavItem) => {
+        const active = isActive(href);
+        return (
+            <Link
+                key={key}
+                href={href}
+                className={`nav-item ${active ? 'active' : ''}`}
+                aria-current={active ? 'page' : undefined}
+                onClick={onNavigate}
+            >
+                <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                <span>{t(key)}</span>
+            </Link>
+        );
+    };
 
     return (
         <aside className={`sidebar ${open ? 'open' : ''}`} aria-label={t('primaryNavigation')}>
-            {/* Logo */}
-            <div className={`${isUrdu ? 'p-8' : 'p-6'} border-b border-[var(--color-border)]`}>
-                <div className={`flex items-center ${isUrdu ? 'gap-4' : 'gap-3'}`}>
-                    <div className={`${isUrdu ? 'w-12 h-12' : 'w-11 h-11'} rounded-xl bg-gradient-to-br from-[var(--color-accent-primary)] to-[var(--color-accent-secondary)] flex items-center justify-center flex-shrink-0`}>
-                        <Printer className={`${isUrdu ? 'w-6 h-6' : 'w-5 h-5'} text-white`} />
-                    </div>
-                    <div>
-                        <h1 className={`${isUrdu ? 'text-xl' : 'text-lg'} font-bold text-[var(--color-text-primary)]`}>
-                            {tCommon('appName')}
-                        </h1>
-                        <p className={`${isUrdu ? 'text-sm' : 'text-xs'} text-[var(--color-text-muted)]`}>
-                            {isUrdu ? 'بزنس مینجمنٹ' : 'Business Management'}
-                        </p>
-                    </div>
-                </div>
+            <div className="flex items-center gap-2.5 px-5 pb-4 pt-5">
+                <span
+                    aria-hidden="true"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[var(--color-accent-primary)] text-[13px] font-semibold text-white"
+                >
+                    AH
+                </span>
+                <span className="min-w-0 leading-tight">
+                    <span className="block truncate text-sm font-semibold text-[var(--color-sidebar-strong)]">{tCommon('appName')}</span>
+                    <span className="block truncate text-xs text-[var(--color-sidebar-muted)]">{t('workspace')}</span>
+                </span>
             </div>
 
-            {/* Navigation */}
-            <nav className={`flex-1 ${isUrdu ? 'py-6' : 'py-4'} overflow-y-auto`}>
-                {navItems.map((item) => {
-                    const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(`${item.href}/`);
-                    const Icon = item.icon;
-
-                    return (
-                        <Link
-                            key={item.key}
-                            href={item.href}
-                            className={`nav-item relative ${isActive ? 'active' : ''}`}
-                            aria-current={isActive ? 'page' : undefined}
-                            onClick={onNavigate}
-                        >
-                            <Icon className={`${isUrdu ? 'w-6 h-6' : 'w-5 h-5'}`} />
-                            <span>{t(item.key)}</span>
-                        </Link>
-                    );
-                })}
+            <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 py-2">
+                {navGroups.map((group) => (
+                    <div key={group.key ?? 'home'} className="flex flex-col gap-0.5">
+                        {group.key && <span className="nav-group-label">{t(`groups.${group.key}`)}</span>}
+                        {group.items.map(renderItem)}
+                    </div>
+                ))}
             </nav>
 
-            {/* Footer */}
-            <div className={`${isUrdu ? 'p-6' : 'p-4'} border-t border-[var(--color-border)]`}>
-                <p className={`${isUrdu ? 'text-sm' : 'text-xs'} text-center text-[var(--color-text-muted)]`}>
-                    © 2026 {isUrdu ? 'الحمد پرنٹرز' : 'Al-Hamd Printers'}
-                </p>
+            <div className="border-t border-[var(--color-sidebar-edge)] px-3 py-3">
+                {renderItem({ key: 'settings', href: '/settings', icon: Settings })}
             </div>
         </aside>
     );

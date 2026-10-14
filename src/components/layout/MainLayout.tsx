@@ -25,7 +25,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Mobile overlay */}
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                    className="fixed inset-0 z-30 bg-[#111827]/45 md:hidden"
                     onClick={() => setSidebarOpen(false)}
                     aria-hidden="true"
                 />
