@@ -23,7 +23,13 @@ export interface DocumentParty {
     gstNumber?: string | null;
 }
 
-export type MatchReason = "ntn" | "gstNumber" | "email" | "name" | "phone" | "similarName";
+export type MatchReason = "learned" | "ntn" | "gstNumber" | "email" | "name" | "phone" | "similarName";
+
+/** A printed name that staff confirmed belongs to a customer (see CustomerAlias). */
+export interface CustomerAliasEntry {
+    normalizedName: string;
+    customerId: string;
+}
 
 export interface CustomerMatch {
     id: string;
@@ -89,7 +95,19 @@ function score(party: DocumentParty, customer: CustomerCandidate): { score: numb
     return null;
 }
 
-export function matchCustomer(party: DocumentParty, customers: CustomerCandidate[]): CustomerMatch | null {
+export function matchCustomer(
+    party: DocumentParty,
+    customers: CustomerCandidate[],
+    aliases: CustomerAliasEntry[] = [],
+): CustomerMatch | null {
+    // A name confirmed on an earlier document beats every heuristic except a tax number
+    const name = normalizeName(party.name);
+    const alias = name ? aliases.find((a) => a.normalizedName === name) : undefined;
+    const aliased = alias && customers.find((c) => c.id === alias.customerId);
+    const ntn = digits(party.ntn);
+    const ntnMatch = ntn.length >= 7 ? customers.find((c) => digits(c.ntn) === ntn) : undefined;
+    if (aliased && (!ntnMatch || ntnMatch.id === aliased.id)) return { id: aliased.id, reason: "learned", score: 98 };
+
     const ranked = customers
         .map((customer) => ({ customer, result: score(party, customer) }))
         .filter((entry): entry is { customer: CustomerCandidate; result: { score: number; reason: MatchReason } } => entry.result !== null)

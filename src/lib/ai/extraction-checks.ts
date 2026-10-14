@@ -1,4 +1,5 @@
 import { calculateDocumentTotals, roundMoney } from "@/lib/finance";
+import type { ProductMatchReason } from "./product-match";
 
 /*
  * Deterministic checks on what the model read. The model transcribes; this
@@ -117,6 +118,9 @@ export interface ExtractedPOItem {
     unit?: string;
     productCode?: string;
     customAttributes: Record<string, string | null>;
+    /** Our product this line was linked to, and why (set after extraction) */
+    productId?: string | null;
+    productMatch?: ProductMatchReason | null;
 }
 
 export interface ExtractedPOData {

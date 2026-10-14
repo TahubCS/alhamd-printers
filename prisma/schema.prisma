@@ -53,6 +53,8 @@ model Customer {
   cheques                Cheque[]
   payments               Payment[]
   deliveryChallans       DeliveryChallan[]
+  aliases                CustomerAlias[]
+  productAliases         ProductAlias[]
 }
 
 // ============================================
@@ -74,6 +76,7 @@ model Product {
   updatedAt          DateTime                    @updatedAt
   invoiceItems       InvoiceItem[]
   purchaseOrderItems CustomerPurchaseOrderItem[]
+  aliases            ProductAlias[]
 }
 
 // ============================================
@@ -467,4 +470,39 @@ model BankAccount {
   payments            Payment[]
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+}
+
+// ============================================
+// LEARNED MATCHES - remembered from confirmed AI readings
+// ============================================
+
+// A customer name as printed on a document, confirmed to mean this customer
+model CustomerAlias {
+  id             String   @id @default(cuid())
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  normalizedName String   @unique
+  name           String
+  timesConfirmed Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([customerId])
+}
+
+// How one customer describes an item on their POs, confirmed to be this product
+model ProductAlias {
+  id             String   @id @default(cuid())
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  normalizedText String
+  text           String
+  timesConfirmed Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([customerId, normalizedText])
+  @@index([productId])
 }

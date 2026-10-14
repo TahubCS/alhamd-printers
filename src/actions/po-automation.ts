@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { extractDataFromPO, ExtractedPOData } from "@/lib/ai/po-extractor";
 import { matchCustomer } from "@/lib/ai/customer-match";
+import { loadCustomerAliases, recordConfirmedReading, suggestProducts } from "@/lib/ai/learned-matches";
 import { MAX_UPLOAD_BYTES, SUPPORTED_MIME_TYPES } from "@/lib/ai/gemini";
 import { revalidatePath } from "next/cache";
 import { calculateDocumentTotals } from "@/lib/finance";
@@ -23,11 +24,12 @@ export async function processPOUpload(formData: FormData) {
 
     try {
         const buffer = Buffer.from(await file.arrayBuffer());
-        const [companies, customers] = await Promise.all([
+        const [companies, customers, customerAliases] = await Promise.all([
             prisma.company.findMany({ select: { name: true, nameUrdu: true } }),
             prisma.customer.findMany({
                 select: { id: true, name: true, nameUrdu: true, phone: true, email: true, ntn: true, gstNumber: true },
             }),
+            loadCustomerAliases(),
         ]);
         // Our own invoicing names, so the model never mistakes us for the customer
         const vendorNames = companies.flatMap((c) => [c.name, c.nameUrdu]).filter((n): n is string => Boolean(n));
@@ -37,7 +39,13 @@ export async function processPOUpload(formData: FormData) {
             return { success: false, error: "AI Extraction Failed. Please try a clearer image." };
         }
 
-        const match = matchCustomer(extractedData.customer, customers);
+        const match = matchCustomer(extractedData.customer, customers, customerAliases);
+        const suggestions = await suggestProducts(match?.id ?? null, extractedData.items);
+        extractedData.items = extractedData.items.map((item, i) => ({
+            ...item,
+            productId: suggestions[i]?.productId ?? null,
+            productMatch: suggestions[i]?.reason ?? null,
+        }));
         const matchedCustomer = match
             ? await prisma.customer.findUnique({
                 where: { id: match.id },
@@ -71,6 +79,8 @@ export type ConfirmPOData = Omit<Partial<ExtractedPOData>, "items" | "paymentTer
     newCustomerAddress?: string;
     newCustomerNTN?: string;
     newCustomerGST?: string;
+    /** Set only for AI-read POs: the customer name as printed, so confirmations can be learned */
+    printedCustomerName?: string | null;
     // File Metadata
     originalFileUrl?: string | null;
     ocrText?: string | null;
@@ -83,6 +93,11 @@ export type ConfirmPOData = Omit<Partial<ExtractedPOData>, "items" | "paymentTer
         gstRate?: number;
         unit?: string;
         customAttributes?: Record<string, string | null>;
+        productId?: string | null;
+        // AI-read lines only: what was suggested and what the document printed
+        suggestedProductId?: string | null;
+        sourceDescription?: string | null;
+        sourceProductCode?: string | null;
     }[];
 };
 
@@ -93,16 +108,15 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
             return isNaN(parsed) ? 0 : parsed;
         };
 
-        const lines = data.items
-            .filter((item) => (item.description || "").trim() !== "")
-            .map((item) => ({
-                description: item.description.trim(),
-                quantity: Math.max(1, Math.round(safeNumber(item.quantity))),
-                rate: Math.max(0, safeNumber(item.rate)),
-                gstRate: Math.max(0, safeNumber(item.gstRate)),
-                unit: item.unit || "Pieces",
-                customAttributes: item.customAttributes || {},
-            }));
+        const items = data.items.filter((item) => (item.description || "").trim() !== "");
+        const lines = items.map((item) => ({
+            description: item.description.trim(),
+            quantity: Math.max(1, Math.round(safeNumber(item.quantity))),
+            rate: Math.max(0, safeNumber(item.rate)),
+            gstRate: Math.max(0, safeNumber(item.gstRate)),
+            unit: item.unit || "Pieces",
+            customAttributes: item.customAttributes || {},
+        }));
         if (lines.length === 0) {
             return { success: false, error: "Add at least one item with a description" };
         }
@@ -148,7 +162,12 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
                 }
             }
 
-            return tx.customerPurchaseOrder.create({
+            // Only link products that exist
+            const requested = [...new Set(items.map((item) => item.productId).filter((id): id is string => Boolean(id)))];
+            const existing = new Set((await tx.product.findMany({ where: { id: { in: requested } }, select: { id: true } })).map((p) => p.id));
+            const productIds = items.map((item) => (item.productId && existing.has(item.productId) ? item.productId : null));
+
+            const created = await tx.customerPurchaseOrder.create({
                 data: {
                     customerId,
                     poNumber: data.poNumber || `PO-${Date.now()}`,
@@ -161,10 +180,20 @@ export async function confirmCustomerPO(data: ConfirmPOData) {
                     originalFileUrl: data.originalFileUrl || null,
                     ocrText: data.ocrText || null,
                     items: {
-                        create: lines.map((line, i) => ({ ...line, amount: totals.lines[i].amount })),
+                        create: lines.map((line, i) => ({ ...line, amount: totals.lines[i].amount, productId: productIds[i] })),
                     },
                 },
             });
+
+            if (data.printedCustomerName !== undefined) {
+                await recordConfirmedReading(tx, customerId, data.printedCustomerName, items.map((item, i) => ({
+                    productId: productIds[i],
+                    suggestedProductId: item.suggestedProductId ?? null,
+                    description: item.sourceDescription || item.description,
+                    productCode: item.sourceProductCode ?? null,
+                })));
+            }
+            return created;
         });
 
         revalidatePath("/purchase-orders");

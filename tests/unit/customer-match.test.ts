@@ -53,3 +53,20 @@ describe("matchCustomer", () => {
         expect(matchCustomer({ name: "Crescent Textiles" }, customers)).toBeNull();
     });
 });
+
+describe("matchCustomer with learned names", () => {
+    const aliases = [{ normalizedName: "bb apparel karachi", customerId: "bluebird" }];
+
+    it("uses a name staff confirmed before", () => {
+        expect(matchCustomer({ name: "BB Apparel, Karachi (Pvt) Ltd" }, customers, aliases)).toMatchObject({ id: "bluebird", reason: "learned" });
+    });
+
+    it("lets a tax number for another customer override the learned name", () => {
+        const royal = customers.map((c) => (c.id === "royal" ? { ...c, ntn: "7654321-0" } : c));
+        expect(matchCustomer({ name: "BB Apparel Karachi", ntn: "7654321-0" }, royal, aliases)).toMatchObject({ id: "royal", reason: "ntn" });
+    });
+
+    it("ignores a learned name whose customer no longer exists", () => {
+        expect(matchCustomer({ name: "BB Apparel Karachi" }, customers, [{ normalizedName: "bb apparel karachi", customerId: "deleted" }])).toBeNull();
+    });
+});
