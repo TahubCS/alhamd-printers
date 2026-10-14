@@ -19,7 +19,7 @@ const TabsList = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            "inline-flex h-11 items-center justify-center rounded-lg bg-[var(--color-bg-tertiary)] p-1 text-[var(--color-text-secondary)] border border-[var(--color-border)]",
+            "inline-flex flex-wrap items-center gap-0.5 rounded-md bg-[var(--color-neutral-soft)] p-0.5 text-[var(--color-text-secondary)]",
             className
         )}
         {...props}
@@ -43,10 +43,10 @@ const TabsTrigger = React.forwardRef<
             ref={ref}
             type="button"
             className={cn(
-                "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+                "inline-flex h-8 items-center justify-center whitespace-nowrap rounded px-3 text-[13px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-50",
                 isActive
-                    ? "bg-[var(--color-primary)] text-white shadow-sm"
-                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]",
+                    ? "bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
                 className
             )}
             onClick={(e) => {
@@ -68,7 +68,7 @@ const TabsContent = React.forwardRef<
         <div
             ref={ref}
             className={cn(
-                "mt-4 focus-visible:outline-none animate-in fade-in-50",
+                "mt-4",
                 className
             )}
             {...props}

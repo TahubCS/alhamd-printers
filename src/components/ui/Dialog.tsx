@@ -39,20 +39,20 @@ export function Dialog({ title, description, closeLabel, onClose, children }: Di
 
     // Portal to <body>: animated (transformed) page wrappers would otherwise confine position: fixed
     return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#111827]/45 p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
             <div
                 ref={panelRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
-                className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6 shadow-lg"
+                className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6 shadow-[var(--shadow-lg)]"
             >
                 <div className="mb-5 flex items-start justify-between gap-4">
                     <div>
-                        <h2 id={titleId} className="text-xl font-bold text-[var(--color-text-primary)]">{title}</h2>
+                        <h2 id={titleId} className="text-lg font-semibold text-[var(--color-text-primary)]">{title}</h2>
                         {description && <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{description}</p>}
                     </div>
-                    <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]" aria-label={closeLabel}>
+                    <button type="button" onClick={onClose} className="rounded-md p-1.5 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]" aria-label={closeLabel}>
                         <X className="h-5 w-5" />
                     </button>
                 </div>

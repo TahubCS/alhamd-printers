@@ -1,28 +1,32 @@
 import { HTMLAttributes, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
     variant?: 'default' | 'secondary' | 'outline' | 'success' | 'danger' | 'warning';
 }
 
-export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
-    ({ className = '', variant = 'default', ...props }, ref) => {
-        const variants = {
-            default: 'border-indigo-400/30 bg-indigo-500/15 text-indigo-200',
-            secondary: 'border-[var(--color-border)] bg-[var(--color-bg-hover)] text-[var(--color-text-secondary)]',
-            outline: 'border-[var(--color-border-light)] text-[var(--color-text-primary)]',
-            success: 'border-green-500/30 bg-green-500/15 text-green-300',
-            danger: 'border-red-500/30 bg-red-500/15 text-red-300',
-            warning: 'border-amber-500/30 bg-amber-500/15 text-amber-300',
-        };
+// Soft fill + dark text keeps every state readable on the light surfaces; the dot
+// means status never relies on the fill colour alone.
+const variants = {
+    default: 'bg-[var(--color-info-soft)] text-[var(--color-info)]',
+    secondary: 'bg-[var(--color-neutral-soft)] text-[var(--color-neutral)]',
+    outline: 'border border-[var(--color-border-light)] text-[var(--color-text-secondary)]',
+    success: 'bg-[var(--color-success-soft)] text-[var(--color-success)]',
+    danger: 'bg-[var(--color-error-soft)] text-[var(--color-error)]',
+    warning: 'bg-[var(--color-warning-soft)] text-[var(--color-warning)]',
+};
 
-        return (
-            <span
-                ref={ref}
-                className={`inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${variants[variant]} ${className}`}
-                {...props}
-            />
-        );
-    }
+export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
+    ({ className = '', variant = 'default', children, ...props }, ref) => (
+        <span
+            ref={ref}
+            className={cn('inline-flex items-center gap-1.5 whitespace-nowrap rounded px-2 py-px text-xs font-medium leading-5', variants[variant], className)}
+            {...props}
+        >
+            {variant !== 'outline' && <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-80" />}
+            {children}
+        </span>
+    )
 );
 
 Badge.displayName = 'Badge';

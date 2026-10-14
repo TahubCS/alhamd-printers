@@ -16,7 +16,7 @@ Table.displayName = 'Table';
 
 export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
     ({ className = '', ...props }, ref) => (
-        <thead ref={ref} className={cn('[&_tr]:border-b [&_tr]:border-[var(--color-border)]', className)} {...props} />
+        <thead ref={ref} className={cn('bg-[var(--color-bg-subtle)] [&_tr]:border-b [&_tr]:border-[var(--color-border)] [&_tr:hover]:bg-transparent', className)} {...props} />
     )
 );
 TableHeader.displayName = 'TableHeader';
@@ -36,7 +36,7 @@ export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTable
     ({ className = '', ...props }, ref) => (
         <tr
             ref={ref}
-            className={cn('border-b border-[var(--color-border)] transition-colors hover:bg-[var(--color-bg-hover)] data-[state=selected]:bg-[var(--color-bg-hover)]', className)}
+            className={cn('border-b border-[var(--color-divider)] transition-colors hover:bg-[var(--color-bg-hover)] data-[state=selected]:bg-[var(--color-bg-hover)]', className)}
             {...props}
         />
     )
@@ -47,7 +47,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLT
     ({ className = '', ...props }, ref) => (
         <th
             ref={ref}
-            className={cn('h-12 px-4 text-start align-middle font-medium text-[var(--color-text-secondary)] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', className)}
+            className={cn('h-10 px-4 text-start align-middle text-xs font-medium whitespace-nowrap text-[var(--color-text-secondary)] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', className)}
             {...props}
         />
     )
@@ -58,7 +58,7 @@ export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLT
     ({ className = '', ...props }, ref) => (
         <td
             ref={ref}
-            className={cn('p-4 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', className)}
+            className={cn('px-4 py-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', className)}
             {...props}
         />
     )
