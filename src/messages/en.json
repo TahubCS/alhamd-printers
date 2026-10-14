@@ -288,5 +288,45 @@
             "throttled": "Too many failed attempts. Please wait 15 minutes and try again.",
             "config": "Sign-in is not configured. Set AUTH_USERNAME, AUTH_PASSWORD and AUTH_SECRET."
         }
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Invoicing companies and bank accounts used across the app",
+        "companies": {
+            "title": "Invoicing companies",
+            "description": "Each invoice is issued under one of these names. The default is preselected on new invoices.",
+            "add": "Add company",
+            "name": "Company name",
+            "nameUrdu": "Urdu name",
+            "phone": "Phone",
+            "email": "Email",
+            "address": "Address",
+            "website": "Website",
+            "logo": "Logo",
+            "logoHint": "PNG, JPEG or WebP under 200 KB. Printed on invoice PDFs.",
+            "logoTooLarge": "Logo must be under 200 KB.",
+            "removeLogo": "Remove logo",
+            "default": "Default",
+            "makeDefault": "Make default",
+            "empty": "No companies yet. Add one before creating invoices.",
+            "invoiceCount": "{count, plural, =0 {No invoices} one {# invoice} other {# invoices}}",
+            "confirmDelete": "Delete {name}? This cannot be undone.",
+            "genericError": "Something went wrong. Please try again."
+        },
+        "banks": {
+            "title": "Bank accounts",
+            "description": "Accounts customers can transfer to. Inactive accounts are hidden from the payment form.",
+            "add": "Add account",
+            "bankName": "Bank",
+            "accountTitle": "Account title",
+            "lastFour": "Last 4 digits",
+            "securityNote": "Only the last four digits are stored. Full account numbers never enter the database.",
+            "inactive": "Inactive",
+            "activate": "Activate",
+            "deactivate": "Deactivate",
+            "empty": "No bank accounts added yet.",
+            "paymentCount": "{count, plural, =0 {No payments} one {# payment} other {# payments}}",
+            "genericError": "Something went wrong. Please try again."
+        }
     }
 }

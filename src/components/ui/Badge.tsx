@@ -1,10 +1,10 @@
 import { HTMLAttributes, forwardRef } from 'react';
 
-interface BadgeProps extends HTMLAttributes<HTMLDivElement> {
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
     variant?: 'default' | 'secondary' | 'outline' | 'success' | 'danger' | 'warning';
 }
 
-export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
+export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     ({ className = '', variant = 'default', ...props }, ref) => {
         const variants = {
             default: 'border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/80',
@@ -16,7 +16,7 @@ export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
         };
 
         return (
-            <div
+            <span
                 ref={ref}
                 className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 ${variants[variant]} ${className}`}
                 {...props}

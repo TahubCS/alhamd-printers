@@ -11,7 +11,8 @@ import {
     Wallet,
     Banknote,
     Printer,
-    CreditCard
+    CreditCard,
+    Settings
 } from 'lucide-react';
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
     { key: 'inventory', href: '/inventory', icon: Package },
     { key: 'expenses', href: '/expenses', icon: Wallet },
     { key: 'wages', href: '/wages', icon: Banknote },
+    { key: 'settings', href: '/settings', icon: Settings },
 ];
 
 export default function Sidebar({ open = false, onNavigate }: { open?: boolean; onNavigate?: () => void }) {
@@ -54,7 +56,7 @@ export default function Sidebar({ open = false, onNavigate }: { open?: boolean; 
             {/* Navigation */}
             <nav className={`flex-1 ${isUrdu ? 'py-6' : 'py-4'} overflow-y-auto`}>
                 {navItems.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(`${item.href}/`);
                     const Icon = item.icon;
 
                     return (

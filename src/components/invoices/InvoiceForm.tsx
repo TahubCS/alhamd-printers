@@ -4,6 +4,7 @@ import { createInvoice } from "@/actions/invoice";
 import { getCustomers } from "@/actions/customer";
 import { getProducts } from "@/actions/product";
 import { getCustomerPOById } from "@/actions/po";
+import { getCompanies } from "@/actions/settings";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -52,7 +53,7 @@ export default function InvoiceForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form State
-    const [companyId, setCompanyId] = useState("alhamd-printers"); // Default
+    const [companyId, setCompanyId] = useState("");
     const [customerId, setCustomerId] = useState(urlCustomerId || "");
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [creditDays, setCreditDays] = useState(0);
@@ -65,10 +66,19 @@ export default function InvoiceForm() {
     // Data State
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
+    const [companies, setCompanies] = useState<{ id: string; name: string; isDefault: boolean }[]>([]);
     const [customerSearch, setCustomerSearch] = useState("");
 
     // Load initial data
     useEffect(() => {
+        getCompanies().then(res => {
+            if (res.success && res.data) {
+                setCompanies(res.data);
+                const preferred = res.data.find(c => c.isDefault) ?? res.data[0];
+                if (preferred) setCompanyId(current => current || preferred.id);
+            }
+        });
+
         getProducts().then(res => {
             if (res.success && res.data) {
                 setProducts(res.data);
@@ -189,6 +199,10 @@ export default function InvoiceForm() {
             alert(t("selectCustomer"));
             return;
         }
+        if (!companyId) {
+            alert(t("selectCompany"));
+            return;
+        }
 
         setIsSubmitting(true);
         try {
@@ -232,10 +246,9 @@ export default function InvoiceForm() {
                             value={companyId}
                             onChange={e => setCompanyId(e.target.value)}
                         >
-                            <option value="alhamd-printers">Al-Hamd Printers</option>
-                            <option value="ats">ATS</option>
-                            <option value="ma-enterprises">M.A Enterprises</option>
-                            <option value="muhammad-tanveer">Muhammad Tanveer</option>
+                            {companies.map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
                         </select>
                     </div>
 
